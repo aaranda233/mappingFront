@@ -1,0 +1,93 @@
+<!-- 🧠 Chat flotante -->
+<div x-data="chatWidget()" class="fixed bottom-5 right-5 z-50">
+  <!-- Botón flotante -->
+  <button
+    @click="open = !open"
+    class="bg-[#f15a24] hover:bg-[#e25d1c] text-white p-3 rounded-full shadow-lg focus:outline-none"
+  >
+    💬
+  </button>
+
+  <!-- Ventana del chat -->
+  <div
+    x-show="open"
+    x-transition
+    class="mt-2 w-80 h-[400px] bg-white dark:bg-gray-900 rounded-xl shadow-xl flex flex-col"
+  >
+    <!-- Cabecera -->
+    <div class="bg-[#f15a24] text-white p-3 rounded-t-xl font-semibold">
+      Asistente IA
+    </div>
+
+    <!-- Mensajes -->
+    <div class="flex-1 p-3 overflow-y-auto text-sm space-y-2" id="chat-messages">
+      <template x-for="msg in messages" :key="msg.id">
+        <div
+          :class="msg.role === 'user' ? 'text-right' : 'text-left text-[#f15a24]'"
+        >
+          <span
+            class="inline-block rounded-xl px-3 py-2"
+            :class="msg.role === 'user' ? 'bg-gray-200' : 'bg-orange-100'"
+            x-text="msg.content"
+          ></span>
+        </div>
+      </template>
+    </div>
+
+    <!-- Input -->
+    <div class="p-3 border-t flex gap-2">
+      <input
+        x-model="input"
+        @keydown.enter="sendMessage"
+        placeholder="Escribe algo..."
+        class="flex-1 px-3 py-2 border rounded-lg text-sm"
+      />
+      <button @click="sendMessage" class="text-[#f15a24] font-bold">➤</button>
+    </div>
+  </div>
+</div>
+<script>
+  function chatWidget() {
+    return {
+      open: false,
+      input: '',
+      messages: [],
+      async sendMessage() {
+        const text = this.input.trim();
+        if (!text) return;
+
+        this.messages.push({ id: Date.now(), role: 'user', content: text });
+        this.input = '';
+
+        // Llamada a tu API aquí
+        try {
+          const res = await fetch('https://TU_API/chat', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ message: text })
+          });
+
+          const data = await res.json();
+          this.messages.push({
+            id: Date.now() + 1,
+            role: 'assistant',
+            content: data.reply || 'Sin respuesta.'
+          });
+        } catch (e) {
+          this.messages.push({
+            id: Date.now() + 2,
+            role: 'assistant',
+            content: '❌ Error al contactar con el asistente.'
+          });
+        }
+
+        this.$nextTick(() => {
+          const container = document.getElementById('chat-messages');
+          container.scrollTop = container.scrollHeight;
+        });
+      }
+    };
+  }
+</script>

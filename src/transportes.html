@@ -4,20 +4,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport"
-    content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
-  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-  <title>Hortichuelas - Dashboard</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-  <!-- Toastify CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Hortichuelas - Transportes</title>
 
-  <!-- Toastify JS -->
+  <!-- Animaciones -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+  <!-- Toastify -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
   <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
 </head>
 
 <body :class="{'dark bg-gray-900': darkMode === true}"
-  x-data="{ page: 'ecommerce', loaded: true, darkMode: false, stickyMenu: false, sidebarToggle: false, scrollTop: false }"
+  x-data="{ loaded: true, darkMode: false, stickyMenu: false, sidebarToggle: false, scrollTop: false }"
   x-init="
     darkMode = JSON.parse(localStorage.getItem('darkMode'));
     $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)))
@@ -30,73 +30,76 @@
       <include src="./partials/overlay.html" />
       <include src="./partials/header.html" />
 
-      <main x-data="mappingManager()" x-init="init">
-        <!-- ✅ Toast -->
+      <main x-data="transportesManager()" x-init="init">
+        <!-- Toast -->
         <div x-show="toast" x-transition
           class="fixed top-5 right-5 bg-green-600 text-white px-4 py-2 rounded-xl shadow-lg z-50">
           <span x-text="toast"></span>
         </div>
 
-        <!-- ✅ Loading -->
+        <!-- Loading -->
         <div x-show="loading" class="text-center p-4 text-gray-600">
-          <svg class="animate-spin h-6 w-6 mx-auto text-[#f15a24]" xmlns="http://www.w3.org/2000/svg" fill="none"
+          <svg class="animate-spin h-6 w-6 mx-auto text-[color:#f97316]" xmlns="http://www.w3.org/2000/svg" fill="none"
             viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
           </svg>
-          <p class="mt-2">Cargando...</p>
+          <p class="mt-2">Cargando transportes...</p>
         </div>
 
-        <!-- ✅ Cards o mensaje vacío -->
+        <!-- Contenido -->
         <div class="p-6">
-          <template x-if="mappings.length === 0 && !loading">
+          <template x-if="transportes.length === 0 && !loading">
             <div class="flex flex-col items-center justify-center text-center text-gray-600 mt-10">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-400 mb-4" fill="none"
                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round"
                   d="M12 9v3m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                <h2 class="text-xl font-semibold">No hay mappings pendientes</h2>
-                <p class="text-gray-500 mt-2">Todo está procesado. ¡Buen trabajo! 🎉</p>
+              </svg>
+              <h2 class="text-xl font-semibold">No hay transportes pendientes</h2>
+              <p class="text-gray-500 mt-2">Todo está gestionado. 🚛</p>
             </div>
           </template>
 
-          <div x-show="mappings.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 bg-gray-100">
-            <template x-for="(item, index) in mappings" :key="item._id">
+          <div x-show="transportes.length > 0"
+            class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 bg-gray-100">
+            <template x-for="(item, index) in transportes" :key="item._id">
               <div x-show="!item.enviado" x-transition.duration.300ms>
                 <div
-                  class="relative bg-white/60 backdrop-blur-xl shadow-xl rounded-3xl p-6 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl border border-gray-200 hover:border-[#f15a24]/60 w-full">
+                  class="relative bg-white/60 backdrop-blur-xl shadow-xl rounded-3xl p-6 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl border border-gray-200 hover:border-[color:#f97316]/60 w-full">
 
                   <!-- Cabecera -->
                   <div class="flex items-center gap-3 mb-3">
-                    <div class="bg-[#f15a24]/10 text-[#f15a24] rounded-full p-2 shadow-inner">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2">
+                    <div class="bg-[color:#f97316]/10 text-[color:#f97316] rounded-full p-2 shadow-inner">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M9 17v-6h6v6m-6-6V7a2 2 0 012-2h2a2 2 0 012 2v4" />
+                          d="M9 17H7a2 2 0 01-2-2V6a1 1 0 011-1h8v5h5l3 4v3a2 2 0 01-2 2h-2m-3 0h-4m4 0a2 2 0 11-4 0m4 0a2 2 0 104 0" />
                       </svg>
                     </div>
-                    <h2 class="text-lg font-bold text-gray-800">🧾 Línea: <span x-text="item.id_linea"></span></h2>
+                    <h2 class="text-lg font-bold text-gray-800">🚚 Ruta: <span x-text="item.ruta"></span></h2>
                   </div>
 
-                  <!-- Contenido -->
+                  <!-- Detalles -->
                   <div class="text-[15px] text-gray-700 space-y-1 mb-4">
-                    <p><span class="font-medium">🧵 Descripción:</span> <span x-text="item.descripcion"></span></p>
-                    <p><span class="font-medium">📦 Ref. Pedido:</span> <span x-text="item.ref_pedido"></span></p>
+                    <p><span class="font-medium">📦 Matrícula:</span> <span x-text="item.matricula"></span></p>
+                    <p><span class="font-medium">🧭 Origen:</span> <span x-text="item.origen"></span></p>
+                    <p><span class="font-medium">🏁 Destino:</span> <span x-text="item.destino"></span></p>
                   </div>
 
                   <!-- Inputs -->
                   <div class="space-y-3">
-                    <input type="text" placeholder="🔢 ID Gensal"
+                    <input type="text" placeholder="📌 ID Carga"
                       class="w-full px-4 py-2 bg-white/80 border border-gray-300 rounded-xl shadow-sm"
-                      x-model="item.id_gensal" />
-                    <input type="text" placeholder="🏷️ ID Categoría"
+                      x-model="item.id_carga" />
+                    <input type="text" placeholder="🕒 Hora estimada"
                       class="w-full px-4 py-2 bg-white/80 border border-gray-300 rounded-xl shadow-sm"
-                      x-model="item.id_categoria" />
+                      x-model="item.hora_estimacion" />
                   </div>
 
                   <!-- Botón -->
                   <button
-                    class="mt-5 w-full py-2.5 bg-[#f15a24] hover:bg-[#e75218] text-white font-semibold rounded-xl flex items-center justify-center gap-2"
+                    class="mt-5 w-full py-2.5 bg-[color:#f97316] hover:bg-[#e25d1c] text-white font-semibold rounded-xl flex items-center justify-center gap-2"
                     @click="enviar(item)">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 animate-bounce" fill="none"
                       viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -112,7 +115,6 @@
       </main>
     </div>
   </div>
-  <include src="./partials/chat-widget.html"></include>
 </body>
 
 </html>

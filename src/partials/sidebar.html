@@ -1,111 +1,77 @@
-<aside
-  :class="sidebarToggle ? 'translate-x-0 lg:w-[90px]' : '-translate-x-full'"
-  class="sidebar fixed left-0 top-0 z-9999 flex h-screen w-[290px] flex-col overflow-y-hidden border-r border-gray-200 bg-white px-5 dark:border-gray-800 dark:bg-black lg:static lg:translate-x-0"
->
+<aside :class="sidebarToggle ? 'translate-x-0 lg:w-[90px]' : '-translate-x-full'"
+  class="sidebar fixed left-0 top-0 z-50 flex h-screen w-[290px] flex-col overflow-y-auto border-r border-gray-200 bg-white px-5 dark:border-gray-800 dark:bg-black lg:static lg:translate-x-0">
   <!-- SIDEBAR HEADER -->
-  <div
-    :class="sidebarToggle ? 'justify-center' : 'justify-between'"
-    class="flex items-center gap-2 pt-8 sidebar-header pb-7"
-  >
-  <div
-  class="w-full flex justify-center items-center p-4"
-  :class="sidebarToggle ? 'p-2' : 'p-4'"
->
-  <img
-    src="images/logo/logo.svg"
-    alt="Logo"
-    class="object-contain transition-all duration-300"
-    :class="sidebarToggle ? 'max-h-8 max-w-[48px]' : 'max-h-12 max-w-[140px]'"
-  />
-</div>
-
+  <div :class="sidebarToggle ? 'justify-center' : 'justify-between'"
+    class="flex items-center gap-2 pt-8 sidebar-header pb-7">
+    <div class="w-full flex justify-center items-center" :class="sidebarToggle ? 'p-2' : 'p-4'">
+      <img src="images/logo/logo.svg" alt="Logo" class="object-contain transition-all duration-300"
+        :class="sidebarToggle ? 'max-h-8 max-w-[48px]' : 'max-h-12 max-w-[140px]'" />
+    </div>
   </div>
-  <!-- SIDEBAR HEADER -->
 
-  <div class="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
-    <!-- Sidebar Menu -->
-    <nav x-data="{selected: $persist('Dashboard')}">
-      <div>
-        <ul class="flex flex-col gap-4 mb-6">
-          <!-- Menu Item Dashboard -->
-          <li>
-            <a
-              href="#"
-              @click.prevent="selected = (selected === 'Dashboard' ? '' : 'Dashboard')"
-              class="menu-item group"
-              :class="selected === 'Dashboard' ? 'menu-item-active' : 'menu-item-inactive'"
-            >
-              <!-- Icon -->
-              <svg
-                :class="selected === 'Dashboard' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                  d="M5.5 3.25C4.25736 3.25 3.25 4.25736 3.25 5.5V8.99998C3.25 10.2426 4.25736 11.25 5.5 11.25H9C10.2426 11.25 11.25 10.2426 11.25 8.99998V5.5C11.25 4.25736 10.2426 3.25 9 3.25H5.5Z
-                  M12.75 5.5C12.75 4.25736 13.7574 3.25 15 3.25H18.5C19.7426 3.25 20.75 4.25736 20.75 5.5V8.99998C20.75 10.2426 19.7426 11.25 18.5 11.25H15C13.7574 11.25 12.75 10.2426 12.75 8.99998V5.5Z
-                  M5.5 12.75C4.25736 12.75 3.25 13.7574 3.25 15V18.5C3.25 19.7426 4.25736 20.75 5.5 20.75H9C10.2426 20.75 11.25 19.7427 11.25 18.5V15C11.25 13.7574 10.2426 12.75 9 12.75H5.5Z
-                  M15 12.75C13.7574 12.75 12.75 13.7574 12.75 15V18.5C12.75 19.7426 13.7574 20.75 15 20.75H18.5C19.7426 20.75 20.75 19.7427 20.75 18.5V15C20.75 13.7574 19.7426 12.75 18.5 12.75H15Z"
-                  fill=""
-                />
-              </svg>
+  <!-- SIDEBAR MENU -->
+  <nav x-data="{ selected: 'Pedidos' }" role="navigation" aria-label="Menú lateral" class="flex flex-col gap-4">
+    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mt-4 mb-2">
+      Mappings
+    </p>
+    <ul class="flex flex-col gap-4">
 
-              <span
-                class="menu-item-text"
-                :class="sidebarToggle ? 'lg:hidden' : ''"
-              >
-                Mapping
-              </span>
+      <!-- 📦 Pedidos Edeka -->
+      <li>
+        <a href="#" @click.prevent="selected = (selected === 'Pedidos' ? '' : 'Pedidos')"
+          class="menu-item group flex items-center gap-3 text-sm font-medium transition-colors"
+          :class="selected === 'Pedidos' ? 'text-blue-600' : 'text-gray-600 hover:text-blue-600'">
+          <!-- Icono Caja -->
+          <svg :class="selected === 'Pedidos' ? 'text-blue-600' : 'text-gray-400 group-hover:text-blue-600'" width="24"
+            height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M3 7.5L12 12l9-4.5M3 7.5v9l9 4.5M3 7.5l9-4.5 9 4.5M21 7.5v9M12 12v9" />
+          </svg>
+          <span :class="sidebarToggle ? 'lg:hidden' : ''">Pedidos</span>
+        </a>
+        <div class="overflow-hidden transition-all duration-300 ease-in-out"
+          :class="selected === 'Pedidos' ? 'max-h-40' : 'max-h-0'">
+          <ul class="flex flex-col gap-1 mt-2 pl-8 text-sm text-gray-500">
+            <li>
+              <a href="index.html" class="hover:text-blue-600"
+                :class="window.location.pathname.includes('index') ? 'text-blue-600 font-medium' : ''">
+                Edeka
+              </a>
+            </li>
+          </ul>
+        </div>
+      </li>
 
-              <!-- Arrow -->
-              <svg
-                class="menu-item-arrow"
-                :class="[(selected === 'Dashboard') ? 'menu-item-arrow-active' : 'menu-item-arrow-inactive', sidebarToggle ? 'lg:hidden' : '' ]"
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585"
-                  stroke=""
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </a>
+      <!-- 🚚 Transportes Edeka -->
+      <li>
+        <a href="#" @click.prevent="selected = (selected === 'Transportes' ? '' : 'Transportes')"
+          class="menu-item group flex items-center gap-3 text-sm font-medium transition-colors"
+          :class="selected === 'Transportes' ? 'text-[color:#f97316]' : 'text-gray-600 hover:text-[color:#f97316]'">
+          <!-- Icono Camión -->
+          <svg
+            :class="selected === 'Transportes' ? 'text-[color:#f97316]' : 'text-gray-400 group-hover:text-[color:#f97316]'"
+            width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M9 17H7a2 2 0 01-2-2V6a1 1 0 011-1h8v5h5l3 4v3a2 2 0 01-2 2h-2m-3 0h-4m4 0a2 2 0 11-4 0m4 0a2 2 0 104 0" />
+          </svg>
+          <span :class="sidebarToggle ? 'lg:hidden' : ''">Transportes</span>
+        </a>
+        <div class="overflow-hidden transition-all duration-300 ease-in-out"
+          :class="selected === 'Transportes' ? 'max-h-40' : 'max-h-0'">
+          <ul class="flex flex-col gap-1 mt-2 pl-8 text-sm text-gray-500">
+            <li>
+              <a href="transportes.html" class="hover:text-[color:#f97316]"
+                :class="window.location.pathname.includes('transportes') ? 'text-[color:#f97316] font-medium' : ''">
+                 Edeka
+              </a>
+            </li>
+          </ul>
+        </div>
+      </li>
 
-            <!-- Dropdown Menu -->
-            <div
-              class="overflow-hidden transform translate"
-              :class="(selected === 'Dashboard') ? 'block' :'hidden'"
-            >
-              <ul
-                :class="sidebarToggle ? 'lg:hidden' : 'flex'"
-                class="flex flex-col gap-1 mt-2 menu-dropdown pl-9"
-              >
-                <li>
-                  <a
-                    href="index.html"
-                    class="menu-dropdown-item group"
-                    :class="page === 'ecommerce' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'"
-                  >
-                    Edeka
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </li>
-          <!-- End Menu Item Dashboard -->
-        </ul>
-      </div>
-    </nav>
-  </div>
+    </ul>
+
+  </nav>
 </aside>
