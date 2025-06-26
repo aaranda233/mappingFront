@@ -10,7 +10,8 @@
   </div>
 
   <!-- SIDEBAR MENU -->
-  <nav x-data="{ selected: 'Pedidos' }" role="navigation" aria-label="Menú lateral" class="flex flex-col gap-4">
+ <nav x-data="{ selected: window.location.pathname.includes('transportes') ? 'Transportes' : 'Pedidos' }"
+     role="navigation" aria-label="Menú lateral" class="flex flex-col gap-4">
     <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mt-4 mb-2">
       Mappings
     </p>

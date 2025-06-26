@@ -15,8 +15,11 @@ import map01 from "./components/map-01";
 import "./components/calendar-init.js";
 import "./components/image-resize";
 
-import mappingManager from "./mappingManager";
+import mappingManager from "./mappingManager.js";
+import transporteManager from "./transporteManager.js";
+
 window.mappingManager = mappingManager;
+window.transporteManager = transporteManager;
 
 
 Alpine.plugin(persist);
