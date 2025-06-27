@@ -17,16 +17,26 @@ FROM base AS dev
 
 RUN apk add --no-cache bash
 
-EXPOSE 5173 3000 8080
+EXPOSE 3000 5173 8080
 
 CMD ["npx", "webpack", "serve", "--open", "--config", "webpack.config.js"]
+
+# =========================
+# Etapa de build (compila el frontend)
+# =========================
+FROM base AS build
+
+RUN npm run build
 
 # =========================
 # Etapa de producción (con NGINX)
 # =========================
 FROM nginx:alpine AS production
 
-COPY --from=base /app/build /usr/share/nginx/html
+COPY --from=build /app/build /usr/share/nginx/html
+
+# Config opcional para SPAs (404 fallback)
+# COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
