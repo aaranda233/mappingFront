@@ -35,9 +35,10 @@ FROM nginx:alpine AS production
 
 COPY --from=build /app/build /usr/share/nginx/html
 
-# Config opcional para SPAs (404 fallback)
-# COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copia la configuración NGINX personalizada
+COPY nginx/default.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]
+
