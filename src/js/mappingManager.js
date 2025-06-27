@@ -14,7 +14,7 @@ export default function mappingManager() {
             if (this.primeraCarga) this.loading = true;
 
             try {
-                const res = await fetch("http://192.168.2.202:5008/api/mapping");
+                const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping`);
                 const data = await res.json();
 
                 const nuevos = [];
@@ -49,7 +49,7 @@ export default function mappingManager() {
             }
 
             try {
-                const res = await fetch("http://192.168.2.202:5008/api/mapping/consumir", {
+                const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/consumir`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({

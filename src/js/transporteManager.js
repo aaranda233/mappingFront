@@ -14,7 +14,7 @@ export default function transportesManager() {
             if (this.primeraCarga) this.loading = true;
 
             try {
-                const res = await fetch("http://192.168.2.202:5008/api/mapping/transportes");
+                const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/transportes`);
                 const data = await res.json();
 
                 // Añade campo seleccion para cada item
@@ -36,7 +36,7 @@ export default function transportesManager() {
             }
 
             try {
-                const res = await fetch("http://192.168.2.202:5008/api/mapping/transportes/consumir", {
+                const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/transportes/consumir`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({

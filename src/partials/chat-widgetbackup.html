@@ -1,93 +1,161 @@
-<!-- 🧠 Chat flotante -->
 <div x-data="chatWidget()" class="fixed bottom-5 right-5 z-50">
-  <!-- Botón flotante -->
-  <button
-    @click="open = !open"
-    class="bg-[#f15a24] hover:bg-[#e25d1c] text-white p-3 rounded-full shadow-lg focus:outline-none"
-  >
-    💬
-  </button>
+    <!-- Botón premium -->
+    <button @click="open = !open; $nextTick(() => open && $refs.input.focus())"
+        class="group relative flex items-center justify-center w-14 h-14 rounded-full bg-white/90 backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.1)] border border-gray-200 hover:shadow-[0_6px_30px_rgba(241,90,36,0.4)] transition-all duration-300 hover:scale-105"
+        title="Abrir asistente">
+        <div class="absolute inset-0 animate-pulse rounded-full bg-[#f15a24]/10 pointer-events-none"></div>
 
-  <!-- Ventana del chat -->
-  <div
-    x-show="open"
-    x-transition
-    class="mt-2 w-80 h-[400px] bg-white dark:bg-gray-900 rounded-xl shadow-xl flex flex-col"
-  >
-    <!-- Cabecera -->
-    <div class="bg-[#f15a24] text-white p-3 rounded-t-xl font-semibold">
-      Asistente IA
-    </div>
+        <svg class="relative w-6 h-6 text-[#f15a24] transition-transform group-hover:rotate-3"
+            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 2v2m0 0a6 6 0 00-6 6v2H5a2 2 0 00-2 2v2a2 2 0 002 2h1v1a3 3 0 003 3h6a3 3 0 003-3v-1h1a2 2 0 002-2v-2a2 2 0 00-2-2h-1V10a6 6 0 00-6-6z" />
+        </svg>
 
-    <!-- Mensajes -->
-    <div class="flex-1 p-3 overflow-y-auto text-sm space-y-2" id="chat-messages">
-      <template x-for="msg in messages" :key="msg.id">
         <div
-          :class="msg.role === 'user' ? 'text-right' : 'text-left text-[#f15a24]'"
-        >
-          <span
-            class="inline-block rounded-xl px-3 py-2"
-            :class="msg.role === 'user' ? 'bg-gray-200' : 'bg-orange-100'"
-            x-text="msg.content"
-          ></span>
+            class="absolute -left-52 top-1/2 -translate-y-1/2 bg-gray-900 text-white text-xs px-3 py-1 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+            ¿En qué puedo ayudarte?
         </div>
-      </template>
-    </div>
+    </button>
 
-    <!-- Input -->
-    <div class="p-3 border-t flex gap-2">
-      <input
-        x-model="input"
-        @keydown.enter="sendMessage"
-        placeholder="Escribe algo..."
-        class="flex-1 px-3 py-2 border rounded-lg text-sm"
-      />
-      <button @click="sendMessage" class="text-[#f15a24] font-bold">➤</button>
+    <!-- Panel de chat -->
+    <div x-show="open" x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
+        x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
+        x-transition:leave-end="opacity-0 translate-y-4"
+        class="fixed bottom-24 right-5 w-96 max-w-[90vw] h-[500px] bg-white dark:bg-gray-900 rounded-2xl shadow-2xl flex flex-col border border-gray-200 overflow-hidden">
+        <!-- Header -->
+        <div
+            class="flex items-center justify-between px-4 py-3 bg-gradient-to-br from-[#f15a24] to-[#f77a3c] text-white">
+            <span class="font-semibold">Asistente IA</span>
+            <button @click="open = false" class="hover:text-gray-200">✖</button>
+        </div>
+
+        <!-- Mensajes -->
+        <div class="flex-1 p-4 overflow-y-auto space-y-3 text-sm" id="chat-messages">
+            <template x-for="msg in messages" :key="msg.id">
+                <div :class="msg.role === 'user' ? 'text-right' : 'text-left'">
+                    <span class="inline-block max-w-[80%] px-4 py-2 rounded-xl shadow-sm"
+                        :class="msg.role === 'user' ? 'bg-gray-100' : 'bg-[#fff6f2] text-[#f15a24] border border-[#f15a24]/30'"
+                        x-text="msg.content"></span>
+                </div>
+            </template>
+
+            <template x-if="loading">
+                <div class="text-left text-[#f15a24] animate-pulse">
+                    <span
+                        class="inline-block bg-[#fff6f2] px-4 py-2 rounded-xl border border-[#f15a24]/30">Escribiendo...</span>
+                </div>
+            </template>
+        </div>
+
+        <!-- Input -->
+        <div class="p-3 border-t flex items-center gap-2 bg-gray-50">
+            <input x-ref="input" x-model="input" @keydown.enter="sendMessage" placeholder="Escribe tu mensaje..."
+                class="flex-1 px-4 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#f15a24]/50 focus:outline-none" />
+            <button @click="sendMessage"
+                class="px-4 py-2 rounded-lg bg-[#f15a24] text-white hover:bg-[#e75218] transition">
+                ➤
+            </button>
+        </div>
     </div>
-  </div>
 </div>
+
 <script>
-  function chatWidget() {
-    return {
-      open: false,
-      input: '',
-      messages: [],
-      async sendMessage() {
-        const text = this.input.trim();
-        if (!text) return;
+    function chatWidget() {
+        return {
+            open: false,
+            input: '',
+            messages: [],
+            loading: false,
 
-        this.messages.push({ id: Date.now(), role: 'user', content: text });
-        this.input = '';
+            async sendMessage() {
+                const text = this.input.trim();
+                if (!text) return;
 
-        // Llamada a tu API aquí
-        try {
-          const res = await fetch('https://TU_API/chat', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
+                // Añadir mensaje del usuario
+                this.messages.push({ id: Date.now(), role: 'user', content: text });
+                this.input = '';
+
+                // Mensaje vacío del asistente
+                const assistantId = Date.now() + 1;
+                this.messages.push({ id: assistantId, role: 'assistant', content: '' });
+
+                // Llamada en streaming
+                try {
+                    await sendToLLMStreamed(text, chunk => {
+                        const assistantMsg = this.messages.find(m => m.id === assistantId);
+                        assistantMsg.content += chunk;
+                        this.$nextTick(() => this.scrollToBottom());
+                    });
+                } catch (err) {
+                    this.messages.push({ id: Date.now() + 2, role: 'assistant', content: '❌ Error al contactar con el modelo.' });
+                }
             },
-            body: JSON.stringify({ message: text })
-          });
 
-          const data = await res.json();
-          this.messages.push({
-            id: Date.now() + 1,
-            role: 'assistant',
-            content: data.reply || 'Sin respuesta.'
-          });
-        } catch (e) {
-          this.messages.push({
-            id: Date.now() + 2,
-            role: 'assistant',
-            content: '❌ Error al contactar con el asistente.'
-          });
+            scrollToBottom() {
+                const el = document.getElementById('chat-messages');
+                if (el) el.scrollTop = el.scrollHeight;
+            }
+        };
+    }
+
+    async function sendToLLMStreamed(message, onChunk) {
+        try {
+            const response = await fetch('http://192.168.2.202:8010/v1/chat/completions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: "meta-llama/Meta-Llama-3-8B-Instruct",
+                    messages: [
+                        { role: "system", content: "Eres un asistente útil." },
+                        { role: "user", content: message }
+                    ],
+                    stream: true
+                })
+            });
+
+            // Comprobación del estado HTTP
+            if (!response.ok) {
+                throw new Error(`❌ Código de error HTTP: ${response.status}`);
+            }
+
+            // Comprobación de cuerpo de respuesta
+            if (!response.body || !response.body.getReader) {
+                throw new Error("❌ El backend no envió cuerpo en streaming.");
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+            let buffer = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+
+                const chunks = buffer.split("\n\n").filter(c => c.trim().startsWith("data:"));
+
+                for (const chunk of chunks) {
+                    const jsonLine = chunk.replace(/^data:\s*/, '').trim();
+                    if (jsonLine === "[DONE]") return;
+
+                    try {
+                        const parsed = JSON.parse(jsonLine);
+                        const delta = parsed.choices?.[0]?.delta?.content;
+                        if (delta) onChunk(delta);
+                    } catch (err) {
+                        console.warn("⚠️ Error al parsear chunk:", err, chunk);
+                    }
+                }
+
+                // Limpia el buffer si termina bien
+                buffer = buffer.endsWith("\n\n") ? '' : buffer;
+            }
+        } catch (error) {
+            console.error("🚨 Error en fetch:", error);
+            throw new Error(error.message || "❌ Error desconocido al contactar con el modelo.");
         }
+    }
 
-        this.$nextTick(() => {
-          const container = document.getElementById('chat-messages');
-          container.scrollTop = container.scrollHeight;
-        });
-      }
-    };
-  }
 </script>
