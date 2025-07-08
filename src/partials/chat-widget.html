@@ -1,27 +1,33 @@
 <div x-data="chatWidget()" x-init="$nextTick(() => init())" class="fixed bottom-5 right-5 z-50 select-none">
-  <!-- Botón de apertura -->
+
+  <!-- Toggle Button -->
   <button id="chat-toggle-button" @click="open = !open; $nextTick(() => open && $refs.input.focus())"
     :class="loading ? 'bg-gradient-to-br from-[#f17533] to-[#ff9f40] animate-pulse shadow-[0_0_20px_rgba(241,90,36,0.5)] scale-105' : 'bg-white/90'"
     class="group relative flex items-center justify-center w-14 h-14 rounded-full backdrop-blur-md shadow-lg border border-gray-200 hover:shadow-2xl transition-all duration-300 hover:scale-105"
     title="Abrir asistente">
     <div class="absolute inset-0 rounded-full bg-[#f17533]/10 pointer-events-none animate-pulse"></div>
     <template x-if="loading">
-      <div
-        class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-[#f17533]/90 text-white text-[11px] px-2 py-1 rounded-md shadow-md animate-fade-in tracking-wide z-50">
+      <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-[#f17533]/90 text-white text-[11px] px-2 py-1 rounded-md shadow-md animate-fade-in tracking-wide z-50">
         ✨ Razonando..
       </div>
     </template>
-    <svg class="relative w-6 h-6 text-[#f17533] group-hover:rotate-3 transition-transform"
-      xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+    <svg class="relative w-6 h-6 text-[#f17533] group-hover:rotate-3 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none"
+      viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
       <path stroke-linecap="round" stroke-linejoin="round"
         d="M12 2v2m0 0a6 6 0 00-6 6v2H5a2 2 0 00-2 2v2a2 2 0 002 2h1v1a3 3 0 003 3h6a3 3 0 003-3v-1h1a2 2 0 002-2v-2a2 2 0 00-2-2h-1V10a6 6 0 00-6-6z" />
     </svg>
   </button>
-  <!-- TODO: Mirar para que el usuario no pueda modificar lo que pulsamos de la IA, es decir, el texto que viene predefinido, ponerlo por ejemplo encima arriba y pueda elegir enviarlo o no -->
-  <!-- Panel -->
+
+  <!-- Chat Panel -->
   <div x-show="open"
     class="fixed bottom-24 right-5 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl flex flex-col border border-gray-200 overflow-hidden"
     :style="`width: ${width}px; height: ${height}px; min-width: 300px; min-height: 300px; max-height: 90vh; max-width: 90vw;`">
+
+    <!-- Resizer Top Left -->
+    <div @mousedown="startResize($event)"
+      class="absolute top-1 left-1 w-4 h-4 cursor-nwse-resize z-50 bg-transparent group">
+      <div class="w-full h-full bg-[conic-gradient(at_top_left,_#f17533_25%,_transparent_25%)] rounded-sm group-hover:scale-125 transition-transform duration-200"></div>
+    </div>
 
     <!-- Header -->
     <div class="flex items-center justify-between px-4 py-3 bg-gradient-to-br from-[#f17533] to-[#f77a3c] text-white">
@@ -29,36 +35,15 @@
       <button @click="open = false" class="hover:text-gray-200">✖</button>
     </div>
 
-    <!-- Controles (joystick reducido) + Limpiar -->
-    <div class="flex justify-between items-start px-3 pt-2 pb-1 text-xs gap-2">
-      <!-- Joystick reducido -->
-      <div class="flex flex-col items-center text-gray-700">
-        <div class="grid grid-cols-3 gap-[2px]">
-          <div></div>
-          <button @click="height += 40"
-            class="w-6 h-6 bg-gray-100 hover:bg-gray-200 rounded text-[11px] flex items-center justify-center">⬆</button>
-          <div></div>
-          <button @click="width += 40"
-            class="w-6 h-6 bg-gray-100 hover:bg-gray-200 rounded text-[11px] flex items-center justify-center">⬅</button>
-          <div class="w-6 h-6 text-[9px] text-gray-300 flex items-center justify-center">ajustar</div>
-          <button @click="width -= 40"
-            class="w-6 h-6 bg-gray-100 hover:bg-gray-200 rounded text-[11px] flex items-center justify-center">➡</button>
-          <div></div>
-          <button @click="height -= 40"
-            class="w-6 h-6 bg-gray-100 hover:bg-gray-200 rounded text-[11px] flex items-center justify-center">⬇</button>
-          <div></div>
-        </div>
-      </div>
-
-      <!-- Botón Limpiar reducido -->
+    <!-- Controls -->
+    <div class="flex justify-end items-start px-3 pt-2 pb-1 text-xs gap-2">
       <button @click="resetChat"
         class="text-[11px] px-2 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200 transition mt-[6px] whitespace-nowrap">
         🧹 Limpiar
       </button>
     </div>
 
-
-    <!-- Mensajes -->
+    <!-- Messages -->
     <div class="flex-1 p-4 overflow-y-auto space-y-3 text-sm" id="chat-messages">
       <template x-for="msg in messages" :key="msg.id">
         <div :class="msg.role === 'user' ? 'text-right' : 'text-left'">
@@ -73,28 +58,22 @@
         </div>
       </template>
     </div>
-    <!-- 💡 Sugerencia de IA -->
+
+    <!-- Suggested Message -->
     <template x-if="proposedMessage">
       <div class="px-4 pb-2">
         <div class="bg-[#fff6f2] border border-[#f17533]/30 text-[#f17533] rounded-lg p-3 text-sm shadow">
           <p class="font-semibold mb-1">Sugerencia de IA:</p>
           <pre class="whitespace-pre-wrap font-sans text-sm text-gray-800" x-text="proposedMessage"></pre>
           <div class="flex justify-end gap-2 mt-3">
-            <button @click="
-          messages.push({ id: Date.now(), role: 'assistant', content: proposedMessage });
-          proposedMessage = '';
-        " class="px-3 py-1 text-white bg-[#f17533] rounded hover:bg-[#e75218] text-xs">
-              Usar
-            </button>
+            <button @click="messages.push({ id: Date.now(), role: 'assistant', content: proposedMessage }); proposedMessage = '';"
+              class="px-3 py-1 text-white bg-[#f17533] rounded hover:bg-[#e75218] text-xs">Usar</button>
             <button @click="resetChat"
-              class="px-3 py-1 text-gray-500 border border-gray-300 rounded hover:bg-gray-100 text-xs">
-              Descartar
-            </button>
+              class="px-3 py-1 text-gray-500 border border-gray-300 rounded hover:bg-gray-100 text-xs">Descartar</button>
           </div>
         </div>
       </div>
     </template>
-
 
     <!-- Input -->
     <div class="p-3 border-t flex items-center gap-2 bg-gray-50">
@@ -107,120 +86,130 @@
   </div>
 </div>
 
+<!-- Fade animation -->
 <style>
-  @keyframes fade-in {
-    0% {
-      opacity: 0;
-      transform: translateY(4px);
-    }
-
-    100% {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .animate-fade-in {
-    animation: fade-in 0.4s ease-in-out;
-  }
+@keyframes fade-in {
+  0% { opacity: 0; transform: translateY(4px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in { animation: fade-in 0.4s ease-in-out; }
 </style>
 
+<!-- Alpine JS logic -->
 <script>
-  function generateUUID() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-      const r = Math.random() * 16 | 0;
-      const v = c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
-  }
-  function chatWidget() {
-    return {
-      open: false,
-      input: '',
-      messages: [],
-      loading: false,
-      width: 384,
-      height: 500,
-      sessionId: null,
-      proposedMessage: '',
+function generateUUID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
 
-      init() {
-        let sid = localStorage.getItem('sessionId');
-        if (!sid) {
-          sid = generateUUID();
-          localStorage.setItem('sessionId', sid);
-        }
-        this.sessionId = sid;
+function chatWidget() {
+  return {
+    open: false,
+    input: '',
+    messages: [],
+    loading: false,
+    width: 384,
+    height: 500,
+    sessionId: null,
+    proposedMessage: '',
 
-        const w = localStorage.getItem('chatWidth');
-        const h = localStorage.getItem('chatHeight');
-        if (w) this.width = parseInt(w);
-        if (h) this.height = parseInt(h);
-
-        this.$watch('width', val => localStorage.setItem('chatWidth', val));
-        this.$watch('height', val => localStorage.setItem('chatHeight', val));
-        window.chat = this;
-      },
-
-      async sendMessage() {
-        const text = this.input.trim();
-        if (!text) return;
-
-        this.messages.push({ id: Date.now(), role: 'user', content: text });
-        this.input = '';
-        this.proposedMessage = '';
-        this.loading = true;
-
-        try {
-          await sendToLLMStreamed(text, this.sessionId, chunk => {
-            this.proposedMessage += chunk;
-            this.$nextTick(() => this.scrollToBottom());
-          });
-        } catch {
-          this.messages.push({ id: Date.now() + 1, role: 'assistant', content: '❌ Error al contactar con el modelo.' });
-        } finally {
-          this.loading = false;
-        }
-      },
-
-      async resetChat() {
-        this.messages = [];
-        this.proposedMessage = '';
-        try {
-          await fetch("http://192.168.2.202:8001/reset", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ session_id: this.sessionId }),
-          });
-        } catch {
-          console.warn("❌ No se pudo resetear la memoria del backend.");
-        }
-      },
-
-      scrollToBottom() {
-        const el = document.getElementById('chat-messages');
-        if (el) el.scrollTop = el.scrollHeight;
+    init() {
+      let sid = localStorage.getItem('sessionId');
+      if (!sid) {
+        sid = generateUUID();
+        localStorage.setItem('sessionId', sid);
       }
-    };
-  }
+      this.sessionId = sid;
+      const w = localStorage.getItem('chatWidth');
+      const h = localStorage.getItem('chatHeight');
+      if (w) this.width = parseInt(w);
+      if (h) this.height = parseInt(h);
+      this.$watch('width', val => localStorage.setItem('chatWidth', val));
+      this.$watch('height', val => localStorage.setItem('chatHeight', val));
+      window.chat = this;
+    },
 
-  async function sendToLLMStreamed(message, sessionId, onChunk) {
-    const response = await fetch("http://192.168.2.202:8001/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ input: message, session_id: sessionId })
-    });
+    async sendMessage() {
+      const text = this.input.trim();
+      if (!text) return;
+      this.messages.push({ id: Date.now(), role: 'user', content: text });
+      this.input = '';
+      this.proposedMessage = '';
+      this.loading = true;
 
-    if (!response.ok) throw new Error("❌ Error al conectar con el backend.");
-    const text = await response.text();
+      try {
+        await sendToLLMStreamed(text, this.sessionId, chunk => {
+          this.proposedMessage += chunk;
+          this.$nextTick(() => this.scrollToBottom());
+        });
+      } catch {
+        this.messages.push({ id: Date.now() + 1, role: 'assistant', content: '❌ Error al contactar con el modelo.' });
+      } finally {
+        this.loading = false;
+      }
+    },
 
-    try {
-      const data = JSON.parse(text);
-      onChunk(data.output || text);
-    } catch {
-      onChunk(text);
+    async resetChat() {
+      this.messages = [];
+      this.proposedMessage = '';
+      try {
+        await fetch("http://192.168.2.202:8001/reset", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id: this.sessionId }),
+        });
+      } catch {
+        console.warn("❌ No se pudo resetear la memoria del backend.");
+      }
+    },
+
+    scrollToBottom() {
+      const el = document.getElementById('chat-messages');
+      if (el) el.scrollTop = el.scrollHeight;
+    },
+
+    startResize(event) {
+      const startX = event.clientX;
+      const startY = event.clientY;
+      const startWidth = this.width;
+      const startHeight = this.height;
+
+      const onMouseMove = (e) => {
+        const deltaX = startX - e.clientX;
+        const deltaY = startY - e.clientY;
+        this.width = Math.max(300, startWidth + deltaX);
+        this.height = Math.max(300, startHeight + deltaY);
+      };
+
+      const onMouseUp = () => {
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+      };
+
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
     }
+  };
+}
+
+async function sendToLLMStreamed(message, sessionId, onChunk) {
+  const response = await fetch("http://192.168.2.202:8001/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ input: message, session_id: sessionId })
+  });
+
+  if (!response.ok) throw new Error("❌ Error al conectar con el backend.");
+  const text = await response.text();
+
+  try {
+    const data = JSON.parse(text);
+    onChunk(data.output || text);
+  } catch {
+    onChunk(text);
   }
-
-
+}
 </script>
