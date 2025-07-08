@@ -8,23 +8,22 @@
         :class="sidebarToggle ? 'max-h-8 max-w-[48px]' : 'max-h-12 max-w-[140px]'" />
     </div>
   </div>
-
+  
   <!-- SIDEBAR MENU -->
- <nav x-data="{ selected: window.location.pathname.includes('transportes') ? 'Transportes' : 'Pedidos' }"
-     role="navigation" aria-label="Menú lateral" class="flex flex-col gap-4">
+  <nav x-data="{ selected: window.location.pathname.includes('transportes') ? 'Transportes' : 'Pedidos' }"
+    role="navigation" aria-label="Menú lateral" class="flex flex-col gap-4">
     <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mt-4 mb-2">
       Mappings
     </p>
     <ul class="flex flex-col gap-4">
-
       <!-- 📦 Pedidos Edeka -->
       <li>
         <a href="#" @click.prevent="selected = (selected === 'Pedidos' ? '' : 'Pedidos')"
           class="menu-item group flex items-center gap-3 text-sm font-medium transition-colors"
-          :class="selected === 'Pedidos' ? 'text-blue-600' : 'text-gray-600 hover:text-blue-600'">
+          :class="selected === 'Pedidos' ? 'text-[#003a4b]' : 'text-gray-600 hover:text-[#003a4b]'">
           <!-- Icono Caja -->
-          <svg :class="selected === 'Pedidos' ? 'text-blue-600' : 'text-gray-400 group-hover:text-blue-600'" width="24"
-            height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
+          <svg :class="selected === 'Pedidos' ? 'text-[#003a4b]' : 'text-gray-400 group-hover:text-[#003a4b]'"
+            width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
             xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round"
               d="M3 7.5L12 12l9-4.5M3 7.5v9l9 4.5M3 7.5l9-4.5 9 4.5M21 7.5v9M12 12v9" />
@@ -35,8 +34,8 @@
           :class="selected === 'Pedidos' ? 'max-h-40' : 'max-h-0'">
           <ul class="flex flex-col gap-1 mt-2 pl-8 text-sm text-gray-500">
             <li>
-              <a href="index.html" class="hover:text-blue-600"
-                :class="window.location.pathname.includes('index') ? 'text-blue-600 font-medium' : ''">
+              <a href="index.html" class="hover:text-[#003a4b]"
+                :class="window.location.pathname.includes('index') ? 'text-[#003a4b] font-medium' : ''">
                 Edeka
               </a>
             </li>
@@ -44,14 +43,15 @@
         </div>
       </li>
 
+
       <!-- 🚚 Transportes Edeka -->
       <li>
         <a href="#" @click.prevent="selected = (selected === 'Transportes' ? '' : 'Transportes')"
           class="menu-item group flex items-center gap-3 text-sm font-medium transition-colors"
-          :class="selected === 'Transportes' ? 'text-[color:#f97316]' : 'text-gray-600 hover:text-[color:#f97316]'">
+          :class="selected === 'Transportes' ? 'text-[color:#f17533]' : 'text-gray-600 hover:text-[color:#f17533]'">
           <!-- Icono Camión -->
           <svg
-            :class="selected === 'Transportes' ? 'text-[color:#f97316]' : 'text-gray-400 group-hover:text-[color:#f97316]'"
+            :class="selected === 'Transportes' ? 'text-[color:#f17533]' : 'text-gray-400 group-hover:text-[color:#f17533]'"
             width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
             xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round"
@@ -63,9 +63,9 @@
           :class="selected === 'Transportes' ? 'max-h-40' : 'max-h-0'">
           <ul class="flex flex-col gap-1 mt-2 pl-8 text-sm text-gray-500">
             <li>
-              <a href="transportes.html" class="hover:text-[color:#f97316]"
-                :class="window.location.pathname.includes('transportes') ? 'text-[color:#f97316] font-medium' : ''">
-                 Edeka
+              <a href="transportes.html" class="hover:text-[color:#f17533]"
+                :class="window.location.pathname.includes('transportes') ? 'text-[color:#f17533] font-medium' : ''">
+                Edeka
               </a>
             </li>
           </ul>

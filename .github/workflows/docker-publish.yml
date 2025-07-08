@@ -61,31 +61,34 @@ jobs:
 
 
 
-      - name: Notificar despliegue a Teams (Power Automate)
+      - name: Notificar despliegue a Teams
         env:
           WEBHOOK_URL: >-
-            https://prod-74.westeurope.logic.azure.com:443/workflows/d38d035c094043ffae425a702f0e0679/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=RE-VaksUFi7yG4iuKsKEGt5TWg3lBm6SSFuvzYNWFOw
-          TAGS: ${{ steps.meta.outputs.tags }}
-          DIGEST: ${{ steps.build-and-push.outputs.digest }}
+            https://prod-50.westeurope.logic.azure.com:443/workflows/db21453690d446649c9933479139312d/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=cAY6WgDEeyrIMv_XbG-2kkdj8lon8B5-6GR1v3ZWqo4
           REPO: ${{ github.repository }}
           ACTOR: ${{ github.actor }}
+          DIGEST: ${{ steps.build-and-push.outputs.digest }}
+          TAGS: ${{ steps.meta.outputs.tags }}
         run: |
-          DATE=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
-          TAG=$(echo "$TAGS" | head -n1)
-          SIZE_MB="Desconocido"
-          DURATION="00:00"
+          FECHA=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          TAG=$(echo "$TAGS" | cut -d',' -f1)
 
-          curl -X POST "$WEBHOOK_URL" \
-            -H "Content-Type: application/json" \
-            -d '{
-              "repo": "'"$REPO"'",
-              "tag": "'"$TAG"'",
-              "digest": "'"$DIGEST"'",
-              "size": "'"$SIZE_MB"'",
-              "duration": "'"$DURATION"'",
-              "actor": "'"$ACTOR"'",
-              "date": "'"$DATE"'"
-            }'
+          cat > payload.json <<EOF
+          {
+            "repo": "$REPO",
+            "tag": "$TAG",
+            "digest": "$DIGEST",
+            "actor": "$ACTOR",
+            "fecha": "$FECHA"
+          }
+          EOF
+
+              echo "📤 Enviando payload a Teams..."
+              cat payload.json
+
+              curl -X POST "$WEBHOOK_URL" \
+                -H "Content-Type: application/json" \
+                --data @payload.json
 
 
 

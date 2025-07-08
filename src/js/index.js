@@ -21,7 +21,6 @@ import transporteManager from "./transporteManager.js";
 window.mappingManager = mappingManager;
 window.transporteManager = transporteManager;
 
-
 Alpine.plugin(persist);
 window.Alpine = Alpine;
 Alpine.start();

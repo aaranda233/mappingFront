@@ -744,3 +744,67 @@ span.flatpickr-weekday,
   cursor: grabbing; /* Changes the cursor to indicate dragging */
 }
 
+#aiBall {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #ff7a18, #f15a24);
+  z-index: 100;
+  opacity: 0;
+  transform: translate(0, 0);
+  transition: transform 0.7s ease-in-out, opacity 0.4s ease;
+  pointer-events: none;
+
+  box-shadow:
+    0 0 10px rgba(241, 90, 36, 0.6),
+    0 0 20px rgba(241, 90, 36, 0.4),
+    0 0 30px rgba(241, 90, 36, 0.2);
+  
+  animation: aiGlow 1.5s infinite ease-in-out, aiColorCycle 6s infinite linear;
+}
+
+@keyframes aiGlow {
+  0%, 100% {
+    filter: brightness(1);
+    box-shadow:
+      0 0 10px rgba(241, 90, 36, 0.6),
+      0 0 20px rgba(241, 90, 36, 0.4),
+      0 0 30px rgba(241, 90, 36, 0.2);
+  }
+  50% {
+    filter: brightness(1.3);
+    box-shadow:
+      0 0 16px rgba(241, 90, 36, 0.8),
+      0 0 30px rgba(241, 90, 36, 0.6),
+      0 0 40px rgba(241, 90, 36, 0.3);
+  }
+}
+
+@keyframes aiColorCycle {
+  0%   { background: radial-gradient(circle at 30% 30%, #ff7a18, #f15a24); }
+  25%  { background: radial-gradient(circle at 30% 30%, #f15a24, #ff6f61); }
+  50%  { background: radial-gradient(circle at 30% 30%, #ff6f61, #fbb03b); }
+  75%  { background: radial-gradient(circle at 30% 30%, #fbb03b, #ff7a18); }
+  100% { background: radial-gradient(circle at 30% 30%, #ff7a18, #f15a24); }
+}
+
+
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 2s linear infinite;
+}
+
+
+
+
+
+
+
