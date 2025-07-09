@@ -23,7 +23,7 @@ export default function mappingManager() {
                 for (const nuevo of data) {
                     const yaExiste = this.mappings.some(m => m._id === nuevo._id);
                     if (!yaExiste) {
-                        nuevos.push({ ...nuevo, id_categoria: "", id_gensal: "" });
+                        nuevos.push({ ...nuevo, id_categoria: "", id_gensal: "", error: "" });
                     }
                 }
 
@@ -43,10 +43,13 @@ export default function mappingManager() {
         },
 
         async enviar(item) {
-            if (!item.id_categoria) {
-                alert("Por favor, introduce un ID de categoría.");
+            //comprueba que todos los campos sean correctos
+            if (!item.id_categoria || !item.id_gensal || !item.id_genero) {
+                item.error = "⚠️ Por favor completa todos los campos antes de enviar.";
                 return;
             }
+            //Limpiamos el item de errores cuando de envia
+            item.error = "";
 
             try {
                 const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/consumir`, {
@@ -55,7 +58,8 @@ export default function mappingManager() {
                     body: JSON.stringify({
                         id_categoria: item.id_categoria,
                         ref_pedido: item.ref_pedido,
-                        id_gensal: item.id_gensal
+                        id_gensal: item.id_gensal,
+                        id_genero: item.id_genero
                     })
                 });
 
@@ -69,16 +73,23 @@ export default function mappingManager() {
                         console.warn("Respuesta sin JSON, pero no es 204:", e);
                     }
                 }
-
-                if (res.ok || result.message === "Mapping no encontrado") {
-                    this.mappings = this.mappings.filter(m => m._id !== item._id);
-                    this.showToast("✅ Enviado correctamente");
+                
+                //comprobación de que todos php ha podido generar el mapping
+                if (res.ok) {
+                    // Analizamos la respuesta del PHP
+                    if (result.result && result.result.toLowerCase() === "ok") {
+                        this.mappings = this.mappings.filter(m => m._id !== item._id);
+                        this.showToast("✅ Enviado correctamente");
+                    } else {
+                        item.error = "❌ " + (result.message || "Error desconocido desde el servidor externo.");
+                    }
                 } else {
-                    alert("❌ Error al enviar: " + (result.message || "Respuesta inesperada del servidor"));
+                    item.error = "❌ " + (result.message || "Respuesta no exitosa del servidor externo.");
                 }
+
             } catch (err) {
                 console.error("Error enviando:", err);
-                this.showToast("⚠️ No se pudo contactar con el servidor");
+                item.error = "⚠️ No se pudo contactar con el servidor";
             }
         },
 
