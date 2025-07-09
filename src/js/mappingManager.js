@@ -73,7 +73,7 @@ export default function mappingManager() {
                         console.warn("Respuesta sin JSON, pero no es 204:", e);
                     }
                 }
-                
+
                 //comprobación de que todos php ha podido generar el mapping
                 if (res.ok) {
                     // Analizamos la respuesta del PHP
@@ -144,6 +144,7 @@ export default function mappingManager() {
 
                     window.chat.proposedMessage = '';
                     window.chat.loading = true;
+                    window.chat.useProposedMessage = true;
 
                     sendToLLMStreamed(prompt, window.chat.sessionId, chunk => {
                         window.chat.proposedMessage += chunk;

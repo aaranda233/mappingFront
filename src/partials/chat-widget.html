@@ -7,12 +7,13 @@
     title="Abrir asistente">
     <div class="absolute inset-0 rounded-full bg-[#f17533]/10 pointer-events-none animate-pulse"></div>
     <template x-if="loading">
-      <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-[#f17533]/90 text-white text-[11px] px-2 py-1 rounded-md shadow-md animate-fade-in tracking-wide z-50">
+      <div
+        class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-[#f17533]/90 text-white text-[11px] px-2 py-1 rounded-md shadow-md animate-fade-in tracking-wide z-50">
         ✨ Razonando..
       </div>
     </template>
-    <svg class="relative w-6 h-6 text-[#f17533] group-hover:rotate-3 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none"
-      viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+    <svg class="relative w-6 h-6 text-[#f17533] group-hover:rotate-3 transition-transform"
+      xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
       <path stroke-linecap="round" stroke-linejoin="round"
         d="M12 2v2m0 0a6 6 0 00-6 6v2H5a2 2 0 00-2 2v2a2 2 0 002 2h1v1a3 3 0 003 3h6a3 3 0 003-3v-1h1a2 2 0 002-2v-2a2 2 0 00-2-2h-1V10a6 6 0 00-6-6z" />
     </svg>
@@ -26,7 +27,9 @@
     <!-- Resizer Top Left -->
     <div @mousedown="startResize($event)"
       class="absolute top-1 left-1 w-4 h-4 cursor-nwse-resize z-50 bg-transparent group">
-      <div class="w-full h-full bg-[conic-gradient(at_top_left,_#f17533_25%,_transparent_25%)] rounded-sm group-hover:scale-125 transition-transform duration-200"></div>
+      <div
+        class="w-full h-full bg-[conic-gradient(at_top_left,_#f17533_25%,_transparent_25%)] rounded-sm group-hover:scale-125 transition-transform duration-200">
+      </div>
     </div>
 
     <!-- Header -->
@@ -66,7 +69,8 @@
           <p class="font-semibold mb-1">Sugerencia de IA:</p>
           <pre class="whitespace-pre-wrap font-sans text-sm text-gray-800" x-text="proposedMessage"></pre>
           <div class="flex justify-end gap-2 mt-3">
-            <button @click="messages.push({ id: Date.now(), role: 'assistant', content: proposedMessage }); proposedMessage = '';"
+            <button
+              @click="messages.push({ id: Date.now(), role: 'assistant', content: proposedMessage }); proposedMessage = '';"
               class="px-3 py-1 text-white bg-[#f17533] rounded hover:bg-[#e75218] text-xs">Usar</button>
             <button @click="resetChat"
               class="px-3 py-1 text-gray-500 border border-gray-300 rounded hover:bg-gray-100 text-xs">Descartar</button>
@@ -77,139 +81,165 @@
 
     <!-- Input -->
     <div class="p-3 border-t flex items-center gap-2 bg-gray-50">
-      <input x-ref="input" x-model="input" @keydown.enter="sendMessage" placeholder="Escribe tu mensaje..."
+      <input x-ref="input" x-model="input" @keydown.enter="useProposedMessage = false; sendMessage()" placeholder="Escribe tu mensaje..."
         class="flex-1 px-4 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#f17533]/50 focus:outline-none" />
-      <button @click="sendMessage" class="px-4 py-2 rounded-lg bg-[#f17533] text-white hover:bg-[#e75218] transition">
+      <button @click="useProposedMessage = false; sendMessage()"
+        class="px-4 py-2 rounded-lg bg-[#f17533] text-white hover:bg-[#e75218] transition">
         ➤
       </button>
+
     </div>
   </div>
 </div>
 
 <!-- Fade animation -->
 <style>
-@keyframes fade-in {
-  0% { opacity: 0; transform: translateY(4px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-.animate-fade-in { animation: fade-in 0.4s ease-in-out; }
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.4s ease-in-out;
+  }
 </style>
 
 <!-- Alpine JS logic -->
 <script>
-function generateUUID() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-}
-
-function chatWidget() {
-  return {
-    open: false,
-    input: '',
-    messages: [],
-    loading: false,
-    width: 384,
-    height: 500,
-    sessionId: null,
-    proposedMessage: '',
-
-    init() {
-      let sid = localStorage.getItem('sessionId');
-      if (!sid) {
-        sid = generateUUID();
-        localStorage.setItem('sessionId', sid);
-      }
-      this.sessionId = sid;
-      const w = localStorage.getItem('chatWidth');
-      const h = localStorage.getItem('chatHeight');
-      if (w) this.width = parseInt(w);
-      if (h) this.height = parseInt(h);
-      this.$watch('width', val => localStorage.setItem('chatWidth', val));
-      this.$watch('height', val => localStorage.setItem('chatHeight', val));
-      window.chat = this;
-    },
-
-    async sendMessage() {
-      const text = this.input.trim();
-      if (!text) return;
-      this.messages.push({ id: Date.now(), role: 'user', content: text });
-      this.input = '';
-      this.proposedMessage = '';
-      this.loading = true;
-
-      try {
-        await sendToLLMStreamed(text, this.sessionId, chunk => {
-          this.proposedMessage += chunk;
-          this.$nextTick(() => this.scrollToBottom());
-        });
-      } catch {
-        this.messages.push({ id: Date.now() + 1, role: 'assistant', content: '❌ Error al contactar con el modelo.' });
-      } finally {
-        this.loading = false;
-      }
-    },
-
-    async resetChat() {
-      this.messages = [];
-      this.proposedMessage = '';
-      try {
-        await fetch("http://192.168.2.202:8001/reset", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ session_id: this.sessionId }),
-        });
-      } catch {
-        console.warn("❌ No se pudo resetear la memoria del backend.");
-      }
-    },
-
-    scrollToBottom() {
-      const el = document.getElementById('chat-messages');
-      if (el) el.scrollTop = el.scrollHeight;
-    },
-
-    startResize(event) {
-      const startX = event.clientX;
-      const startY = event.clientY;
-      const startWidth = this.width;
-      const startHeight = this.height;
-
-      const onMouseMove = (e) => {
-        const deltaX = startX - e.clientX;
-        const deltaY = startY - e.clientY;
-        this.width = Math.max(300, startWidth + deltaX);
-        this.height = Math.max(300, startHeight + deltaY);
-      };
-
-      const onMouseUp = () => {
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
-      };
-
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp);
-    }
-  };
-}
-
-async function sendToLLMStreamed(message, sessionId, onChunk) {
-  const response = await fetch("http://192.168.2.202:8001/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ input: message, session_id: sessionId })
-  });
-
-  if (!response.ok) throw new Error("❌ Error al conectar con el backend.");
-  const text = await response.text();
-
-  try {
-    const data = JSON.parse(text);
-    onChunk(data.output || text);
-  } catch {
-    onChunk(text);
+  function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
   }
-}
+
+  function chatWidget() {
+    return {
+      open: false,
+      input: '',
+      messages: [],
+      loading: false,
+      width: 384,
+      height: 500,
+      sessionId: null,
+      proposedMessage: '',
+      useProposedMessage: false,
+
+      init() {
+        let sid = localStorage.getItem('sessionId');
+        if (!sid) {
+          sid = generateUUID();
+          localStorage.setItem('sessionId', sid);
+        }
+        this.sessionId = sid;
+        const w = localStorage.getItem('chatWidth');
+        const h = localStorage.getItem('chatHeight');
+        if (w) this.width = parseInt(w);
+        if (h) this.height = parseInt(h);
+        this.$watch('width', val => localStorage.setItem('chatWidth', val));
+        this.$watch('height', val => localStorage.setItem('chatHeight', val));
+        window.chat = this;
+      },
+
+      async sendMessage() {
+        const text = this.input.trim();
+        if (!text) return;
+
+        this.messages.push({ id: Date.now(), role: 'user', content: text });
+        this.input = '';
+        this.proposedMessage = '';
+        this.loading = true;
+
+        try {
+          if (this.useProposedMessage) {
+            // Mostrar como sugerencia (cuando se activa desde AI externa)
+            await sendToLLMStreamed(text, this.sessionId, chunk => {
+              this.proposedMessage += chunk;
+              this.$nextTick(() => this.scrollToBottom());
+            });
+          } else {
+            // Mostrar directamente como respuesta del asistente
+            let assistantResponse = '';
+            await sendToLLMStreamed(text, this.sessionId, chunk => {
+              assistantResponse += chunk;
+              this.$nextTick(() => this.scrollToBottom());
+            });
+            this.messages.push({ id: Date.now(), role: 'assistant', content: assistantResponse });
+          }
+        } catch {
+          this.messages.push({ id: Date.now() + 1, role: 'assistant', content: '❌ Error al contactar con el modelo.' });
+        } finally {
+          this.loading = false;
+          this.useProposedMessage = false; // Reset siempre a falso tras envío
+        }
+      },
+
+      async resetChat() {
+        this.messages = [];
+        this.proposedMessage = '';
+        try {
+          await fetch("http://192.168.2.202:8001/reset", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ session_id: this.sessionId }),
+          });
+        } catch {
+          console.warn("❌ No se pudo resetear la memoria del backend.");
+        }
+      },
+
+      scrollToBottom() {
+        const el = document.getElementById('chat-messages');
+        if (el) el.scrollTop = el.scrollHeight;
+      },
+
+      startResize(event) {
+        const startX = event.clientX;
+        const startY = event.clientY;
+        const startWidth = this.width;
+        const startHeight = this.height;
+
+        const onMouseMove = (e) => {
+          const deltaX = startX - e.clientX;
+          const deltaY = startY - e.clientY;
+          this.width = Math.max(300, startWidth + deltaX);
+          this.height = Math.max(300, startHeight + deltaY);
+        };
+
+        const onMouseUp = () => {
+          document.removeEventListener('mousemove', onMouseMove);
+          document.removeEventListener('mouseup', onMouseUp);
+        };
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+      }
+    };
+  }
+
+  async function sendToLLMStreamed(message, sessionId, onChunk) {
+    const response = await fetch("http://192.168.2.202:8001/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ input: message, session_id: sessionId })
+    });
+
+    if (!response.ok) throw new Error("❌ Error al conectar con el backend.");
+    const text = await response.text();
+
+    try {
+      const data = JSON.parse(text);
+      onChunk(data.output || text);
+    } catch {
+      onChunk(text);
+    }
+  }
 </script>
