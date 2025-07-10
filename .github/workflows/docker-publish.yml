@@ -1,8 +1,6 @@
 name: Docker
 
 on:
-  schedule:
-    - cron: '26 17 * * *' # Hora configurada del segundo YAML
   push:
     # Solo se activa en push de tags semánticos
     tags: [ 'v*.*.*' ]
