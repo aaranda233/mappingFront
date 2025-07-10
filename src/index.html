@@ -23,7 +23,7 @@
   x-init="
     darkMode = JSON.parse(localStorage.getItem('darkMode'));
     $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)))
-  ">
+  " x-cloak>
 
   <div class="flex h-screen overflow-hidden">
     <include src="./partials/sidebar.html"></include>
@@ -32,7 +32,7 @@
       <include src="./partials/overlay.html" />
       <include src="./partials/header.html" />
 
-      <main x-data="mappingManager()" x-init="init">
+      <main x-data="mappingManager()" x-init="init" x-cloak>
         <!-- ✅ Toast -->
         <div x-show="toast" x-transition
           class="fixed top-5 right-5 bg-green-600 text-white px-4 py-2 rounded-xl shadow-lg z-50">

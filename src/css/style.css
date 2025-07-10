@@ -802,9 +802,6 @@ span.flatpickr-weekday,
   animation: spin-slow 2s linear infinite;
 }
 
-
-
-
-
+[x-cloak] { display: none !important; }
 
 
