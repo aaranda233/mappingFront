@@ -213,7 +213,7 @@
           this.width = Math.max(300, startWidth + deltaX);
           this.height = Math.max(300, startHeight + deltaY);
         };
-
+        
         const onMouseUp = () => {
           document.removeEventListener('mousemove', onMouseMove);
           document.removeEventListener('mouseup', onMouseUp);

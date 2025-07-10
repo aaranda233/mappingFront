@@ -12,6 +12,9 @@
   <!-- Toastify -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
   <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+  <!-- Variables hardcodeadas -->
+  <script src="./js/env.js"></script>
 </head>
 
 <body :class="{'dark bg-gray-900': darkMode === true}"
@@ -58,12 +61,22 @@
             </div>
           </template>
 
-          <div x-show="transportes.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 bg-gray-100">
+          <div x-show="transportes.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             <template x-for="(item, index) in transportes" :key="item._id">
               <div x-show="!item.enviado" x-transition.duration.300ms>
                 <div
                   class="relative bg-white/60 backdrop-blur-xl shadow-xl rounded-3xl p-6 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl border border-gray-200 hover:border-[color:#f97316]/60 w-full">
-
+                  <!-- Botón de IA profesional con color #00394a -->
+                  <button
+                    class="absolute top-3 right-3 flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#00394a]/60 bg-white/70 text-[#00394a] font-semibold text-xs shadow-md hover:shadow-lg hover:scale-105 backdrop-blur-md transition-all duration-300"
+                    @click="enviarAI(item, $event)" title="Enviar a IA inteligente">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                      stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 4v1m0 14v1m8-8h-1M5 12H4m14.14-5.14l-.7.7M6.56 17.44l-.7.7m12.28 0l-.7-.7M6.56 6.56l-.7-.7M9 9h6a1 1 0 011 1v4a1 1 0 01-1 1H9a1 1 0 01-1-1v-4a1 1 0 011-1z" />
+                    </svg>
+                    IA
+                  </button>
                   <!-- Cabecera -->
                   <div class="flex items-center gap-3 mb-3">
                     <div class="bg-[color:#f97316]/10 text-[color:#f97316] rounded-full p-2 shadow-inner">
@@ -94,6 +107,17 @@
                         </option>
                       </template>
                     </select>
+
+                    <!-- Error debajo del select -->
+                    <div x-show="item.error"
+                      class="mt-2 px-4 py-2 rounded-lg bg-red-100 text-red-800 border border-red-300 text-sm font-medium flex items-center gap-2 transition-all duration-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M12 9v2m0 4h.01M12 2a10 10 0 1010 10A10 10 0 0012 2z" />
+                      </svg>
+                      <span x-text="item.error"></span>
+                    </div>
                   </div>
 
                   <!-- Botón -->
@@ -115,6 +139,10 @@
       </main>
     </div>
   </div>
+  <include src="./partials/chat-widget.html"></include>
+  <!-- Pelota IA animada -->
+  <div id="aiBall"></div>
+
 </body>
 
 </html>
