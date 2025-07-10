@@ -186,7 +186,7 @@
         this.messages = [];
         this.proposedMessage = '';
         try {
-          await fetch("http://192.168.2.202:8001/reset", {
+          await fetch(`http://${window.env.IP_LANGCHAIN}/reset`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ session_id: this.sessionId }),
@@ -226,7 +226,7 @@
   }
 
   async function sendToLLMStreamed(message, sessionId, onChunk) {
-    const response = await fetch("http://192.168.2.202:8001/chat", {
+    const response = await fetch(`http://${window.env.IP_LANGCHAIN}/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ input: message, session_id: sessionId })

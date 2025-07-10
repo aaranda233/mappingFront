@@ -1,4 +1,11 @@
-window.env = {
+/*window.env = {
   IP_BACKEND: "192.168.2.202:5008",
+  IP_LANGCHAIN: "192.168.2.202:8001",
   VERSION: "dev"
+};*/
+
+window.env = {
+  IP_BACKEND: "192.168.2.202:31508",
+  IP_LANGCHAIN: "192.168.2.202:32002",
+  VERSION: "PROD"
 };
