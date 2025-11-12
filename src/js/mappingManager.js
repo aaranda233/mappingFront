@@ -157,6 +157,44 @@ export default function mappingManager() {
                     });
                 }
             }, 800);
+        },
+
+        async eliminar(item) {
+            if (!confirm('¿Estás seguro de eliminar este mapping? Se eliminará de ambas bases de datos.')) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/${item._id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.message || 'Error al eliminar');
+                }
+
+                // Eliminar del array local
+                this.mappings = this.mappings.filter(m => m._id !== item._id);
+
+                // Toast de éxito
+                this.showToast("✅ Mapping eliminado correctamente de ambas bases de datos");
+
+            } catch (error) {
+                console.error('Error:', error);
+                Toastify({
+                    text: `❌ ${error.message}`,
+                    duration: 4000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "#ef4444",
+                    stopOnFocus: true
+                }).showToast();
+            }
         }
     };
 }
