@@ -42,7 +42,7 @@ export default function transportesManager() {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        _id: item._id,
+                        _id: item.id,
                         id: item.id_mapping,
                         idDireccion: parseInt(item.seleccion)
                     })
@@ -51,7 +51,7 @@ export default function transportesManager() {
                 const result = await res.json();
 
                 if (res.ok) {
-                    this.transportes = this.transportes.filter(t => t._id !== item._id);
+                    this.transportes = this.transportes.filter(t => t.id !== item.id);
                     this.showToast("✅ Transporte procesado correctamente");
                 } else {
                     item.error = "❌ Error: " + (result.message || "Respuesta inesperada");
