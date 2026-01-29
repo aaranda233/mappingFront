@@ -21,7 +21,7 @@ export default function mappingManager() {
 
                 // Agrega nuevos si no están ya
                 for (const nuevo of data) {
-                    const yaExiste = this.mappings.some(m => m._id === nuevo._id);
+                    const yaExiste = this.mappings.some(m => m.id === nuevo.id);
                     if (!yaExiste) {
                         nuevos.push({ ...nuevo, id_categoria: "", id_gensal: "", error: "" });
                     }
@@ -29,7 +29,7 @@ export default function mappingManager() {
 
                 // Quita los que ya no están
                 this.mappings = this.mappings.filter(m =>
-                    data.some(n => n._id === m._id)
+                    data.some(n => n.id === m.id)
                 );
 
                 // Añade solo los nuevos
@@ -78,7 +78,7 @@ export default function mappingManager() {
                 if (res.ok) {
                     // Analizamos la respuesta del PHP
                     if (result.result && result.result.toLowerCase() === "ok") {
-                        this.mappings = this.mappings.filter(m => m._id !== item._id);
+                        this.mappings = this.mappings.filter(m => m.id !== item.id);
                         this.showToast("✅ Enviado correctamente");
                     } else {
                         item.error = "❌ " + (result.message || "Error desconocido desde el servidor externo.");
@@ -165,7 +165,7 @@ export default function mappingManager() {
             }
 
             try {
-                const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/${item._id}`, {
+                const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/${item.id}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json'
@@ -179,7 +179,7 @@ export default function mappingManager() {
                 }
 
                 // Eliminar del array local
-                this.mappings = this.mappings.filter(m => m._id !== item._id);
+                this.mappings = this.mappings.filter(m => m.id !== item.id);
 
                 // Toast de éxito
                 this.showToast("✅ Mapping eliminado correctamente de ambas bases de datos");
