@@ -23,6 +23,13 @@ window.transporteManager = transporteManager;
 
 Alpine.plugin(persist);
 window.Alpine = Alpine;
+
+// Register global store
+import store from "./store.js";
+Alpine.store("global", store);
+Alpine.store("global").fetchCounts(); // Initial fetch
+setInterval(() => Alpine.store("global").fetchCounts(), 30000); // Refresh every 30s
+
 Alpine.start();
 
 // Init flatpickr

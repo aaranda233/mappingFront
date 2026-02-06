@@ -34,9 +34,11 @@
           :class="selected === 'Pedidos' ? 'max-h-40' : 'max-h-0'">
           <ul class="flex flex-col gap-1 mt-2 pl-8 text-sm text-gray-500">
             <li>
-              <a href="index.html" class="hover:text-[#003a4b]"
+              <a href="index.html" class="hover:text-[#003a4b] flex justify-between items-center"
                 :class="window.location.pathname.includes('index') ? 'text-[#003a4b] font-medium' : ''">
                 Mappings
+                <span class="text-xs font-bold rounded-full bg-red-500 text-white px-2 py-0.5"
+                  x-show="$store.global.counts.pedidos > 0" x-text="$store.global.counts.pedidos"></span>
               </a>
             </li>
           </ul>
@@ -63,9 +65,11 @@
           :class="selected === 'Transportes' ? 'max-h-40' : 'max-h-0'">
           <ul class="flex flex-col gap-1 mt-2 pl-8 text-sm text-gray-500">
             <li>
-              <a href="transportes.html" class="hover:text-[color:#f17533]"
+              <a href="transportes.html" class="hover:text-[color:#f17533] flex justify-between items-center"
                 :class="window.location.pathname.includes('transportes') ? 'text-[color:#f17533] font-medium' : ''">
                 Transportes
+                <span class="text-xs font-bold rounded-full bg-red-500 text-white px-2 py-0.5"
+                  x-show="$store.global.counts.transportes > 0" x-text="$store.global.counts.transportes"></span>
               </a>
             </li>
           </ul>
