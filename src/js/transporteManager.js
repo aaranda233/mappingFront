@@ -31,7 +31,7 @@ export default function transportesManager() {
         },
         async enviar(item) {
             if (!item.seleccion) {
-                item.error = "⚠️ Por favor selecciona una dirección antes de enviar.";
+                item.error = "Por favor selecciona una dirección antes de enviar.";
                 return;
             }
 
