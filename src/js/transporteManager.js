@@ -37,20 +37,12 @@ export default function transportesManager() {
 
             item.error = ""; // limpiamos errores anteriores
 
-            console.log("Enviando item de transporte:", item);
-            const payload = {
-                _id: item.id,
-                id: item.id_mapping,
-                idDireccion: parseInt(item.seleccion)
-            };
-            console.log("Payload enviado:", payload);
-
             try {
                 const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/transportes/consumir`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        _id: item.id,
+                        _id: item._id,
                         id: item.id_mapping,
                         idDireccion: parseInt(item.seleccion)
                     })
