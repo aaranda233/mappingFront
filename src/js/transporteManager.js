@@ -51,7 +51,7 @@ export default function transportesManager() {
                 const result = await res.json();
 
                 if (res.ok) {
-                    this.transportes = this.transportes.filter(t => t.id !== item.id);
+                    this.transportes = this.transportes.filter(t => t._id !== item._id);
                     this.showToast("✅ Transporte procesado correctamente");
                 } else {
                     item.error = "❌ Error: " + (result.message || "Respuesta inesperada");
