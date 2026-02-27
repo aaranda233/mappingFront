@@ -88,13 +88,12 @@ export default function mappingManager() {
                 //comprobación de que todos php ha podido generar el mapping
                 if (res.ok) {
                     const resultValue = (result.result || result.Result || "").toString().toLowerCase();
-                    const errorMsg = result.message || result.Message;
 
-                    if (resultValue === "ok" || (!resultValue && !errorMsg)) {
+                    if (resultValue !== "error") {
                         this.mappings = this.mappings.filter(m => m.id !== item.id);
                         this.showToast("✅ Enviado correctamente");
                     } else {
-                        item.error = "❌ " + (errorMsg || "Error desconocido desde el servidor externo.");
+                        item.error = "❌ " + (result.message || result.Message || "Error desconocido desde el servidor externo.");
                     }
                 } else {
                     item.error = "❌ " + (result.message || result.Message || "Respuesta no exitosa del servidor externo.");
