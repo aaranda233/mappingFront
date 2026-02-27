@@ -94,6 +94,13 @@ module.exports = {
         loader: "html-loader",
         options: {
           preprocessor: processNestedHtml,
+          sources: {
+            urlFilter: (attribute, value) => {
+              // No procesar env.js — se inyecta en runtime vía ConfigMap
+              if (value === "/env.js") return false;
+              return true;
+            },
+          },
         },
       },
     ],
