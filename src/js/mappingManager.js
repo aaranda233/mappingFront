@@ -23,7 +23,18 @@ export default function mappingManager() {
                 for (const nuevo of data) {
                     const yaExiste = this.mappings.some(m => m.id === nuevo.id);
                     if (!yaExiste) {
-                        nuevos.push({ ...nuevo, id_categoria: "", id_gensal: "", error: "" });
+                        nuevos.push({
+                            ...nuevo,
+                            id_categoria: "",
+                            id_gensal: "",
+                            error: "",
+                            busquedaPresentacion: "",
+                            resultadosPresentacion: [],
+                            buscandoPresentacion: false,
+                            mostrarResultados: false,
+                            presentacionSeleccionada: null,
+                            _debounceTimer: null
+                        });
                     }
                 }
 
@@ -76,15 +87,17 @@ export default function mappingManager() {
 
                 //comprobación de que todos php ha podido generar el mapping
                 if (res.ok) {
-                    // Analizamos la respuesta del PHP
-                    if (result.result && result.result.toLowerCase() === "ok") {
+                    const resultValue = (result.result || result.Result || "").toString().toLowerCase();
+                    const errorMsg = result.message || result.Message;
+
+                    if (resultValue === "ok" || (!resultValue && !errorMsg)) {
                         this.mappings = this.mappings.filter(m => m.id !== item.id);
                         this.showToast("✅ Enviado correctamente");
                     } else {
-                        item.error = "❌ " + (result.message || "Error desconocido desde el servidor externo.");
+                        item.error = "❌ " + (errorMsg || "Error desconocido desde el servidor externo.");
                     }
                 } else {
-                    item.error = "❌ " + (result.message || "Respuesta no exitosa del servidor externo.");
+                    item.error = "❌ " + (result.message || result.Message || "Respuesta no exitosa del servidor externo.");
                 }
 
             } catch (err) {
@@ -157,6 +170,57 @@ export default function mappingManager() {
                     });
                 }
             }, 800);
+        },
+
+        buscarPresentaciones(item) {
+            clearTimeout(item._debounceTimer);
+            item.presentacionSeleccionada = null;
+            item.id_genero = "";
+            item.id_gensal = "";
+            item.id_categoria = "";
+
+            if (item.busquedaPresentacion.length < 2) {
+                item.resultadosPresentacion = [];
+                item.mostrarResultados = false;
+                return;
+            }
+
+            item.buscandoPresentacion = true;
+            item.mostrarResultados = true;
+
+            item._debounceTimer = setTimeout(async () => {
+                try {
+                    const res = await fetch(
+                        `http://${window.env.IP_BACKEND}/api/mapping/presentaciones/buscar?busqueda=${encodeURIComponent(item.busquedaPresentacion)}&idcliente=0`
+                    );
+                    const data = await res.json();
+                    item.resultadosPresentacion = data;
+                } catch (err) {
+                    console.error("Error buscando presentaciones:", err);
+                    item.resultadosPresentacion = [];
+                } finally {
+                    item.buscandoPresentacion = false;
+                }
+            }, 300);
+        },
+
+        seleccionarPresentacion(item, presentacion) {
+            item.id_genero = String(presentacion.IdGenero);
+            item.id_gensal = String(presentacion.IdGenSal);
+            item.id_categoria = String(presentacion.IdCategoria);
+            item.presentacionSeleccionada = presentacion;
+            item.mostrarResultados = false;
+            item.busquedaPresentacion = presentacion.Presentacion;
+        },
+
+        limpiarPresentacion(item) {
+            item.busquedaPresentacion = "";
+            item.resultadosPresentacion = [];
+            item.mostrarResultados = false;
+            item.presentacionSeleccionada = null;
+            item.id_genero = "";
+            item.id_gensal = "";
+            item.id_categoria = "";
         },
 
         async eliminar(item) {
