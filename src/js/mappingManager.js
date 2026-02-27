@@ -206,7 +206,7 @@ export default function mappingManager() {
 
         seleccionarPresentacion(item, presentacion) {
             item.id_genero = String(presentacion.IdGenero);
-            item.id_gensal = String(presentacion.IdGenSal);
+            item.id_gensal = String(presentacion.IdPresentacion);
             item.id_categoria = String(presentacion.IdCategoria);
             item.presentacionSeleccionada = presentacion;
             item.mostrarResultados = false;
