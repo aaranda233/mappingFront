@@ -95,7 +95,18 @@
 
                   <!-- Contenido -->
                   <div class="text-[15px] text-gray-700 space-y-1 mb-4">
-                    <p><span class="font-medium">Descripción:</span> <span x-text="item.descripcion"></span></p>
+                    <p class="flex items-center gap-2">
+                      <span class="font-medium">Descripción:</span> <span x-text="item.descripcion"></span>
+                      <button type="button" title="Buscar esta descripci&oacute;n"
+                        class="shrink-0 p-1 rounded-lg text-[#f17533] hover:bg-[#f17533]/10 transition"
+                        @click="item.busquedaPresentacion = item.descripcion; buscarPresentaciones(item)">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                          stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
+                        </svg>
+                      </button>
+                    </p>
                     <p><span class="font-medium">Ref. Pedido:</span> <span x-text="item.ref_pedido"></span></p>
                   </div>
 
