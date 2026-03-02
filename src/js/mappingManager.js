@@ -35,7 +35,8 @@ export default function mappingManager() {
                             buscandoPresentacion: false,
                             mostrarResultados: false,
                             presentacionSeleccionada: null,
-                            _debounceTimer: null
+                            _debounceTimer: null,
+                            flipped: false
                         });
                     }
                 }
@@ -222,6 +223,10 @@ export default function mappingManager() {
             item.id_genero = "";
             item.id_gensal = "";
             item.id_categoria = "";
+        },
+
+        toggleFlip(item) {
+            item.flipped = !item.flipped;
         },
 
         abrirPdf(item) {
