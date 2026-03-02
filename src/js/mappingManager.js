@@ -4,6 +4,8 @@ export default function mappingManager() {
         loading: false,
         primeraCarga: true,
         toast: null,
+        pdfModalOpen: false,
+        pdfBlobUrl: null,
 
         init() {
             this.loadMappings();
@@ -220,6 +222,26 @@ export default function mappingManager() {
             item.id_genero = "";
             item.id_gensal = "";
             item.id_categoria = "";
+        },
+
+        abrirPdf(item) {
+            if (!item.pdf) return;
+            const byteChars = atob(item.pdf);
+            const byteArray = new Uint8Array(byteChars.length);
+            for (let i = 0; i < byteChars.length; i++) {
+                byteArray[i] = byteChars.charCodeAt(i);
+            }
+            const blob = new Blob([byteArray], { type: 'application/pdf' });
+            this.pdfBlobUrl = URL.createObjectURL(blob);
+            this.pdfModalOpen = true;
+        },
+
+        cerrarPdf() {
+            this.pdfModalOpen = false;
+            if (this.pdfBlobUrl) {
+                URL.revokeObjectURL(this.pdfBlobUrl);
+                this.pdfBlobUrl = null;
+            }
         },
 
         async eliminar(item) {
