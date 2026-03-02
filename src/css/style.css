@@ -804,25 +804,4 @@ span.flatpickr-weekday,
 
 [x-cloak] { display: none !important; }
 
-/* Flip card 3D */
-.flip-card {
-  perspective: 1200px;
-}
-.flip-card-inner {
-  position: relative;
-  transform-style: preserve-3d;
-  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.flip-card-inner.flipped {
-  transform: rotateY(180deg);
-}
-.flip-card-front,
-.flip-card-back {
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-.flip-card-back {
-  position: absolute;
-  inset: 0;
-  transform: rotateY(180deg);
-}
+
