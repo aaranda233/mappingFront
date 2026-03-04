@@ -32,7 +32,7 @@ Alpine.store("global", store);
 Alpine.store("global").fetchCounts(); // Initial fetch
 Alpine.store("global").fetchEstadoPedidos(); // Initial fetch estado pedidos
 setInterval(() => Alpine.store("global").fetchCounts(), 30000); // Refresh every 30s
-setInterval(() => Alpine.store("global").fetchEstadoPedidos(), 5000); // Refresh estado pedidos every 5s
+setInterval(() => Alpine.store("global").fetchEstadoPedidos(), 1000); // Refresh estado pedidos every 1s
 
 Alpine.start();
 

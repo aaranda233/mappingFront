@@ -8,7 +8,8 @@ export default function estadoPedidosManager() {
 
         init() {
             this.loadEstadoActual();
-            setInterval(() => this.loadEstadoActual(), 5000);
+            setInterval(() => this.loadEstadoActual(), 1000);
+            setInterval(() => { if (this.showHistorial) this.loadHistorial(); }, 5000);
         },
 
         async loadEstadoActual() {
@@ -22,20 +23,17 @@ export default function estadoPedidosManager() {
         },
 
         async loadHistorial() {
-            this.loadingHistorial = true;
             try {
                 const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos/historial`);
                 this.historial = await res.json();
             } catch (err) {
                 console.error("Error cargando historial:", err);
-            } finally {
-                this.loadingHistorial = false;
             }
         },
 
         toggleHistorial() {
             this.showHistorial = !this.showHistorial;
-            if (this.showHistorial && this.historial.length === 0) {
+            if (this.showHistorial) {
                 this.loadHistorial();
             }
         },
