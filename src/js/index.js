@@ -17,9 +17,11 @@ import "./components/image-resize";
 
 import mappingManager from "./mappingManager.js";
 import transporteManager from "./transporteManager.js";
+import estadoPedidosManager from "./estadoPedidosManager.js";
 
 window.mappingManager = mappingManager;
 window.transporteManager = transporteManager;
+window.estadoPedidosManager = estadoPedidosManager;
 
 Alpine.plugin(persist);
 window.Alpine = Alpine;
@@ -28,7 +30,9 @@ window.Alpine = Alpine;
 import store from "./store.js";
 Alpine.store("global", store);
 Alpine.store("global").fetchCounts(); // Initial fetch
+Alpine.store("global").fetchEstadoPedidos(); // Initial fetch estado pedidos
 setInterval(() => Alpine.store("global").fetchCounts(), 30000); // Refresh every 30s
+setInterval(() => Alpine.store("global").fetchEstadoPedidos(), 5000); // Refresh estado pedidos every 5s
 
 Alpine.start();
 
