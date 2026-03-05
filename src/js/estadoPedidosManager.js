@@ -47,7 +47,13 @@ export default function estadoPedidosManager() {
         formatFecha(fecha) {
             if (!fecha) return '-';
             const d = new Date(fecha);
-            return d.toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const dd = String(d.getDate()).padStart(2, '0');
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const yyyy = d.getFullYear();
+            const hh = String(d.getHours()).padStart(2, '0');
+            const min = String(d.getMinutes()).padStart(2, '0');
+            const ss = String(d.getSeconds()).padStart(2, '0');
+            return `${dd}/${mm}/${yyyy}, ${hh}:${min}:${ss}`;
         }
     };
 }
