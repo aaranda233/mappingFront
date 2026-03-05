@@ -21,13 +21,13 @@
   <div class="flex h-screen overflow-hidden">
     <include src="./partials/sidebar.html"></include>
 
-    <div class="relative flex flex-col flex-1 overflow-x-hidden overflow-y-auto">
+    <div class="relative flex flex-col flex-1 overflow-hidden">
       <include src="./partials/overlay.html" />
       <include src="./partials/header.html" />
 
-      <main x-data="estadoPedidosManager()" x-init="init" x-cloak>
+      <main x-data="estadoPedidosManager()" x-init="init" x-cloak class="flex-1 flex flex-col overflow-hidden">
 
-        <div class="p-6 space-y-6">
+        <div class="p-6 flex flex-col gap-6 flex-1 overflow-hidden">
 
           <!-- Card Estado Actual -->
           <div class="bg-white/60 backdrop-blur-xl shadow-xl rounded-3xl p-6 border border-gray-200">
@@ -71,12 +71,12 @@
                   <p class="font-medium text-gray-800" x-text="current.ref_pedido"></p>
                 </div>
                 <div>
-                  <span class="text-gray-400">Centro</span>
-                  <p class="font-medium text-gray-800" x-text="current.centro || '-'"></p>
+                  <span class="text-gray-400">Cliente</span>
+                  <p class="font-medium text-gray-800" x-text="current.cliente || '-'"></p>
                 </div>
                 <div>
-                  <span class="text-gray-400">ID Pedido Net</span>
-                  <p class="font-medium text-gray-800" x-text="current.id_pedido_net || '-'"></p>
+                  <span class="text-gray-400">Pedido</span>
+                  <p class="font-medium text-gray-800" x-text="current.pedido || '-'"></p>
                 </div>
                 <div>
                   <span class="text-gray-400">Inicio</span>
@@ -87,7 +87,8 @@
           </div>
 
           <!-- Historial desplegable -->
-          <div class="bg-white/60 backdrop-blur-xl shadow-xl rounded-3xl border border-gray-200">
+          <div class="bg-white/60 backdrop-blur-xl shadow-xl rounded-3xl border border-gray-200 flex flex-col overflow-hidden min-h-0"
+            :class="showHistorial ? 'flex-1' : ''"
             <!-- Botón toggle -->
             <button @click="toggleHistorial()"
               class="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50/50 rounded-3xl transition-colors">
@@ -106,8 +107,8 @@
             </button>
 
             <!-- Tabla historial -->
-            <div class="overflow-hidden transition-all duration-300 ease-in-out"
-              :class="showHistorial ? 'max-h-[2000px]' : 'max-h-0'">
+            <div class="transition-all duration-300 ease-in-out flex-1 min-h-0"
+              :class="showHistorial ? 'overflow-y-auto' : 'max-h-0 overflow-hidden'">
 
               <!-- Loading historial -->
               <div x-show="loadingHistorial" class="text-center p-4 text-gray-600">
@@ -121,12 +122,13 @@
 
               <div x-show="!loadingHistorial && historial.length > 0" class="px-6 pb-6 overflow-x-auto">
                 <table class="w-full text-sm text-left">
-                  <thead class="text-xs text-gray-500 uppercase border-b border-gray-200">
+                  <thead class="text-xs text-gray-500 uppercase border-b border-gray-200 sticky top-0 bg-white/90 backdrop-blur-sm z-10">
                     <tr>
                       <th class="py-3 px-2">Estado</th>
                       <th class="py-3 px-2">Ref. Pedido</th>
                       <th class="py-3 px-2">Mensaje</th>
-                      <th class="py-3 px-2">Centro</th>
+                      <th class="py-3 px-2">Cliente</th>
+                      <th class="py-3 px-2">Pedido</th>
                       <th class="py-3 px-2">Fecha Inicio</th>
                       <th class="py-3 px-2">Fecha Fin</th>
                     </tr>
@@ -148,7 +150,8 @@
                         </td>
                         <td class="py-3 px-2 font-medium" x-text="item.ref_pedido"></td>
                         <td class="py-3 px-2 text-gray-600" x-text="item.mensaje || '-'"></td>
-                        <td class="py-3 px-2" x-text="item.centro || '-'"></td>
+                        <td class="py-3 px-2" x-text="item.cliente || '-'"></td>
+                        <td class="py-3 px-2" x-text="item.pedido || '-'"></td>
                         <td class="py-3 px-2 text-gray-500" x-text="formatFecha(item.fecha_inicio)"></td>
                         <td class="py-3 px-2 text-gray-500" x-text="formatFecha(item.fecha_fin)"></td>
                       </tr>
