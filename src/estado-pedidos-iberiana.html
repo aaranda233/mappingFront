@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Hortichuelas - Estado Pedidos IBERIANA</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+  <!-- Variables de entorno (inyectadas por ConfigMap en K8s) -->
+  <script src="/env.js"></script>
+</head>
+
+<body :class="{'dark bg-gray-900': darkMode === true}"
+  x-data="{ loaded: true, darkMode: false, stickyMenu: false, sidebarToggle: false, scrollTop: false }" x-init="
+    darkMode = JSON.parse(localStorage.getItem('darkMode'));
+    $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)))
+  " x-cloak>
+
+  <div class="flex h-screen overflow-hidden">
+    <include src="./partials/sidebar.html"></include>
+
+    <div class="relative flex flex-col flex-1 overflow-hidden">
+      <include src="./partials/overlay.html" />
+      <include src="./partials/header.html" />
+
+      <main x-data="estadoPedidosIberianaManager()" x-init="init" x-cloak class="flex-1 flex flex-col overflow-hidden">
+
+        <div class="p-6 flex flex-col gap-6 flex-1 overflow-hidden">
+
+          <!-- Card Estado Actual -->
+          <div class="bg-white/60 backdrop-blur-xl shadow-xl rounded-3xl p-6 border border-gray-200">
+            <div class="flex items-center gap-4">
+              <!-- Piloto grande -->
+              <div class="relative flex h-6 w-6 shrink-0">
+                <span class="absolute inline-flex h-full w-full rounded-full opacity-75"
+                  :class="{
+                    'bg-gray-400': pilotColor() === 'gray',
+                    'bg-green-500 animate-ping': pilotColor() === 'green',
+                    'bg-red-500 animate-ping': pilotColor() === 'red'
+                  }"></span>
+                <span class="relative inline-flex rounded-full h-6 w-6"
+                  :class="{
+                    'bg-gray-400': pilotColor() === 'gray',
+                    'bg-green-500': pilotColor() === 'green',
+                    'bg-red-500': pilotColor() === 'red'
+                  }"></span>
+              </div>
+
+              <div>
+                <h2 class="text-lg font-bold text-gray-800">Estado Pedidos IBERIANA</h2>
+                <template x-if="current">
+                  <p class="text-sm text-gray-600">
+                    <span class="font-semibold capitalize" x-text="current.estado"></span> &mdash;
+                    <span x-text="current.mensaje"></span>
+                    <span class="text-gray-400 ml-2" x-text="'(' + formatFecha(current.fecha_inicio) + ')'"></span>
+                  </p>
+                </template>
+                <template x-if="!current">
+                  <p class="text-sm text-gray-500">Sin pedidos activos</p>
+                </template>
+              </div>
+            </div>
+
+            <!-- Detalles del pedido activo -->
+            <template x-if="current">
+              <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div>
+                  <span class="text-gray-400">Ref. Pedido</span>
+                  <p class="font-medium text-gray-800" x-text="current.ref_pedido"></p>
+                </div>
+                <div>
+                  <span class="text-gray-400">Cliente</span>
+                  <p class="font-medium text-gray-800" x-text="current.cliente || '-'"></p>
+                </div>
+                <div>
+                  <span class="text-gray-400">Pedido</span>
+                  <p class="font-medium text-gray-800" x-text="current.pedido || '-'"></p>
+                </div>
+                <div>
+                  <span class="text-gray-400">Inicio</span>
+                  <p class="font-medium text-gray-800" x-text="formatFecha(current.fecha_inicio)"></p>
+                </div>
+              </div>
+            </template>
+          </div>
+
+          <!-- Historial desplegable -->
+          <div class="bg-white/60 backdrop-blur-xl shadow-xl rounded-3xl border border-gray-200 flex flex-col overflow-hidden min-h-0"
+            :class="showHistorial && historial.length > 0 ? 'flex-1' : ''"
+            <!-- Boton toggle -->
+            <button @click="toggleHistorial()"
+              class="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50/50 rounded-3xl transition-colors">
+              <div class="flex items-center gap-3">
+                <svg class="h-5 w-5 text-gray-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h3 class="text-lg font-bold text-gray-800">Historial de Pedidos</h3>
+              </div>
+              <svg class="h-5 w-5 text-gray-400 transition-transform duration-300"
+                :class="showHistorial ? 'rotate-180' : ''"
+                fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            <!-- Tabla historial -->
+            <div class="transition-all duration-300 ease-in-out flex-1 min-h-0"
+              :class="showHistorial ? 'overflow-y-auto' : 'max-h-0 overflow-hidden'">
+
+              <!-- Loading historial -->
+              <div x-show="loadingHistorial" class="text-center p-4 text-gray-600">
+                <svg class="animate-spin h-6 w-6 mx-auto text-[#003a4b]" xmlns="http://www.w3.org/2000/svg" fill="none"
+                  viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                </svg>
+                <p class="mt-2">Cargando historial...</p>
+              </div>
+
+              <div x-show="!loadingHistorial && historial.length > 0" class="px-6 pb-6 overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                  <thead class="text-xs text-gray-500 uppercase border-b border-gray-200 sticky top-0 bg-white/90 backdrop-blur-sm z-10">
+                    <tr>
+                      <th class="py-3 px-2">Estado</th>
+                      <th class="py-3 px-2">Ref. Pedido</th>
+                      <th class="py-3 px-2">Mensaje</th>
+                      <th class="py-3 px-2">Cliente</th>
+                      <th class="py-3 px-2">Pedido</th>
+                      <th class="py-3 px-2">Fecha Inicio</th>
+                      <th class="py-3 px-2">Fecha Fin</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <template x-for="(item, index) in historial" :key="item.id">
+                      <tr class="border-b border-gray-100 hover:bg-gray-50/50">
+                        <td class="py-3 px-2">
+                          <div class="flex items-center gap-2">
+                            <span class="inline-flex h-2.5 w-2.5 rounded-full"
+                              :class="{
+                                'bg-gray-400': item.estado === 'detectado',
+                                'bg-yellow-500': item.estado === 'procesando',
+                                'bg-green-500': item.estado === 'procesado',
+                                'bg-red-500': item.estado === 'error'
+                              }"></span>
+                            <span class="capitalize" x-text="item.estado"></span>
+                          </div>
+                        </td>
+                        <td class="py-3 px-2 font-medium" x-text="item.ref_pedido"></td>
+                        <td class="py-3 px-2 text-gray-600" x-text="item.mensaje || '-'"></td>
+                        <td class="py-3 px-2" x-text="item.cliente || '-'"></td>
+                        <td class="py-3 px-2" x-text="item.pedido || '-'"></td>
+                        <td class="py-3 px-2 text-gray-500" x-text="formatFecha(item.fecha_inicio)"></td>
+                        <td class="py-3 px-2 text-gray-500" x-text="formatFecha(item.fecha_fin)"></td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+              </div>
+
+              <div x-show="!loadingHistorial && historial.length === 0" class="px-6 pb-6 flex justify-center">
+                <div class="inline-flex items-center gap-2 bg-gray-100 text-gray-500 text-sm font-medium px-4 py-2 rounded-lg border border-gray-200">
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                  </svg>
+                  No hay datos disponibles
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+</body>
+
+</html>

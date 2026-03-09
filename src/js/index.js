@@ -18,10 +18,14 @@ import "./components/image-resize";
 import mappingManager from "./mappingManager.js";
 import transporteManager from "./transporteManager.js";
 import estadoPedidosManager from "./estadoPedidosManager.js";
+import estadoPedidosEurogroupManager from "./estadoPedidosEurogroupManager.js";
+import estadoPedidosIberianaManager from "./estadoPedidosIberianaManager.js";
 
 window.mappingManager = mappingManager;
 window.transporteManager = transporteManager;
 window.estadoPedidosManager = estadoPedidosManager;
+window.estadoPedidosEurogroupManager = estadoPedidosEurogroupManager;
+window.estadoPedidosIberianaManager = estadoPedidosIberianaManager;
 
 Alpine.plugin(persist);
 window.Alpine = Alpine;
@@ -30,9 +34,13 @@ window.Alpine = Alpine;
 import store from "./store.js";
 Alpine.store("global", store);
 Alpine.store("global").fetchCounts(); // Initial fetch
-Alpine.store("global").fetchEstadoPedidos(); // Initial fetch estado pedidos
+Alpine.store("global").fetchEstadoPedidos(); // Initial fetch estado pedidos EDEKA
+Alpine.store("global").fetchEstadoPedidosEurogroup(); // Initial fetch estado pedidos EUROGROUP
+Alpine.store("global").fetchEstadoPedidosIberiana(); // Initial fetch estado pedidos IBERIANA
 setInterval(() => Alpine.store("global").fetchCounts(), 30000); // Refresh every 30s
-setInterval(() => Alpine.store("global").fetchEstadoPedidos(), 1000); // Refresh estado pedidos every 1s
+setInterval(() => Alpine.store("global").fetchEstadoPedidos(), 1000); // Refresh estado pedidos EDEKA every 1s
+setInterval(() => Alpine.store("global").fetchEstadoPedidosEurogroup(), 1000); // Refresh estado pedidos EUROGROUP every 1s
+setInterval(() => Alpine.store("global").fetchEstadoPedidosIberiana(), 1000); // Refresh estado pedidos IBERIANA every 1s
 
 Alpine.start();
 
