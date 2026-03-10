@@ -4,6 +4,8 @@ export default function transportesManager() {
         loading: false,
         primeraCarga: true,
         toast: null,
+        pdfModalOpen: false,
+        pdfBlobUrl: null,
 
         init() {
             this.loadTransportes();
@@ -74,6 +76,26 @@ export default function transportesManager() {
                 stopOnFocus: true
             }).showToast();
         },
+        abrirPdf(item) {
+            if (!item.pdf) return;
+            const byteChars = atob(item.pdf);
+            const byteArray = new Uint8Array(byteChars.length);
+            for (let i = 0; i < byteChars.length; i++) {
+                byteArray[i] = byteChars.charCodeAt(i);
+            }
+            const blob = new Blob([byteArray], { type: 'application/pdf' });
+            this.pdfBlobUrl = URL.createObjectURL(blob);
+            this.pdfModalOpen = true;
+        },
+
+        cerrarPdf() {
+            this.pdfModalOpen = false;
+            if (this.pdfBlobUrl) {
+                URL.revokeObjectURL(this.pdfBlobUrl);
+                this.pdfBlobUrl = null;
+            }
+        },
+
         enviarAI(item, event) {
             const ball = document.getElementById('aiBall');
             const chatBtn = document.getElementById('chat-toggle-button');
