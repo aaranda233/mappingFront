@@ -193,7 +193,7 @@ export default function mappingManager() {
             item._debounceTimer = setTimeout(async () => {
                 try {
                     const res = await fetch(
-                        `http://${window.env.IP_BACKEND}/api/mapping/presentaciones/buscar?busqueda=${encodeURIComponent(item.busquedaPresentacion)}&idcliente=0`
+                        `http://${window.env.IP_BACKEND}/api/mapping/presentaciones/buscar?busqueda=${encodeURIComponent(item.busquedaPresentacion)}&idcliente=0&idlinea=${item.id_linea || 0}`
                     );
                     const data = await res.json();
                     item.resultadosPresentacion = data;

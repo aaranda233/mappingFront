@@ -64,7 +64,8 @@
 
           <div x-show="mappings.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             <template x-for="(item, index) in mappings" :key="item.id">
-              <div x-show="!item.enviado" x-transition.duration.300ms>
+              <div x-show="!item.enviado" x-transition.duration.300ms
+                :class="item.mostrarResultados ? 'relative z-50' : 'relative z-0'">
                 <div
                   class="relative bg-white/60 backdrop-blur-xl shadow-xl rounded-3xl p-6 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl border border-gray-200 hover:border-[#f17533]/60 w-full">
                   <!-- Botón PDF -->
