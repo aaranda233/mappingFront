@@ -76,8 +76,8 @@
         </div>
       </li>
 
-      <!-- Estado Pedidos EDEKA -->
-      <li>
+      <!-- Estado Pedidos EDEKA - Solo admin/developer -->
+      <li x-show="$store.global.userRole === 'admin' || $store.global.userRole === 'developer'">
         <a href="#" @click.prevent="selected = (selected === 'EstadoPedidos' ? '' : 'EstadoPedidos')"
           class="menu-item group flex items-center gap-3 text-sm font-medium transition-colors"
           :class="selected === 'EstadoPedidos' ? 'text-[#003a4b]' : 'text-gray-600 hover:text-[#003a4b]'">
@@ -170,9 +170,9 @@
       <li>
         <a href="admin.html"
           class="menu-item group flex items-center gap-3 text-sm font-medium transition-colors"
-          :class="window.location.pathname.includes('admin') ? 'text-purple-600' : 'text-gray-600 hover:text-purple-600'">
+          :class="window.location.pathname.includes('admin') ? 'text-[#f17533]' : 'text-gray-600 hover:text-[#f17533]'"
           <!-- Icono Escudo/Admin -->
-          <svg :class="window.location.pathname.includes('admin') ? 'text-purple-600' : 'text-gray-400 group-hover:text-purple-600'"
+          <svg :class="window.location.pathname.includes('admin') ? 'text-[#f17533]' : 'text-gray-400 group-hover:text-[#f17533]'"
             width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
             xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round"
