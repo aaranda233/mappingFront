@@ -21,6 +21,7 @@ import estadoPedidosManager from "./estadoPedidosManager.js";
 import estadoPedidosEurogroupManager from "./estadoPedidosEurogroupManager.js";
 import estadoPedidosIberianaManager from "./estadoPedidosIberianaManager.js";
 import adminManager from "./adminManager.js";
+import tutorialGuide from "./tutorialGuide.js";
 
 window.mappingManager = mappingManager;
 window.transporteManager = transporteManager;
@@ -28,6 +29,7 @@ window.estadoPedidosManager = estadoPedidosManager;
 window.estadoPedidosEurogroupManager = estadoPedidosEurogroupManager;
 window.estadoPedidosIberianaManager = estadoPedidosIberianaManager;
 window.adminManager = adminManager;
+window.tutorialGuide = tutorialGuide;
 
 Alpine.plugin(persist);
 window.Alpine = Alpine;
