@@ -22,7 +22,30 @@ export default {
             const res = await fetch('/oauth2/userinfo');
             const data = await res.json();
             this.userEmail = data.email || '';
-            this.userRole = (window.env.ADMIN_USERS || []).includes(this.userEmail) ? 'admin' : 'viewer';
+
+            // Obtener roles desde la BD (fuente principal)
+            let dbAdmins = [];
+            let dbDevelopers = [];
+            try {
+                const rolesRes = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/user-roles`);
+                const rolesData = await rolesRes.json();
+                dbAdmins = rolesData.adminUsers || [];
+                dbDevelopers = rolesData.developerUsers || [];
+            } catch (e) {
+                console.warn("No se pudieron obtener roles de BD, usando env.js", e);
+            }
+
+            // Merge: BD tiene prioridad, env.js solo para DEVELOPER_USERS (bootstrap)
+            const allDevelopers = [...new Set([...dbDevelopers, ...(window.env.DEVELOPER_USERS || [])])];
+            const allAdmins = dbAdmins;
+
+            if (allDevelopers.includes(this.userEmail)) {
+                this.userRole = 'developer';
+            } else if (allAdmins.includes(this.userEmail)) {
+                this.userRole = 'admin';
+            } else {
+                this.userRole = 'viewer';
+            }
         } catch (e) {
             console.error("Error fetching user info", e);
             this.userRole = 'viewer';
