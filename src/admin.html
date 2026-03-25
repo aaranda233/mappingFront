@@ -31,30 +31,24 @@
       <include src="./partials/header.html" />
 
       <main x-data="adminManager()" x-init="init" x-cloak>
-        <!-- Toast -->
-        <div x-show="toast" x-transition
-          class="fixed top-5 right-5 bg-green-600 text-white px-4 py-2 rounded-xl shadow-lg z-50">
-          <span x-text="toast"></span>
-        </div>
-
-        <div class="p-6 max-w-4xl mx-auto">
+        <div class="p-6 max-w-5xl mx-auto">
           <!-- Titulo -->
           <div class="mb-8">
-            <h1 class="text-2xl font-bold text-gray-800">Gestión de Usuarios</h1>
-            <p class="text-sm text-gray-500 mt-1">Añade o elimina usuarios de las listas de Admin y Desarrollador</p>
+            <h1 class="text-2xl font-bold text-gray-800">Gestión de Usuarios y Permisos</h1>
+            <p class="text-sm text-gray-500 mt-1">Configura qué secciones puede ver cada usuario</p>
           </div>
 
           <!-- Mensajes -->
           <div x-show="successMessage" x-transition
             class="mb-4 px-4 py-3 rounded-xl bg-green-50 border border-green-200 text-green-800 text-sm font-medium flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
             </svg>
             <span x-text="successMessage"></span>
           </div>
           <div x-show="errorMessage" x-transition
             class="mb-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm font-medium flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M12 2a10 10 0 1010 10A10 10 0 0012 2z" />
             </svg>
             <span x-text="errorMessage"></span>
@@ -63,118 +57,214 @@
           <!-- Formulario de añadir usuario -->
           <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm mb-8">
             <h2 class="text-lg font-semibold text-gray-700 mb-4">Añadir usuario</h2>
-            <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
-              <!-- Input email -->
-              <div class="flex-1 w-full">
-                <label class="block text-sm font-medium text-gray-600 mb-1">Correo electrónico</label>
-                <input type="email" placeholder="usuario@ejemplo.com"
-                  class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl shadow-sm focus:border-[#f17533] focus:ring-1 focus:ring-[#f17533] transition text-sm"
-                  x-model="email"
-                  @keydown.enter="addUser()" />
-              </div>
 
-              <!-- Selección de rol -->
-              <div class="flex gap-4">
-                <label class="flex items-center gap-2 cursor-pointer px-4 py-2.5 rounded-xl border transition text-sm font-medium"
-                  :class="role === 'admin' ? 'border-[#003a4b] bg-[#003a4b]/10 text-[#003a4b]' : 'border-gray-300 text-gray-500 hover:border-gray-400'">
-                  <input type="radio" name="role" value="admin" x-model="role" class="hidden" />
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <!-- Email -->
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-600 mb-1">Correo electrónico</label>
+              <input type="email" placeholder="usuario@ejemplo.com"
+                class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl shadow-sm focus:border-[#003a4b] focus:ring-1 focus:ring-[#003a4b] transition text-sm"
+                x-model="email"
+                @keydown.enter="addUser()" />
+            </div>
+
+            <!-- Permisos checkboxes -->
+            <div class="mb-4">
+              <div class="flex items-center justify-between mb-2">
+                <label class="block text-sm font-medium text-gray-600">Permisos</label>
+                <div class="flex gap-2">
+                  <button @click="selectAll()" class="text-xs text-[#003a4b] hover:underline">Todos</button>
+                  <span class="text-gray-300">|</span>
+                  <button @click="selectNone()" class="text-xs text-gray-400 hover:underline">Ninguno</button>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <!-- Pedidos -->
+                <label class="flex items-center gap-3 cursor-pointer px-4 py-3 rounded-xl border transition text-sm font-medium"
+                  :class="permisos.pedidos ? 'border-[#003a4b] bg-[#003a4b]/5 text-[#003a4b]' : 'border-gray-200 text-gray-500 hover:border-gray-300'">
+                  <input type="checkbox" x-model="permisos.pedidos" class="hidden" />
+                  <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5L12 12l9-4.5M3 7.5v9l9 4.5M3 7.5l9-4.5 9 4.5M21 7.5v9M12 12v9" />
+                  </svg>
+                  <span>Pedidos</span>
+                  <svg x-show="permisos.pedidos" class="h-4 w-4 ml-auto shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                  </svg>
+                </label>
+                <!-- Transportes -->
+                <label class="flex items-center gap-3 cursor-pointer px-4 py-3 rounded-xl border transition text-sm font-medium"
+                  :class="permisos.transportes ? 'border-[#f17533] bg-[#f17533]/5 text-[#f17533]' : 'border-gray-200 text-gray-500 hover:border-gray-300'">
+                  <input type="checkbox" x-model="permisos.transportes" class="hidden" />
+                  <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 17H7a2 2 0 01-2-2V6a1 1 0 011-1h8v5h5l3 4v3a2 2 0 01-2 2h-2m-3 0h-4m4 0a2 2 0 11-4 0m4 0a2 2 0 104 0" />
+                  </svg>
+                  <span>Transportes</span>
+                  <svg x-show="permisos.transportes" class="h-4 w-4 ml-auto shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                  </svg>
+                </label>
+                <!-- Estado Pedidos -->
+                <label class="flex items-center gap-3 cursor-pointer px-4 py-3 rounded-xl border transition text-sm font-medium"
+                  :class="permisos['estado-pedidos'] ? 'border-[#003a4b] bg-[#003a4b]/5 text-[#003a4b]' : 'border-gray-200 text-gray-500 hover:border-gray-300'">
+                  <input type="checkbox" x-model="permisos['estado-pedidos']" class="hidden" />
+                  <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.348 14.652a3.75 3.75 0 010-5.304m5.304 0a3.75 3.75 0 010 5.304m-7.425 2.121a6.75 6.75 0 010-9.546m9.546 0a6.75 6.75 0 010 9.546" />
+                  </svg>
+                  <span>Estado</span>
+                  <svg x-show="permisos['estado-pedidos']" class="h-4 w-4 ml-auto shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                  </svg>
+                </label>
+                <!-- Admin -->
+                <label class="flex items-center gap-3 cursor-pointer px-4 py-3 rounded-xl border transition text-sm font-medium"
+                  :class="permisos.admin ? 'border-[#f17533] bg-[#f17533]/5 text-[#f17533]' : 'border-gray-200 text-gray-500 hover:border-gray-300'">
+                  <input type="checkbox" x-model="permisos.admin" class="hidden" />
+                  <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 2l7 4v5c0 5.25-3.5 9.74-7 11-3.5-1.26-7-5.75-7-11V6l7-4z" />
                   </svg>
-                  Admin
-                </label>
-                <label class="flex items-center gap-2 cursor-pointer px-4 py-2.5 rounded-xl border transition text-sm font-medium"
-                  :class="role === 'developer' ? 'border-[#f17533] bg-[#f17533]/10 text-[#f17533]' : 'border-gray-300 text-gray-500 hover:border-gray-400'">
-                  <input type="radio" name="role" value="developer" x-model="role" class="hidden" />
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                  <span>Admin</span>
+                  <svg x-show="permisos.admin" class="h-4 w-4 ml-auto shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                   </svg>
-                  Desarrollador
                 </label>
               </div>
-
-              <!-- Botón añadir -->
-              <button @click="addUser()"
-                class="px-6 py-2.5 bg-[#003a4b] hover:bg-[#002a38] text-white font-semibold rounded-xl transition-colors text-sm flex items-center gap-2 whitespace-nowrap">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                </svg>
-                Añadir
-              </button>
             </div>
+
+            <!-- Botón añadir -->
+            <button @click="addUser()"
+              class="px-6 py-2.5 bg-[#003a4b] hover:bg-[#002a38] text-white font-semibold rounded-xl transition-colors text-sm flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              Añadir usuario
+            </button>
           </div>
 
-          <!-- Listas de usuarios -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <!-- Desarrolladores -->
-            <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-              <div class="flex items-center gap-2 mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#f17533]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          <!-- Tabla de usuarios -->
+          <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <svg class="h-5 w-5 text-[#003a4b]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
                 </svg>
-                <h3 class="text-lg font-semibold text-gray-700">Desarrolladores</h3>
-                <span class="text-xs font-bold rounded-full bg-[#f17533]/10 text-[#f17533] px-2 py-0.5" x-text="developerUsers.length"></span>
+                <h3 class="text-lg font-semibold text-gray-700">Usuarios</h3>
+                <span class="text-xs font-bold rounded-full bg-[#003a4b]/10 text-[#003a4b] px-2 py-0.5" x-text="users.length"></span>
               </div>
-              <div class="space-y-2">
-                <template x-for="(user, index) in developerUsers" :key="'dev-'+index">
-                  <div class="flex items-center justify-between px-4 py-2.5 bg-[#f17533]/5 rounded-xl border border-[#f17533]/10">
-                    <div class="flex items-center gap-2">
-                      <div class="w-8 h-8 rounded-full bg-[#f17533]/20 flex items-center justify-center text-[#f17533] font-bold text-xs uppercase" x-text="user.charAt(0)"></div>
-                      <span class="text-sm text-gray-700" x-text="user"></span>
+            </div>
+
+            <!-- Loading -->
+            <div x-show="loading" class="text-center py-8">
+              <svg class="animate-spin h-6 w-6 mx-auto text-[#003a4b]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+              </svg>
+              <p class="mt-2 text-sm text-gray-500">Cargando usuarios...</p>
+            </div>
+
+            <!-- Lista de usuarios -->
+            <div x-show="!loading" class="divide-y divide-gray-100">
+              <template x-for="(user, index) in users" :key="user.email">
+                <div class="px-6 py-4 hover:bg-gray-50/50 transition-colors">
+                  <!-- Vista normal -->
+                  <div x-show="editingUser !== user.email" class="flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-3 min-w-0">
+                      <div class="w-9 h-9 rounded-full bg-[#003a4b]/10 flex items-center justify-center text-[#003a4b] font-bold text-sm uppercase shrink-0"
+                        x-text="user.email.charAt(0)"></div>
+                      <div class="min-w-0">
+                        <p class="text-sm font-medium text-gray-800 truncate" x-text="user.email"></p>
+                        <div class="flex flex-wrap gap-1.5 mt-1">
+                          <template x-for="p in permisosConfig" :key="p.key">
+                            <span x-show="user.permisos.includes(p.key)"
+                              class="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                              :style="`background: ${p.color}10; color: ${p.color}`"
+                              x-text="p.label"></span>
+                          </template>
+                        </div>
+                      </div>
                     </div>
-                    <button @click="removeUser(user, 'developer')"
-                      class="text-gray-400 hover:text-red-500 transition p-1 rounded-lg hover:bg-red-50">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                </template>
-                <div x-show="developerUsers.length === 0" class="text-sm text-gray-400 text-center py-4">
-                  No hay desarrolladores configurados
-                </div>
-              </div>
-            </div>
-
-            <!-- Admins -->
-            <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-              <div class="flex items-center gap-2 mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#003a4b]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 2l7 4v5c0 5.25-3.5 9.74-7 11-3.5-1.26-7-5.75-7-11V6l7-4z" />
-                </svg>
-                <h3 class="text-lg font-semibold text-gray-700">Admins</h3>
-                <span class="text-xs font-bold rounded-full bg-[#003a4b]/10 text-[#003a4b] px-2 py-0.5" x-text="adminUsers.length"></span>
-              </div>
-              <div class="space-y-2">
-                <template x-for="(user, index) in adminUsers" :key="'admin-'+index">
-                  <div class="flex items-center justify-between px-4 py-2.5 bg-[#003a4b]/5 rounded-xl border border-[#003a4b]/10">
-                    <div class="flex items-center gap-2">
-                      <div class="w-8 h-8 rounded-full bg-[#003a4b]/20 flex items-center justify-center text-[#003a4b] font-bold text-xs uppercase" x-text="user.charAt(0)"></div>
-                      <span class="text-sm text-gray-700" x-text="user"></span>
+                    <div class="flex items-center gap-2 shrink-0">
+                      <button @click="startEdit(user)"
+                        class="text-gray-400 hover:text-[#003a4b] transition p-1.5 rounded-lg hover:bg-[#003a4b]/5"
+                        title="Editar permisos">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                        </svg>
+                      </button>
+                      <button @click="removeUser(user.email)"
+                        class="text-gray-400 hover:text-red-500 transition p-1.5 rounded-lg hover:bg-red-50"
+                        title="Eliminar usuario">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                        </svg>
+                      </button>
                     </div>
-                    <button @click="removeUser(user, 'admin')"
-                      class="text-gray-400 hover:text-red-500 transition p-1 rounded-lg hover:bg-red-50">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
                   </div>
-                </template>
-                <div x-show="adminUsers.length === 0" class="text-sm text-gray-400 text-center py-4">
-                  No hay admins configurados
+
+                  <!-- Vista edición -->
+                  <div x-show="editingUser === user.email" x-transition class="space-y-3">
+                    <div class="flex items-center gap-3">
+                      <div class="w-9 h-9 rounded-full bg-[#f17533]/10 flex items-center justify-center text-[#f17533] font-bold text-sm uppercase shrink-0"
+                        x-text="user.email.charAt(0)"></div>
+                      <p class="text-sm font-medium text-gray-800" x-text="user.email"></p>
+                      <span class="text-xs text-[#f17533] font-medium bg-[#f17533]/10 px-2 py-0.5 rounded-full">Editando</span>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pl-12">
+                      <!-- Pedidos -->
+                      <label class="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg border transition text-xs font-medium"
+                        :class="editPermisos.pedidos ? 'border-[#003a4b] bg-[#003a4b]/5 text-[#003a4b]' : 'border-gray-200 text-gray-400'">
+                        <input type="checkbox" x-model="editPermisos.pedidos" class="hidden" />
+                        <span>Pedidos</span>
+                        <svg x-show="editPermisos.pedidos" class="h-3.5 w-3.5 ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                      </label>
+                      <!-- Transportes -->
+                      <label class="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg border transition text-xs font-medium"
+                        :class="editPermisos.transportes ? 'border-[#f17533] bg-[#f17533]/5 text-[#f17533]' : 'border-gray-200 text-gray-400'">
+                        <input type="checkbox" x-model="editPermisos.transportes" class="hidden" />
+                        <span>Transportes</span>
+                        <svg x-show="editPermisos.transportes" class="h-3.5 w-3.5 ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                      </label>
+                      <!-- Estado -->
+                      <label class="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg border transition text-xs font-medium"
+                        :class="editPermisos['estado-pedidos'] ? 'border-[#003a4b] bg-[#003a4b]/5 text-[#003a4b]' : 'border-gray-200 text-gray-400'">
+                        <input type="checkbox" x-model="editPermisos['estado-pedidos']" class="hidden" />
+                        <span>Estado</span>
+                        <svg x-show="editPermisos['estado-pedidos']" class="h-3.5 w-3.5 ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                      </label>
+                      <!-- Admin -->
+                      <label class="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg border transition text-xs font-medium"
+                        :class="editPermisos.admin ? 'border-[#f17533] bg-[#f17533]/5 text-[#f17533]' : 'border-gray-200 text-gray-400'">
+                        <input type="checkbox" x-model="editPermisos.admin" class="hidden" />
+                        <span>Admin</span>
+                        <svg x-show="editPermisos.admin" class="h-3.5 w-3.5 ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                      </label>
+                    </div>
+                    <div class="flex gap-2 pl-12">
+                      <button @click="saveEdit(user.email)"
+                        class="px-4 py-1.5 bg-[#003a4b] hover:bg-[#002a38] text-white text-xs font-semibold rounded-lg transition-colors">
+                        Guardar
+                      </button>
+                      <button @click="cancelEdit()"
+                        class="px-4 py-1.5 border border-gray-300 text-gray-600 text-xs font-semibold rounded-lg hover:bg-gray-50 transition-colors">
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
                 </div>
+              </template>
+
+              <div x-show="!loading && users.length === 0" class="text-sm text-gray-400 text-center py-8">
+                No hay usuarios configurados
               </div>
             </div>
           </div>
 
-          <!-- Loading -->
-          <div x-show="loading" class="text-center py-8">
-            <svg class="animate-spin h-6 w-6 mx-auto text-[#003a4b]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-            </svg>
-            <p class="mt-2 text-sm text-gray-500">Cargando roles...</p>
-          </div>
         </div>
       </main>
     </div>

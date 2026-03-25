@@ -1,6 +1,6 @@
 export default {
-    userRole: 'viewer',
     userEmail: '',
+    userPermisos: [],
     counts: {
         pedidos: 0,
         transportes: 0
@@ -23,32 +23,24 @@ export default {
             const data = await res.json();
             this.userEmail = data.email || '';
 
-            // Obtener roles desde la BD (fuente principal)
-            let dbAdmins = [];
-            let dbDevelopers = [];
+            // Obtener permisos desde la BD
             try {
                 const rolesRes = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/user-roles`);
                 const rolesData = await rolesRes.json();
-                dbAdmins = rolesData.adminUsers || [];
-                dbDevelopers = rolesData.developerUsers || [];
+                const users = rolesData.users || [];
+                const me = users.find(u => u.email === this.userEmail);
+                this.userPermisos = me ? [...me.permisos] : [];
             } catch (e) {
-                console.warn("No se pudieron obtener roles de BD, usando env.js", e);
-            }
-
-            // Merge: BD tiene prioridad, env.js solo para DEVELOPER_USERS (bootstrap)
-            const allDevelopers = [...new Set([...dbDevelopers, ...(window.env.DEVELOPER_USERS || [])])];
-            const allAdmins = dbAdmins;
-
-            if (allDevelopers.includes(this.userEmail)) {
-                this.userRole = 'developer';
-            } else if (allAdmins.includes(this.userEmail)) {
-                this.userRole = 'admin';
-            } else {
-                this.userRole = 'viewer';
+                console.warn("No se pudieron obtener permisos de BD, usando env.js", e);
+                // Fallback: DEVELOPER_USERS obtiene todos los permisos
+                const devs = window.env.DEVELOPER_USERS || [];
+                if (devs.includes(this.userEmail)) {
+                    this.userPermisos = ['pedidos', 'transportes', 'estado-pedidos', 'admin'];
+                }
             }
         } catch (e) {
             console.error("Error fetching user info", e);
-            this.userRole = 'viewer';
+            this.userPermisos = [];
         }
     },
     async fetchCounts() {
