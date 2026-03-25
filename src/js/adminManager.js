@@ -31,7 +31,27 @@ export default function adminManager() {
             try {
                 const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/user-roles`);
                 const data = await res.json();
-                this.users = data.users || [];
+
+                if (data.users) {
+                    // Formato nuevo
+                    this.users = data.users;
+                } else {
+                    // Formato antiguo: convertir adminUsers/developerUsers a formato nuevo
+                    const allDevs = [...new Set([...(data.developerUsers || []), ...(window.env.DEVELOPER_USERS || [])])];
+                    const allAdmins = data.adminUsers || [];
+                    const merged = {};
+                    allDevs.forEach(email => {
+                        merged[email] = merged[email] || { email, permisos: [] };
+                        merged[email].permisos = ['pedidos', 'transportes', 'estado-pedidos', 'admin'];
+                    });
+                    allAdmins.forEach(email => {
+                        merged[email] = merged[email] || { email, permisos: [] };
+                        if (!merged[email].permisos.length) {
+                            merged[email].permisos = ['pedidos', 'transportes', 'estado-pedidos'];
+                        }
+                    });
+                    this.users = Object.values(merged);
+                }
             } catch (e) {
                 console.error("Error fetching user roles", e);
                 this.users = [];

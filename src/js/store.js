@@ -27,9 +27,21 @@ export default {
             try {
                 const rolesRes = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/user-roles`);
                 const rolesData = await rolesRes.json();
-                const users = rolesData.users || [];
-                const me = users.find(u => u.email === this.userEmail);
-                this.userPermisos = me ? [...me.permisos] : [];
+
+                if (rolesData.users) {
+                    // Formato nuevo: { users: [{ email, permisos: [...] }] }
+                    const me = rolesData.users.find(u => u.email === this.userEmail);
+                    this.userPermisos = me ? [...me.permisos] : [];
+                } else {
+                    // Formato antiguo: { adminUsers: [], developerUsers: [] }
+                    const devs = [...new Set([...(rolesData.developerUsers || []), ...(window.env.DEVELOPER_USERS || [])])];
+                    const admins = rolesData.adminUsers || [];
+                    if (devs.includes(this.userEmail)) {
+                        this.userPermisos = ['pedidos', 'transportes', 'estado-pedidos', 'admin'];
+                    } else if (admins.includes(this.userEmail)) {
+                        this.userPermisos = ['pedidos', 'transportes', 'estado-pedidos'];
+                    }
+                }
             } catch (e) {
                 console.warn("No se pudieron obtener permisos de BD, usando env.js", e);
                 // Fallback: DEVELOPER_USERS obtiene todos los permisos
