@@ -1,4 +1,6 @@
 export default {
+    userRole: 'viewer',
+    userEmail: '',
     counts: {
         pedidos: 0,
         transportes: 0
@@ -14,6 +16,17 @@ export default {
     estadoPedidosIberiana: {
         current: null,
         pilotColor: 'gray'
+    },
+    async fetchUserInfo() {
+        try {
+            const res = await fetch('/oauth2/userinfo');
+            const data = await res.json();
+            this.userEmail = data.email || '';
+            this.userRole = (window.env.ADMIN_USERS || []).includes(this.userEmail) ? 'admin' : 'viewer';
+        } catch (e) {
+            console.error("Error fetching user info", e);
+            this.userRole = 'viewer';
+        }
     },
     async fetchCounts() {
         try {

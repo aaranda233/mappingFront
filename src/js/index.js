@@ -33,6 +33,7 @@ window.Alpine = Alpine;
 // Register global store
 import store from "./store.js";
 Alpine.store("global", store);
+Alpine.store("global").fetchUserInfo(); // Fetch user role
 Alpine.store("global").fetchCounts(); // Initial fetch
 Alpine.store("global").fetchEstadoPedidos(); // Initial fetch estado pedidos EDEKA
 Alpine.store("global").fetchEstadoPedidosEurogroup(); // Initial fetch estado pedidos EUROGROUP

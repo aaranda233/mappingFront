@@ -16,8 +16,8 @@
       Mappings
     </p>
     <ul class="flex flex-col gap-4">
-      <!-- Pedidos Edeka -->
-      <li>
+      <!-- Pedidos Edeka - Solo admin -->
+      <li x-show="$store.global.userRole === 'admin'">
         <a href="#" @click.prevent="selected = (selected === 'Pedidos' ? '' : 'Pedidos')"
           class="menu-item group flex items-center gap-3 text-sm font-medium transition-colors"
           :class="selected === 'Pedidos' ? 'text-[#003a4b]' : 'text-gray-600 hover:text-[#003a4b]'">
@@ -46,8 +46,8 @@
       </li>
 
 
-      <!--Transportes Edeka -->
-      <li>
+      <!--Transportes Edeka - Solo admin -->
+      <li x-show="$store.global.userRole === 'admin'">
         <a href="#" @click.prevent="selected = (selected === 'Transportes' ? '' : 'Transportes')"
           class="menu-item group flex items-center gap-3 text-sm font-medium transition-colors"
           :class="selected === 'Transportes' ? 'text-[color:#f17533]' : 'text-gray-600 hover:text-[color:#f17533]'">
