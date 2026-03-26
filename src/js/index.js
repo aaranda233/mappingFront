@@ -21,9 +21,11 @@ import estadoPedidosManager from "./estadoPedidosManager.js";
 import estadoPedidosEurogroupManager from "./estadoPedidosEurogroupManager.js";
 import estadoPedidosIberianaManager from "./estadoPedidosIberianaManager.js";
 import adminManager from "./adminManager.js";
+import presentacionesManager from "./presentacionesManager.js";
 
 window.mappingManager = mappingManager;
 window.transporteManager = transporteManager;
+window.presentacionesManager = presentacionesManager;
 window.estadoPedidosManager = estadoPedidosManager;
 window.estadoPedidosEurogroupManager = estadoPedidosEurogroupManager;
 window.estadoPedidosIberianaManager = estadoPedidosIberianaManager;

@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+    content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>Hortichuelas - Presentaciones</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <script src="/env.js"></script>
+</head>
+
+<body :class="{'dark bg-gray-900': darkMode === true}"
+  x-data="{ page: 'presentaciones', loaded: true, darkMode: false, stickyMenu: false, sidebarToggle: false, scrollTop: false }"
+  x-init="
+    darkMode = JSON.parse(localStorage.getItem('darkMode'));
+    $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)))
+  " x-cloak>
+
+  <div class="flex h-screen overflow-hidden">
+    <include src="./partials/sidebar.html"></include>
+
+    <div class="relative flex flex-col flex-1 overflow-x-hidden overflow-y-auto">
+      <include src="./partials/overlay.html" />
+      <include src="./partials/header.html" />
+
+      <main x-data="presentacionesManager()" x-init="init" x-cloak>
+        <div class="p-6">
+          <!-- Titulo y filtros -->
+          <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-800 mb-4">Presentaciones Mapeadas</h1>
+
+            <div class="flex flex-col sm:flex-row gap-3">
+              <!-- Buscador -->
+              <div class="relative flex-1">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                  class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" fill="none"
+                  viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
+                </svg>
+                <input type="text" placeholder="Buscar por descripci&oacute;n, presentaci&oacute;n, categor&iacute;a, ID..."
+                  class="w-full pl-10 pr-4 py-2.5 bg-white/80 border border-gray-300 rounded-xl shadow-sm focus:border-[#f17533] focus:ring-1 focus:ring-[#f17533] transition"
+                  x-model="busqueda" @input="buscar()" />
+              </div>
+
+              <!-- Filtro cliente -->
+              <select
+                class="px-4 py-2.5 bg-white/80 border border-gray-300 rounded-xl shadow-sm focus:border-[#f17533] focus:ring-1 focus:ring-[#f17533] transition min-w-[220px]"
+                x-model="filtroCliente" @change="cambiarCliente()">
+                <template x-for="c in clientes" :key="c.id">
+                  <option :value="c.id" x-text="c.nombre"></option>
+                </template>
+              </select>
+            </div>
+          </div>
+
+          <!-- Loading -->
+          <div x-show="loading" class="text-center p-4 text-gray-600">
+            <svg class="animate-spin h-6 w-6 mx-auto text-[#f17533]" xmlns="http://www.w3.org/2000/svg" fill="none"
+              viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+            </svg>
+            <p class="mt-2">Cargando...</p>
+          </div>
+
+          <!-- Tabla -->
+          <div x-show="!loading && presentaciones.length > 0"
+            class="bg-white/60 backdrop-blur-xl shadow-xl rounded-2xl border border-gray-200 overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm text-left">
+                <thead class="bg-gradient-to-r from-[#00394a] to-[#00394a]/80 text-white">
+                  <tr>
+                    <th class="px-4 py-3 font-semibold">Id</th>
+                    <th class="px-4 py-3 font-semibold">Id Presentaci&oacute;n</th>
+                    <th class="px-4 py-3 font-semibold">Presentaci&oacute;n</th>
+                    <th class="px-4 py-3 font-semibold">Descripci&oacute;n</th>
+                    <th class="px-4 py-3 font-semibold">Categor&iacute;a</th>
+                    <th class="px-4 py-3 font-semibold text-center">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template x-for="(item, idx) in presentaciones" :key="item.Id">
+                    <tr class="border-b border-gray-100 hover:bg-[#f17533]/5 transition-colors"
+                      :class="idx % 2 === 0 ? 'bg-white/40' : 'bg-gray-50/40'">
+                      <td class="px-4 py-3 font-mono text-gray-500" x-text="item.Id"></td>
+                      <td class="px-4 py-3 font-mono text-gray-600" x-text="item.IdPresentacion"></td>
+                      <td class="px-4 py-3 text-gray-800 font-medium" x-text="item.Presentacion"></td>
+                      <td class="px-4 py-3 text-gray-700" x-text="item.Descripcion"></td>
+                      <td class="px-4 py-3 font-mono text-gray-600" x-text="item.Categoria"></td>
+                      <td class="px-4 py-3 text-center">
+                        <button
+                          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#f17533]/60 bg-white/70 text-[#f17533] font-semibold text-xs shadow-md hover:shadow-lg hover:scale-105 backdrop-blur-md transition-all duration-300"
+                          @click="abrirEdicion(item)">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                          Editar
+                        </button>
+                      </td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+            <!-- Contador -->
+            <div class="px-4 py-3 bg-gray-50/60 border-t border-gray-200 text-sm text-gray-500">
+              <span x-text="presentaciones.length"></span> resultados
+            </div>
+          </div>
+
+          <!-- Sin resultados -->
+          <template x-if="!loading && presentaciones.length === 0">
+            <div class="flex flex-col items-center justify-center text-center text-gray-600 mt-10">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-400 mb-4" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M12 9v3m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <h2 class="text-xl font-semibold">No se encontraron presentaciones</h2>
+              <p class="text-gray-500 mt-2">Intenta con otra b&uacute;squeda o cambia el filtro de cliente.</p>
+            </div>
+          </template>
+        </div>
+
+        <!-- ===== MODAL DE EDICION (card tipo mapping) ===== -->
+        <template x-teleport="body">
+          <div x-show="editando" x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-8"
+            @keydown.escape.window="cerrarEdicion()">
+            <!-- Overlay -->
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="cerrarEdicion()"></div>
+
+            <!-- Card de edicion -->
+            <div x-show="editando" x-transition:enter="transition ease-out duration-300 delay-100"
+              x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+              x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100"
+              x-transition:leave-end="opacity-0 scale-95"
+              class="relative w-full max-w-lg bg-white/90 backdrop-blur-xl shadow-2xl rounded-3xl p-6 border border-gray-200">
+
+              <!-- Boton cerrar -->
+              <button @click="cerrarEdicion()"
+                class="absolute top-3 right-3 flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-200 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
+              <!-- Cabecera -->
+              <div class="flex items-center gap-3 mb-2">
+                <div class="rounded-full p-2 shadow-inner transition-colors duration-300"
+                  :class="editFlipped ? 'bg-[#00394a]/10 text-[#00394a]' : 'bg-[#f17533]/10 text-[#f17533]'">
+                  <svg x-show="!editFlipped" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M9 17v-6h6v6m-6-6V7a2 2 0 012-2h2a2 2 0 012 2v4" />
+                  </svg>
+                  <svg x-show="editFlipped" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="text-lg font-bold text-gray-800">Editar Presentaci&oacute;n</h2>
+                  <p x-show="editFlipped" class="text-xs text-gray-500">Entrada manual</p>
+                </div>
+              </div>
+
+              <!-- Info del item -->
+              <div class="text-[15px] text-gray-700 space-y-1 mb-4 bg-gray-50/80 rounded-xl px-4 py-3">
+                <p><span class="font-medium">Descripci&oacute;n:</span> <span x-text="editando?.Descripcion"></span></p>
+                <p class="text-xs text-gray-500">ID: <span x-text="editando?.Id"></span></p>
+              </div>
+
+              <!-- Valores actuales -->
+              <div class="grid grid-cols-3 gap-2 text-xs text-gray-500 mb-4">
+                <div class="bg-gray-50 rounded-lg px-2 py-1.5 text-center">
+                  <div class="font-medium text-gray-600">Presentaci&oacute;n actual</div>
+                  <div x-text="editando?.IdPresentacion" class="text-gray-800 font-semibold"></div>
+                </div>
+                <div class="bg-gray-50 rounded-lg px-2 py-1.5 text-center">
+                  <div class="font-medium text-gray-600">Nombre</div>
+                  <div x-text="editando?.Presentacion" class="text-gray-800 font-semibold text-[11px]"></div>
+                </div>
+                <div class="bg-gray-50 rounded-lg px-2 py-1.5 text-center">
+                  <div class="font-medium text-gray-600">Categor&iacute;a actual</div>
+                  <div x-text="editando?.Categoria" class="text-gray-800 font-semibold"></div>
+                </div>
+              </div>
+
+              <hr class="mb-4 border-gray-200">
+
+              <!-- ===== MODO BUSCADOR ===== -->
+              <div x-show="!editFlipped" x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
+                <div class="space-y-3">
+                  <div class="relative">
+                    <input type="text" placeholder="Buscar presentaci&oacute;n..."
+                      class="w-full px-4 py-2 bg-white/80 border border-gray-300 rounded-xl shadow-sm pr-8"
+                      x-model="editBusqueda"
+                      @input="buscarEditPresentaciones()"
+                      @focus="if(editResultados.length > 0) editMostrarResultados = true"
+                      @click.away="editMostrarResultados = false" />
+                    <svg x-show="editBuscando"
+                      class="animate-spin h-4 w-4 text-[#f17533] absolute right-3 top-3"
+                      xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                    </svg>
+                    <button x-show="editSeleccionada" type="button"
+                      class="absolute right-3 top-2.5 text-gray-400 hover:text-red-500 transition"
+                      @click="limpiarEditPresentacion()">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                    <!-- Resultados dropdown -->
+                    <div x-show="editMostrarResultados && editResultados.length > 0"
+                      class="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                      <template x-for="(pres, pi) in editResultados" :key="pi">
+                        <button type="button"
+                          class="w-full text-left px-4 py-2.5 hover:bg-[#f17533]/10 transition-colors border-b border-gray-100 last:border-0"
+                          @click="seleccionarEditPresentacion(pres)">
+                          <div class="font-semibold text-sm text-gray-800" x-text="pres.Presentacion"></div>
+                          <div class="text-xs text-gray-500 flex gap-3 mt-0.5">
+                            <span>G&eacute;nero: <span x-text="pres.Genero" class="font-medium"></span></span>
+                            <span>Coincidencias: <span x-text="pres.coincidencias" class="font-medium"></span></span>
+                            <span>Albaranes: <span x-text="pres.NumeroAlbaranes" class="font-medium"></span></span>
+                          </div>
+                        </button>
+                      </template>
+                    </div>
+                    <div x-show="editMostrarResultados && !editBuscando && editResultados.length === 0 && editBusqueda.length >= 2"
+                      class="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg px-4 py-3 text-sm text-gray-500">
+                      Sin resultados
+                    </div>
+                  </div>
+
+                  <!-- Seleccionada -->
+                  <div x-show="editSeleccionada"
+                    class="flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-xl text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none"
+                      viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span class="text-green-800">
+                      <span x-text="editSeleccionada?.Presentacion" class="font-medium"></span>
+                      &mdash; <span x-text="editSeleccionada?.Genero"></span>
+                    </span>
+                  </div>
+
+                  <!-- IDs seleccionados -->
+                  <div x-show="editSeleccionada" class="grid grid-cols-3 gap-2 text-xs text-gray-500">
+                    <div class="bg-gray-50 rounded-lg px-2 py-1.5 text-center">
+                      <div class="font-medium text-gray-600">G&eacute;nero</div>
+                      <div x-text="editIdGenero" class="text-gray-800 font-semibold"></div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg px-2 py-1.5 text-center">
+                      <div class="font-medium text-gray-600">Presentaci&oacute;n</div>
+                      <div x-text="editIdGensal" class="text-gray-800 font-semibold"></div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg px-2 py-1.5 text-center">
+                      <div class="font-medium text-gray-600">Categor&iacute;a</div>
+                      <div x-text="editIdCategoria" class="text-gray-800 font-semibold"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Boton cambiar a manual -->
+                <button
+                  class="mt-4 w-full py-2 bg-[#00394a] hover:bg-[#00394a]/80 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors"
+                  @click="toggleEditFlip()">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Introducir manual
+                </button>
+              </div>
+
+              <!-- ===== MODO MANUAL ===== -->
+              <div x-show="editFlipped" x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Presentaci&oacute;n (IdGensal)</label>
+                    <input type="number" placeholder="Ej: 364"
+                      class="w-full px-4 py-2.5 bg-white/80 border border-gray-300 rounded-xl shadow-sm focus:border-[#00394a] focus:ring-1 focus:ring-[#00394a] transition"
+                      x-model="editIdGensal" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Categor&iacute;a</label>
+                    <input type="number" placeholder="Ej: 1002"
+                      class="w-full px-4 py-2.5 bg-white/80 border border-gray-300 rounded-xl shadow-sm focus:border-[#00394a] focus:ring-1 focus:ring-[#00394a] transition"
+                      x-model="editIdCategoria" />
+                  </div>
+                </div>
+
+                <!-- Boton volver al buscador -->
+                <button
+                  class="mt-4 w-full py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors"
+                  @click="toggleEditFlip()">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  </svg>
+                  Volver al buscador
+                </button>
+              </div>
+
+              <!-- Boton Guardar -->
+              <button
+                class="mt-3 w-full py-2.5 bg-[#f17533] hover:bg-[#e75218] text-white font-semibold rounded-xl flex items-center justify-center gap-2"
+                @click="guardarEdicion()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                Guardar cambios
+              </button>
+
+              <!-- Error -->
+              <div x-show="editError"
+                class="mt-4 px-4 py-2 rounded-lg bg-red-100 text-red-800 border border-red-300 text-sm font-medium flex items-center gap-2 transition-all duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 9v2m0 4h.01M12 2a10 10 0 1010 10A10 10 0 0012 2z" />
+                </svg>
+                <span x-text="editError"></span>
+              </div>
+            </div>
+          </div>
+        </template>
+
+      </main>
+    </div>
+  </div>
+  <include src="./partials/chat-widget.html"></include>
+</body>
+
+</html>
