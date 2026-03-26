@@ -48,7 +48,12 @@ export default {
             }
         } catch (e) {
             console.error("Error fetching user info", e);
-            this.userRole = 'viewer';
+            // Sin OAuth2 (dev), dar acceso completo
+            if (window.env.VERSION && window.env.VERSION.toLowerCase() === 'dev') {
+                this.userRole = 'developer';
+            } else {
+                this.userRole = 'viewer';
+            }
         }
     },
     async fetchCounts() {
