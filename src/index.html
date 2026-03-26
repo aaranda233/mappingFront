@@ -92,26 +92,17 @@
                     IA
                   </button>
 
-                  <!-- Cabecera (compartida) -->
+                  <!-- Cabecera -->
                   <div class="flex items-center gap-3 mb-3">
-                    <div class="rounded-full p-2 shadow-inner transition-colors duration-300"
-                      :class="item.flipped ? 'bg-[#00394a]/10 text-[#00394a]' : 'bg-[#f17533]/10 text-[#f17533]'">
-                      <!-- Icono buscador -->
-                      <svg x-show="!item.flipped" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                    <div class="rounded-full p-2 shadow-inner bg-[#f17533]/10 text-[#f17533]">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round"
                           d="M9 17v-6h6v6m-6-6V7a2 2 0 012-2h2a2 2 0 012 2v4" />
                       </svg>
-                      <!-- Icono manual -->
-                      <svg x-show="item.flipped" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
                     </div>
                     <div>
                       <h2 class="text-lg font-bold text-gray-800">L&iacute;nea: <span x-text="item.id_linea"></span></h2>
-                      <p x-show="item.flipped" class="text-xs text-gray-500">Entrada manual</p>
                     </div>
                   </div>
 
@@ -119,7 +110,7 @@
                   <div class="text-[15px] text-gray-700 space-y-1 mb-4">
                     <p class="flex items-center gap-2">
                       <span class="font-medium">Descripci&oacute;n:</span> <span x-text="item.descripcion"></span>
-                      <button x-show="!item.flipped" type="button" title="Buscar esta descripci&oacute;n"
+                      <button type="button" title="Buscar esta descripci&oacute;n"
                         class="shrink-0 p-1 rounded-lg text-[#f17533] hover:bg-[#f17533]/10 transition"
                         @click="item.busquedaPresentacion = item.descripcion; buscarPresentaciones(item)">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
@@ -132,12 +123,11 @@
                     <p><span class="font-medium">Ref. Pedido:</span> <span x-text="item.ref_pedido"></span></p>
                   </div>
 
-                  <!-- ===== MODO BUSCADOR ===== -->
-                  <div x-show="!item.flipped" x-transition:enter="transition ease-out duration-200"
-                    x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
+                  <!-- ===== BUSCADOR ===== -->
+                  <div>
                     <div class="space-y-3">
                       <div class="relative">
-                        <input type="text" placeholder="Buscar presentaci&oacute;n..."
+                        <input type="text" placeholder="Buscar por nombre o n&uacute;mero de presentaci&oacute;n..."
                           class="w-full px-4 py-2 bg-white/80 border border-gray-300 rounded-xl shadow-sm pr-8"
                           x-model="item.busquedaPresentacion"
                           @input="buscarPresentaciones(item)"
@@ -172,7 +162,7 @@
                             </button>
                           </template>
                         </div>
-                        <div x-show="item.mostrarResultados && !item.buscandoPresentacion && item.resultadosPresentacion.length === 0 && item.busquedaPresentacion.length >= 2"
+                        <div x-show="item.mostrarResultados && !item.buscandoPresentacion && item.resultadosPresentacion.length === 0 && item.busquedaPresentacion.length >= 1"
                           class="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg px-4 py-3 text-sm text-gray-500">
                           Sin resultados
                         </div>
@@ -207,56 +197,9 @@
                       </div>
                     </div>
 
-                    <!-- Botón cambiar a manual -->
-                    <button
-                      class="mt-4 w-full py-2 bg-[#00394a] hover:bg-[#00394a]/80 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors"
-                      @click="toggleFlip(item)">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                      Introducir manual
-                    </button>
                   </div>
 
-                  <!-- ===== MODO MANUAL ===== -->
-                  <div x-show="item.flipped" x-transition:enter="transition ease-out duration-200"
-                    x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
-                    <div class="space-y-4">
-                      <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">G&eacute;nero</label>
-                        <input type="number" placeholder="Ej: 2808"
-                          class="w-full px-4 py-2.5 bg-white/80 border border-gray-300 rounded-xl shadow-sm focus:border-[#00394a] focus:ring-1 focus:ring-[#00394a] transition"
-                          x-model="item.id_genero" />
-                      </div>
-                      <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Presentaci&oacute;n</label>
-                        <input type="number" placeholder="Ej: 364"
-                          class="w-full px-4 py-2.5 bg-white/80 border border-gray-300 rounded-xl shadow-sm focus:border-[#00394a] focus:ring-1 focus:ring-[#00394a] transition"
-                          x-model="item.id_gensal" />
-                      </div>
-                      <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Categor&iacute;a</label>
-                        <input type="number" placeholder="Ej: 1002"
-                          class="w-full px-4 py-2.5 bg-white/80 border border-gray-300 rounded-xl shadow-sm focus:border-[#00394a] focus:ring-1 focus:ring-[#00394a] transition"
-                          x-model="item.id_categoria" />
-                      </div>
-                    </div>
-
-                    <!-- Botón volver al buscador -->
-                    <button
-                      class="mt-4 w-full py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors"
-                      @click="toggleFlip(item)">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                      </svg>
-                      Volver al buscador
-                    </button>
-                  </div>
-
-                  <!-- Botón Enviar (siempre visible) -->
+                  <!-- Botón Enviar -->
                   <button
                     class="mt-3 w-full py-2.5 bg-[#f17533] hover:bg-[#e75218] text-white font-semibold rounded-xl flex items-center justify-center gap-2"
                     @click="enviar(item)">

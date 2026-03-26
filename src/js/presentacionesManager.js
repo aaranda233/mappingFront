@@ -16,7 +16,6 @@ export default function presentacionesManager() {
         editIdGensal: '',
         editIdCategoria: '',
         editIdGenero: '',
-        editFlipped: false,
         editError: '',
         _editDebounce: null,
 
@@ -67,7 +66,6 @@ export default function presentacionesManager() {
             this.editIdGensal = String(item.IdPresentacion || '');
             this.editIdCategoria = String(item.Categoria || '');
             this.editIdGenero = '';
-            this.editFlipped = false;
             this.editError = '';
         },
 
@@ -83,7 +81,7 @@ export default function presentacionesManager() {
             this.editIdGensal = '';
             this.editIdCategoria = '';
 
-            if (this.editBusqueda.length < 2) {
+            if (this.editBusqueda.length < 1) {
                 this.editResultados = [];
                 this.editMostrarResultados = false;
                 return;
@@ -124,10 +122,6 @@ export default function presentacionesManager() {
             this.editIdGenero = '';
             this.editIdGensal = '';
             this.editIdCategoria = '';
-        },
-
-        toggleEditFlip() {
-            this.editFlipped = !this.editFlipped;
         },
 
         async guardarEdicion() {

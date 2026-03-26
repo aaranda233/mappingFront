@@ -35,8 +35,7 @@ export default function mappingManager() {
                             buscandoPresentacion: false,
                             mostrarResultados: false,
                             presentacionSeleccionada: null,
-                            _debounceTimer: null,
-                            flipped: false
+                            _debounceTimer: null
                         });
                     }
                 }
@@ -181,7 +180,7 @@ export default function mappingManager() {
             item.id_gensal = "";
             item.id_categoria = "";
 
-            if (item.busquedaPresentacion.length < 2) {
+            if (item.busquedaPresentacion.length < 1) {
                 item.resultadosPresentacion = [];
                 item.mostrarResultados = false;
                 return;
@@ -223,10 +222,6 @@ export default function mappingManager() {
             item.id_genero = "";
             item.id_gensal = "";
             item.id_categoria = "";
-        },
-
-        toggleFlip(item) {
-            item.flipped = !item.flipped;
         },
 
         abrirPdf(item) {
