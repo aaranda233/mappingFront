@@ -50,39 +50,81 @@
       <!-- Application nav menu button -->
 
       <div class="hidden lg:block">
-        <!-- Botón de ayuda -->
-        <div class="absolute top-3 right-0 pr-2" x-data="{ showHelp: false }">
-          <button @click="showHelp = !showHelp"
-            class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800">
-            <span
-              class="flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-xs font-bold text-white">i</span>
-            Parámetros Búsqueda
+        <!-- Botón tutorial -->
+        <div class="absolute top-3 right-0 pr-2" x-data="tutorialGuide()" x-init="initTutorial()">
+          <button @click="startTutorial()"
+            class="flex items-center gap-2 rounded-lg border border-[#003a4b] bg-[#003a4b]/5 px-3 py-2 text-sm text-[#003a4b] shadow-sm hover:bg-[#003a4b]/10 transition-colors">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M12 18h.01" />
+            </svg>
+            Tutorial
           </button>
 
-          <div x-show="showHelp" @click.outside="showHelp = false" x-transition
-            class="absolute right-0 mt-2 w-80 rounded-xl border border-gray-200 bg-white p-4 text-sm shadow-2xl ring-1 ring-black/5 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
-            <p class="mb-3 text-base font-semibold text-gray-800 dark:text-white">Puedes preguntar por:</p>
-            <ul class="space-y-2 text-gray-700 dark:text-gray-200">
-              <li>🆔 <b>idpedido</b> – ID del pedido</li>
-              <li>📅 <b>fechapedido</b> – Fecha de creación</li>
-              <li>📦 <b>pedido</b> – Nº de pedido</li>
-              <li>🗓️ <b>ejercicio</b> – Año fiscal</li>
-              <li>👤 <b>cliente</b> – Nombre del cliente</li>
-              <li>🔢 <b>idcliente</b> – ID del cliente</li>
-              <li>📍 <b>direccion</b> – Lugar de entrega</li>
-              <li>🧾 <b>presentacion</b> – Descripción del producto</li>
-              <li>📦 <b>bultos</b> – Cantidad de cajas</li>
-              <li>💶 <b>precio</b> – Precio del producto</li>
-              <li>🔖 <b>tipoprecio</b> – Tipo de precio</li>
-              <li>🚫 <b>lineaanulada</b> – Línea anulada</li>
-              <li>✏️ <b>lineamodificada</b> – Línea modificada</li>
-              <li>🔍 <b>ref_pedido</b> – Referencia de pedido</li>
-              <li>📑 <b>BestellNr</b> – Referencia de pedido </li>
-            </ul>
-          </div>
+          <!-- Overlay oscuro -->
+          <div x-show="active" x-transition.opacity class="fixed inset-0 bg-black/50 z-[9998]" @click="closeTutorial()"></div>
+
+          <!-- Tooltip del paso actual -->
+          <template x-if="active">
+            <div x-transition
+              class="fixed z-[9999] w-96 rounded-2xl border border-gray-200 bg-white p-5 shadow-2xl"
+              :style="tooltipPosition()">
+              <!-- Progreso -->
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex gap-1">
+                  <template x-for="(s, i) in steps" :key="i">
+                    <div class="h-1.5 w-8 rounded-full transition-colors" :class="i <= step ? 'bg-[#003a4b]' : 'bg-gray-200'"></div>
+                  </template>
+                </div>
+                <span class="text-xs text-gray-400" x-text="(step + 1) + ' / ' + steps.length"></span>
+              </div>
+
+              <!-- Icono + Titulo -->
+              <div class="flex items-center gap-3 mb-2">
+                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#003a4b]/10 text-[#003a4b]">
+                  <svg x-show="steps[step].icon === 'sidebar'" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                  </svg>
+                  <svg x-show="steps[step].icon === 'card'" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5L12 12l9-4.5M3 7.5v9l9 4.5M3 7.5l9-4.5 9 4.5M21 7.5v9M12 12v9" />
+                  </svg>
+                  <svg x-show="steps[step].icon === 'status'" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.348 14.652a3.75 3.75 0 010-5.304m5.304 0a3.75 3.75 0 010 5.304m-7.425 2.121a6.75 6.75 0 010-9.546m9.546 0a6.75 6.75 0 010 9.546" />
+                  </svg>
+                  <svg x-show="steps[step].icon === 'pilot'" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                  </svg>
+                  <svg x-show="steps[step].icon === 'search'" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                  </svg>
+                  <svg x-show="steps[step].icon === 'check'" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h3 class="text-base font-bold text-gray-800" x-text="steps[step].title"></h3>
+              </div>
+
+              <!-- Descripción -->
+              <p class="text-sm text-gray-600 leading-relaxed mb-4" x-html="steps[step].description"></p>
+
+              <!-- Botones -->
+              <div class="flex items-center justify-between">
+                <button @click="closeTutorial()" class="text-xs text-gray-400 hover:text-gray-600 transition-colors">
+                  Salir del tutorial
+                </button>
+                <div class="flex gap-2">
+                  <button x-show="step > 0" @click="step--"
+                    class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                    Anterior
+                  </button>
+                  <button @click="step < steps.length - 1 ? step++ : closeTutorial()"
+                    class="px-4 py-1.5 text-sm text-white bg-[#003a4b] rounded-lg hover:bg-[#002a38] transition-colors font-medium">
+                    <span x-text="step < steps.length - 1 ? 'Siguiente' : 'Entendido'"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </template>
         </div>
-
-
       </div>
     </div>
 
