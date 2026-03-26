@@ -228,8 +228,7 @@
                           <div class="font-semibold text-sm text-gray-800" x-text="pres.Presentacion"></div>
                           <div class="text-xs text-gray-500 flex gap-3 mt-0.5">
                             <span>G&eacute;nero: <span x-text="pres.Genero" class="font-medium"></span></span>
-                            <span x-show="pres.NombreCategoria || pres.categoriaComercial">Cat: <span x-text="pres.NombreCategoria || pres.categoriaComercial" class="font-medium"></span></span>
-                            <span>Albaranes: <span x-text="pres.NumeroAlbaranes" class="font-medium"></span></span>
+                            <span x-show="pres.NombreCategoria">Cat: <span x-text="pres.NombreCategoria" class="font-medium"></span></span>
                           </div>
                         </button>
                       </template>
@@ -285,7 +284,6 @@
       </main>
     </div>
   </div>
-  <include src="./partials/chat-widget.html"></include>
 </body>
 
 </html>
