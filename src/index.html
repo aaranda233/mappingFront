@@ -167,6 +167,23 @@
                         </span>
                       </div>
 
+                      <!-- Campos resueltos -->
+                      <div x-show="item.presentacionSeleccionada"
+                        class="grid grid-cols-3 gap-2 text-xs text-gray-500 mt-2">
+                        <div class="bg-gray-50 rounded-lg px-2 py-1.5 text-center">
+                          <div class="font-medium text-gray-600">Id Presentaci&oacute;n</div>
+                          <div x-text="item.id_gensal" class="text-gray-800 font-semibold"></div>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg px-2 py-1.5 text-center">
+                          <div class="font-medium text-gray-600">Categor&iacute;a</div>
+                          <div x-text="item.id_categoria" class="text-gray-800 font-semibold"></div>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg px-2 py-1.5 text-center">
+                          <div class="font-medium text-gray-600">G&eacute;nero</div>
+                          <div x-text="item.id_genero" class="text-gray-800 font-semibold"></div>
+                        </div>
+                      </div>
+
                     </div>
 
                   </div>
