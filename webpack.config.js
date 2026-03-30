@@ -2,6 +2,7 @@ const path = require("path");
 const glob = require("glob");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 const INCLUDE_PATTERN =
   /<include\s+src=["'](.+?)["']\s*\/?>\s*(?:<\/include>)?/gis;
@@ -98,6 +99,8 @@ module.exports = {
             urlFilter: (attribute, value) => {
               // No procesar env.js — se inyecta en runtime vía ConfigMap
               if (value === "/env.js") return false;
+              // No procesar erp-form.png — recurso estático servido en runtime
+              if (value === "/erp-form.png") return false;
               return true;
             },
           },
@@ -110,6 +113,11 @@ module.exports = {
     new MiniCssExtractPlugin({
       filename: "style.css",
       chunkFilename: "style.css",
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: "src/static", to: ".", noErrorOnMissing: true },
+      ],
     }),
   ],
   output: {
