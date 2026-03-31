@@ -176,34 +176,31 @@
 
         </div>
 
-        <!-- Modal Pedido Detail - Image overlay approach -->
+        <!-- ===== MODAL TEST (izquierda) ===== -->
         <div x-show="showPedidoModal" @click.self="showPedidoModal = false"
-          class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+          class="fixed inset-0 flex items-center justify-start bg-black/60"
+          style="z-index:99999; overflow:auto; padding:2px;"
           x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-          x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-          style="overflow:auto;">
+          x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
 
-          <div @click.stop style="position:relative; width:1367px; transform-origin:top center;"
-            :style="'transform: scale(' + Math.min(1, (window.innerWidth - 40) / 1367) + ')'">
+          <!-- Close button -->
+          <button @click="showPedidoModal = false"
+            style="position:fixed; top:6px; left:50%; transform:translateX(-50%); z-index:10000; background:#c00; color:#fff; border:none; border-radius:50%; width:32px; height:32px; font-size:18px; font-weight:bold; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.4); line-height:32px; text-align:center;">&times;</button>
 
-            <!-- Close button -->
-            <button @click="showPedidoModal = false"
-              style="position:absolute; top:-12px; right:-12px; z-index:10; background:#c00; color:#fff; border:none; border-radius:50%; width:28px; height:28px; font-size:16px; font-weight:bold; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.3);">&times;</button>
-
-            <!-- Background ERP image -->
+          <!-- PANEL TEST -->
+          <div @click.stop style="position:relative;"
+            :style="'zoom: ' + Math.min(1, (window.innerWidth / 2 - 8) / 1367, (window.innerHeight - 20) / 690)">
+            <div style="background:#1e40af; color:#fff; text-align:center; font-family:Tahoma,sans-serif; font-weight:bold; font-size:14pt; padding:6px 0; width:1367px; border-radius:6px 6px 0 0;">TEST</div>
             <style>
-              #erpContainer > span, #erpContainer > template + div > span {
+              .erpPanel > span, .erpPanel > template + div > span {
                 overflow:hidden; white-space:nowrap; text-overflow:ellipsis; max-width:300px; cursor:default;
               }
-              #erpContainer > span:hover, #erpContainer > template + div > span:hover {
+              .erpPanel > span:hover, .erpPanel > template + div > span:hover {
                 overflow:visible !important; white-space:nowrap !important; z-index:50 !important;
                 background:rgba(255,255,255,0.95); box-shadow:0 2px 8px rgba(0,0,0,0.3); border-radius:2px; padding:1px 6px;
               }
             </style>
-            <div id="erpContainer" style="width:1367px; height:652px; background:url('/erp-form.png') no-repeat top left; background-size:1367px 652px; position:relative; font-family:Tahoma,sans-serif; font-weight:bold; font-size:9pt; color:WindowText;">
-
-
-              <!-- ===== CABECERA ===== -->
+            <div class="erpPanel" style="width:1367px; height:652px; background:url('/erp-form.png') no-repeat top left; background-size:1367px 652px; position:relative; font-family:Tahoma,sans-serif; font-weight:bold; font-size:9pt; color:WindowText; border:2px solid #1e40af; border-top:none;">
               <span style="position:absolute; top:53px; left:129px;" x-text="pedidoDetail?.PED_pedido"></span>
               <span style="position:absolute; top:53px; left:421px;" x-text="formatFecha(pedidoDetail?.PED_fechapedido)?.split(',')[0]"></span>
               <span style="position:absolute; top:52px; left:666px;" x-text="formatFecha(pedidoDetail?.PED_fechasalida)?.split(',')[0]"></span>
@@ -229,8 +226,6 @@
               <span style="position:absolute; top:125px; left:960px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" x-text="pedidoDetail?.PED_obs1"></span>
               <span style="position:absolute; top:147px; left:960px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap;" x-text="pedidoDetail?.PED_obs2"></span>
               <span style="position:absolute; top:169px; left:960px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap;" x-text="pedidoDetail?.PED_obs3"></span>
-
-              <!-- ===== LINEA SELECCIONADA ===== -->
               <template x-if="pedidoLineas.length > 0">
                 <div>
                   <span style="position:absolute; top:240px; left:155px;" x-text="pedidoLineas[selectedLinea ?? 0]?.PEL_idgenero"></span>
@@ -264,11 +259,7 @@
                   <span style="position:absolute; top:558px; left:1170px;" x-text="pedidoLineas[selectedLinea ?? 0]?.ReservaPalets"></span>
                 </div>
               </template>
-
-              <!-- idpedido abajo izquierda -->
               <span style="position:absolute; top:627px; left:25px; font-size:8pt; color:#000;" x-text="pedidoDetail?.PED_idpedido"></span>
-
-              <!-- ===== GRID ===== -->
               <div style="position:absolute; top:370px; left:18px; width:960px; height:225px; overflow-y:auto; overflow-x:hidden;">
                 <template x-for="(linea, idx) in pedidoLineas" :key="idx">
                   <div @click="selectedLinea = idx"
@@ -285,9 +276,121 @@
                   </div>
                 </template>
               </div>
-
             </div>
           </div>
+
+          <!-- PANEL PRODUCCION -->
+          <div @click.stop style="position:relative;"
+            :style="'zoom: ' + Math.min(1, (window.innerWidth / 2 - 8) / 1367, (window.innerHeight - 20) / 690)">
+            <div style="background:#15803d; color:#fff; text-align:center; font-family:Tahoma,sans-serif; font-weight:bold; font-size:14pt; padding:6px 0; width:1367px; border-radius:6px 6px 0 0;">PRODUCCION</div>
+
+            <!-- No encontrado -->
+            <template x-if="prodNotFound">
+              <div style="width:1367px; height:652px; display:flex; align-items:center; justify-content:center; background:#f3f4f6; border:2px solid #15803d; border-top:none; border-radius:0 0 6px 6px;">
+                <div style="text-align:center;">
+                  <svg style="width:64px; height:64px; margin:0 auto 16px; color:#9ca3af;" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                  </svg>
+                  <p style="font-family:Tahoma,sans-serif; font-size:16pt; font-weight:bold; color:#6b7280;">TODAVIA NO SE HA INSERTADO EN PRODUCCION</p>
+                </div>
+              </div>
+            </template>
+
+            <!-- Datos produccion -->
+            <template x-if="!prodNotFound && pedidoDetailProd">
+              <div class="erpPanel" style="width:1367px; height:652px; background:url('/erp-form.png') no-repeat top left; background-size:1367px 652px; position:relative; font-family:Tahoma,sans-serif; font-weight:bold; font-size:9pt; color:WindowText; border:2px solid #15803d; border-top:none;">
+                <span style="position:absolute; top:53px; left:129px;" x-text="pedidoDetailProd?.PED_pedido"></span>
+                <span style="position:absolute; top:53px; left:421px;" x-text="formatFecha(pedidoDetailProd?.PED_fechapedido)?.split(',')[0]"></span>
+                <span style="position:absolute; top:52px; left:666px;" x-text="formatFecha(pedidoDetailProd?.PED_fechasalida)?.split(',')[0]"></span>
+                <span style="position:absolute; top:52px; left:910px;" x-text="formatFecha(pedidoDetailProd?.PED_FechaLlegada)?.split(',')[0]"></span>
+                <span style="position:absolute; top:78px; left:116px;" x-text="pedidoDetailProd?.PED_idcliente"></span>
+                <span style="position:absolute; top:76px; left:275px; color:#0000C0; font-family:Verdana; font-size:12pt; max-width:380px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" x-text="pedidoDetailProd?.NomCliente"></span>
+                <span style="position:absolute; top:78px; left:777px;" x-text="pedidoDetailProd?.PED_referencia"></span>
+                <span style="position:absolute; top:103px; left:113px;" x-text="pedidoDetailProd?.PED_iddestino"></span>
+                <span style="position:absolute; top:101px; left:275px; color:#0000C0; font-family:Verdana; font-size:12pt; max-width:380px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" x-text="pedidoDetailProd?.NomDestino"></span>
+                <span style="position:absolute; top:101px; left:777px;" x-text="pedidoDetailProd?.PED_idporte"></span>
+                <span style="position:absolute; top:99px; left:860px; color:#0000C0; font-family:Verdana; font-size:12pt;" x-text="pedidoDetailProd?.NomTipoPorte"></span>
+                <span style="position:absolute; top:127px; left:137px;" x-text="pedidoDetailProd?.PED_idtransportista"></span>
+                <span style="position:absolute; top:125px; left:275px; color:#0000C0; font-family:Verdana; font-size:12pt; max-width:380px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" x-text="pedidoDetailProd?.NomTransportista"></span>
+                <span style="position:absolute; top:125px; left:778px;" x-text="pedidoDetailProd?.PED_iddivisa"></span>
+                <span style="position:absolute; top:123px; left:860px; color:#0000C0; font-family:Verdana; font-size:12pt;" x-text="pedidoDetailProd?.NomDivisa"></span>
+                <span style="position:absolute; top:154px; left:139px;" x-text="pedidoDetailProd?.PED_matriculacamion"></span>
+                <span style="position:absolute; top:154px; left:440px;" x-text="pedidoDetailProd?.PED_matricularemolque"></span>
+                <span style="position:absolute; top:153px; left:778px;" x-text="pedidoDetailProd?.PED_valorcambio"></span>
+                <span style="position:absolute; top:178px; left:136px;" x-text="pedidoDetailProd?.PED_MovilChofer"></span>
+                <span style="position:absolute; top:179px; left:493px;" x-text="pedidoDetailProd?.PED_TransporteRapidoSN"></span>
+                <span style="position:absolute; top:179px; left:656px;" x-text="pedidoDetailProd?.PED_Lote"></span>
+                <span style="position:absolute; top:86px; left:1155px; font-size:8pt;" x-text="pedidoDetailProd?.PED_BESTELLNR"></span>
+                <span style="position:absolute; top:125px; left:960px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" x-text="pedidoDetailProd?.PED_obs1"></span>
+                <span style="position:absolute; top:147px; left:960px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap;" x-text="pedidoDetailProd?.PED_obs2"></span>
+                <span style="position:absolute; top:169px; left:960px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap;" x-text="pedidoDetailProd?.PED_obs3"></span>
+                <template x-if="pedidoLineasProd.length > 0">
+                  <div>
+                    <span style="position:absolute; top:240px; left:155px;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.PEL_idgenero"></span>
+                    <span style="position:absolute; top:238px; left:240px; color:#0000C0; font-family:Verdana; font-size:12pt; max-width:310px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.NomGenero"></span>
+                    <span style="position:absolute; top:265px; left:155px;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.PEL_idtipoconfeccion"></span>
+                    <span style="position:absolute; top:263px; left:240px; color:#0000C0; font-family:Verdana; font-size:12pt; max-width:310px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.NomConfeccion"></span>
+                    <span style="position:absolute; top:290px; left:155px;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.PEL_idgensal"></span>
+                    <span style="position:absolute; top:288px; left:240px; color:#0000C0; font-family:Verdana; font-size:12pt; max-width:310px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.Presentacion"></span>
+                    <span style="position:absolute; top:240px; left:659px;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.PEL_idcategoria"></span>
+                    <span style="position:absolute; top:238px; left:760px; color:#0000C0; font-family:Verdana; font-size:12pt; max-width:240px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.NomCategoria"></span>
+                    <span style="position:absolute; top:265px; left:659px;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.PEL_idtipopalet"></span>
+                    <span style="position:absolute; top:263px; left:760px; color:#0000C0; font-family:Verdana; font-size:12pt; max-width:240px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.TipoPalet"></span>
+                    <span style="position:absolute; top:290px; left:659px;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.Coeficiente"></span>
+                    <span style="position:absolute; top:311px; left:659px;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.PEL_idmarca"></span>
+                    <span style="position:absolute; top:309px; left:760px; color:#0000C0; font-family:Verdana; font-size:12pt; max-width:170px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.NomMarca"></span>
+                    <span style="position:absolute; top:238px; left:1114px; text-align:right;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.Palets"></span>
+                    <span style="position:absolute; top:239px; left:1295px; text-align:right;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.BxPalet"></span>
+                    <span style="position:absolute; top:263px; left:1113px; text-align:right;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.Bultos"></span>
+                    <span style="position:absolute; top:265px; left:1293px; text-align:right;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.KxBulto"></span>
+                    <span style="position:absolute; top:288px; left:1112px; text-align:right;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.KNetos"></span>
+                    <span style="position:absolute; top:288px; left:1293px; text-align:right;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.PzxBulto"></span>
+                    <span style="position:absolute; top:313px; left:1112px; text-align:right;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.KBrutos"></span>
+                    <span style="position:absolute; top:312px; left:1277px; text-align:right;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.Piezas"></span>
+                    <span style="position:absolute; top:337px; left:1113px; text-align:right;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.Precio"></span>
+                    <span style="position:absolute; top:336px; left:1294px;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.KBP"></span>
+                    <span style="position:absolute; top:415px; left:1044px; font-size:8pt;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.Lote"></span>
+                    <span style="position:absolute; top:469px; left:1045px; font-size:8pt;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.ObsConfec1"></span>
+                    <span style="position:absolute; top:497px; left:1043px; font-size:8pt;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.ObsConfec2"></span>
+                    <span style="position:absolute; top:529px; left:1170px;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.Calidad"></span>
+                    <span style="position:absolute; top:526px; left:1298px;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.MaxDias"></span>
+                    <span style="position:absolute; top:558px; left:1170px;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.ReservaPalets"></span>
+                  </div>
+                </template>
+                <span style="position:absolute; top:627px; left:25px; font-size:8pt; color:#000;" x-text="pedidoDetailProd?.PED_idpedido"></span>
+                <div style="position:absolute; top:370px; left:18px; width:960px; height:225px; overflow-y:auto; overflow-x:hidden;">
+                  <template x-for="(linea, idx) in pedidoLineasProd" :key="idx">
+                    <div @click="selectedLineaProd = idx"
+                      style="display:flex; height:20px; line-height:20px; font-size:8pt; cursor:pointer; border-bottom:1px solid #c0c0c0;"
+                      :style="(selectedLineaProd ?? 0) === idx ? 'background:#316AC5; color:#fff;' : 'background:transparent; color:#000;'">
+                      <span style="width:310px; padding-left:6px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" x-text="linea.Presentacion"></span>
+                      <span style="width:80px; overflow:hidden;" x-text="linea.Categoria"></span>
+                      <span style="width:65px; overflow:hidden;" x-text="linea.Marca"></span>
+                      <span style="width:130px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" x-text="linea.TipoPalet"></span>
+                      <span style="width:55px; text-align:right; padding-right:8px;" x-text="linea.Palets"></span>
+                      <span style="width:60px; text-align:right; padding-right:8px;" x-text="linea.Bultos"></span>
+                      <span style="width:60px; text-align:right; padding-right:8px;" x-text="linea.Coeficiente"></span>
+                      <span style="width:65px; text-align:right; padding-right:8px;" x-text="linea.PaletsTransporte"></span>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </template>
+
+            <!-- Loading -->
+            <template x-if="!prodNotFound && !pedidoDetailProd">
+              <div style="width:1367px; height:652px; display:flex; align-items:center; justify-content:center; background:#f9fafb; border:2px solid #15803d; border-top:none; border-radius:0 0 6px 6px;">
+                <div style="text-align:center;">
+                  <svg class="animate-spin" style="width:40px; height:40px; margin:0 auto; color:#15803d;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle style="opacity:0.25;" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path style="opacity:0.75;" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                  </svg>
+                  <p style="font-family:Tahoma,sans-serif; font-size:11pt; color:#6b7280; margin-top:12px;">Buscando en produccion...</p>
+                </div>
+              </div>
+            </template>
+          </div>
+
         </div>
 
       </main>

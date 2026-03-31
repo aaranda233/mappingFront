@@ -9,6 +9,11 @@ export default function estadoPedidosIberianaTestManager() {
         pedidoDetail: null,
         pedidoLineas: [],
         selectedLinea: null,
+        // Producción
+        pedidoDetailProd: null,
+        pedidoLineasProd: [],
+        selectedLineaProd: null,
+        prodNotFound: false,
 
         init() {
             this.loadEstadoActual();
@@ -47,8 +52,13 @@ export default function estadoPedidosIberianaTestManager() {
             this.pedidoDetail = null;
             this.pedidoLineas = [];
             this.selectedLinea = null;
+            this.pedidoDetailProd = null;
+            this.pedidoLineasProd = [];
+            this.selectedLineaProd = null;
+            this.prodNotFound = false;
             console.log('[TEST] Item del historial clicado:', JSON.stringify(item));
             try {
+                // ── Cargar datos de TEST ──
                 const idpedido = item.id_pedido_net;
                 const numPedido = item.pedido;
                 const usarNumPedido = !idpedido || idpedido === 0;
@@ -74,6 +84,36 @@ export default function estadoPedidosIberianaTestManager() {
                 } else {
                     console.warn('[TEST] No se encontró PED_idpedido en la cabecera, no se buscan líneas');
                 }
+
+                // ── Cargar datos de PRODUCCION (cascada: bestellnr+cliente, cliente+fecha+destino, cliente+fecha+referencia) ──
+                const bestellnr = this.pedidoDetail?.PED_BESTELLNR;
+                const cliente = this.pedidoDetail?.PED_idcliente;
+                const fechapedido = this.pedidoDetail?.PED_fechapedido ? new Date(this.pedidoDetail.PED_fechapedido).toISOString().split('T')[0] : '';
+                const iddestino = this.pedidoDetail?.PED_iddestino;
+                const referencia = this.pedidoDetail?.PED_referencia;
+                if (cliente) {
+                    const params = new URLSearchParams();
+                    params.set('cliente', cliente);
+                    if (bestellnr) params.set('bestellnr', bestellnr);
+                    if (fechapedido) params.set('fechapedido', fechapedido);
+                    if (iddestino) params.set('iddestino', iddestino);
+                    if (referencia) params.set('referencia', referencia);
+                    console.log('[PROD] Buscando en producción:', params.toString());
+                    const urlProd = `http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana-test/pedido-prod?${params.toString()}`;
+                    const resProd = await fetch(urlProd);
+                    if (resProd.status === 404) {
+                        console.log('[PROD] No encontrado en producción');
+                        this.prodNotFound = true;
+                    } else if (resProd.ok) {
+                        const prodData = await resProd.json();
+                        console.log('[PROD] Datos producción:', JSON.stringify(prodData));
+                        this.pedidoDetailProd = prodData.header;
+                        this.pedidoLineasProd = prodData.lineas;
+                    }
+                } else {
+                    console.warn('[PROD] No hay cliente para buscar en producción');
+                    this.prodNotFound = true;
+                }
             } catch (err) {
                 console.error("Error cargando detalle pedido Iberiana Test:", err);
             }
@@ -84,6 +124,10 @@ export default function estadoPedidosIberianaTestManager() {
             this.pedidoDetail = null;
             this.pedidoLineas = [];
             this.selectedLinea = null;
+            this.pedidoDetailProd = null;
+            this.pedidoLineasProd = [];
+            this.selectedLineaProd = null;
+            this.prodNotFound = false;
         },
 
         pilotColor() {

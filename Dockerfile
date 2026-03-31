@@ -17,7 +17,7 @@ FROM base AS dev
 
 RUN apk add --no-cache bash
 
-EXPOSE 3000 5173 8080
+EXPOSE 3001
 
 CMD ["npx", "webpack", "serve", "--open", "--config", "webpack.config.js"]
 

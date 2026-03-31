@@ -50,6 +50,12 @@ module.exports = {
     compress: true,
     port: 3001,
     hot: true,
+    watchFiles: {
+      options: {
+        usePolling: !!process.env.WATCHPACK_POLLING,
+        interval: 1000,
+      },
+    },
   },
   module: {
     rules: [
