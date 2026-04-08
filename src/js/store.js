@@ -38,18 +38,23 @@ export default {
                 console.warn("No se pudieron obtener permisos de BD, usando env.js", e);
             }
 
-            // Fallback: DEVELOPER_USERS de env.js obtiene todos los permisos
+            // Fallback: DEVELOPER_USERS de env.js obtiene todos los permisos (excepto admin)
             if (this.userPermisos.length === 0) {
                 const devs = window.env.DEVELOPER_USERS || [];
                 if (devs.includes(this.userEmail)) {
-                    this.userPermisos = ['pedidos', 'transportes', 'estado-pedidos', 'admin'];
+                    this.userPermisos = ['pedidos', 'transportes', 'estado-pedidos'];
                 }
+            }
+
+            // En modo dev, nunca conceder permiso admin
+            if (window.env.VERSION && window.env.VERSION.toLowerCase() === 'dev') {
+                this.userPermisos = this.userPermisos.filter(p => p !== 'admin');
             }
         } catch (e) {
             console.error("Error fetching user info", e);
-            // Sin OAuth2 (dev), dar acceso completo
+            // Sin OAuth2 (dev), dar acceso sin admin
             if (window.env.VERSION && window.env.VERSION.toLowerCase() === 'dev') {
-                this.userPermisos = ['pedidos', 'transportes', 'estado-pedidos', 'admin'];
+                this.userPermisos = ['pedidos', 'transportes', 'estado-pedidos'];
             } else {
                 this.userPermisos = [];
             }
