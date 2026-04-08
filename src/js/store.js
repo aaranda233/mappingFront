@@ -22,6 +22,12 @@ export default {
         pilotColor: 'gray'
     },
     async fetchUserInfo() {
+        // En modo dev, asignar permisos base sin admin y saltar OAuth/BD
+        if (window.env.VERSION && window.env.VERSION.toLowerCase() === 'dev') {
+            this.userPermisos = ['pedidos', 'transportes', 'estado-pedidos'];
+            return;
+        }
+
         try {
             const res = await fetch('/oauth2/userinfo');
             const data = await res.json();
@@ -38,26 +44,16 @@ export default {
                 console.warn("No se pudieron obtener permisos de BD, usando env.js", e);
             }
 
-            // Fallback: DEVELOPER_USERS de env.js obtiene todos los permisos (excepto admin)
+            // Fallback: DEVELOPER_USERS de env.js obtiene todos los permisos
             if (this.userPermisos.length === 0) {
                 const devs = window.env.DEVELOPER_USERS || [];
                 if (devs.includes(this.userEmail)) {
-                    this.userPermisos = ['pedidos', 'transportes', 'estado-pedidos'];
+                    this.userPermisos = ['pedidos', 'transportes', 'estado-pedidos', 'admin'];
                 }
-            }
-
-            // En modo dev, nunca conceder permiso admin
-            if (window.env.VERSION && window.env.VERSION.toLowerCase() === 'dev') {
-                this.userPermisos = this.userPermisos.filter(p => p !== 'admin');
             }
         } catch (e) {
             console.error("Error fetching user info", e);
-            // Sin OAuth2 (dev), dar acceso sin admin
-            if (window.env.VERSION && window.env.VERSION.toLowerCase() === 'dev') {
-                this.userPermisos = ['pedidos', 'transportes', 'estado-pedidos'];
-            } else {
-                this.userPermisos = [];
-            }
+            this.userPermisos = [];
         }
     },
     async fetchCounts() {
