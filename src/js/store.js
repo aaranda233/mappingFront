@@ -17,17 +17,7 @@ export default {
         current: null,
         pilotColor: 'gray'
     },
-    estadoPedidosIberianaTest: {
-        current: null,
-        pilotColor: 'gray'
-    },
     async fetchUserInfo() {
-        // En modo dev, asignar permisos base sin admin y saltar OAuth/BD
-        if (window.env.VERSION && window.env.VERSION.toLowerCase() === 'dev') {
-            this.userPermisos = ['pedidos', 'transportes', 'estado-pedidos'];
-            return;
-        }
-
         try {
             const res = await fetch('/oauth2/userinfo');
             const data = await res.json();
@@ -117,22 +107,6 @@ export default {
             }
         } catch (e) {
             console.error("Error fetching estado pedidos iberiana", e);
-        }
-    },
-    async fetchEstadoPedidosIberianaTest() {
-        try {
-            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana-test/actual`);
-            const data = await res.json();
-            this.estadoPedidosIberianaTest.current = data.current;
-            if (!data.current) {
-                this.estadoPedidosIberianaTest.pilotColor = 'gray';
-            } else if (data.current.estado === 'error') {
-                this.estadoPedidosIberianaTest.pilotColor = 'red';
-            } else {
-                this.estadoPedidosIberianaTest.pilotColor = 'green';
-            }
-        } catch (e) {
-            console.error("Error fetching estado pedidos iberiana test", e);
         }
     }
 }
