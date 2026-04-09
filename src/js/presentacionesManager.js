@@ -4,7 +4,10 @@ export default function presentacionesManager() {
         loading: false,
         busqueda: '',
         filtroCliente: '0',
+        filtroGenero: '',
         _debounceTimer: null,
+        sortField: '',
+        sortDirection: 'asc',
 
         // Edicion
         editando: null, // el item que se esta editando
@@ -36,6 +39,7 @@ export default function presentacionesManager() {
                 const params = new URLSearchParams();
                 if (this.filtroCliente !== '0') params.set('idcliente', this.filtroCliente);
                 if (this.busqueda.trim().length >= 2) params.set('busqueda', this.busqueda.trim());
+                if (this.filtroGenero && parseInt(this.filtroGenero, 10) > 0) params.set('idgenero', this.filtroGenero);
 
                 const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/presentaciones?${params}`);
                 this.presentaciones = await res.json();
@@ -53,6 +57,29 @@ export default function presentacionesManager() {
 
         cambiarCliente() {
             this.cargarPresentaciones();
+        },
+
+        sortBy(field) {
+            if (this.sortField === field) {
+                this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                this.sortField = field;
+                this.sortDirection = 'asc';
+            }
+            const dir = this.sortDirection === 'asc' ? 1 : -1;
+            this.presentaciones.sort((a, b) => {
+                const aVal = a[field] ?? '';
+                const bVal = b[field] ?? '';
+                const aBlank = aVal === '' || aVal === null || aVal === undefined;
+                const bBlank = bVal === '' || bVal === null || bVal === undefined;
+                if (aBlank && !bBlank) return 1;
+                if (!aBlank && bBlank) return -1;
+                if (aBlank && bBlank) return 0;
+                if (typeof aVal === 'number' && typeof bVal === 'number') {
+                    return (aVal - bVal) * dir;
+                }
+                return String(aVal).localeCompare(String(bVal), 'es') * dir;
+            });
         },
 
         // ---- Edicion con card ----
