@@ -140,12 +140,19 @@
                           <template x-for="(pres, pi) in item.resultadosPresentacion" :key="pi">
                             <button type="button"
                               class="w-full text-left px-4 py-2.5 hover:bg-[#f17533]/10 transition-colors border-b border-gray-100 last:border-0"
+                              :class="pi === 0 && pres.NumeroAlbaranes > 0 && 'bg-orange-50/80'"
                               @click="seleccionarPresentacion(item, pres)">
-                              <div class="font-semibold text-sm text-gray-800" x-text="pres.Presentacion"></div>
+                              <div class="flex items-center gap-2">
+                                <span class="font-semibold text-sm text-gray-800" x-text="pres.Presentacion"></span>
+                                <span x-show="pi === 0 && pres.NumeroAlbaranes > 0"
+                                  class="text-[10px] font-bold uppercase tracking-wide bg-[#f17533] text-white px-1.5 py-0.5 rounded-full">Recomendado</span>
+                              </div>
                               <div class="text-xs text-gray-500 flex gap-3 mt-0.5">
                                 <span>G&eacute;nero: <span x-text="pres.Genero" class="font-medium"></span></span>
                                 <span x-show="pres.NombreCategoria">Cat: <span x-text="pres.NombreCategoria" class="font-medium"></span></span>
-                                <span x-show="pres.NumeroAlbaranes > 0">Albaranes: <span x-text="pres.NumeroAlbaranes" class="font-medium text-[#f17533]"></span></span>
+                                <span x-show="pres.NumeroAlbaranes > 0" class="font-medium text-[#f17533]">
+                                  <span x-text="pres.NumeroAlbaranes"></span> compras
+                                </span>
                               </div>
                             </button>
                           </template>
