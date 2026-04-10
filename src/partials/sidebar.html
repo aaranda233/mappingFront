@@ -10,7 +10,7 @@
   </div>
 
   <!-- SIDEBAR MENU -->
-  <nav x-data="{ selected: (window.location.pathname.includes('estado-pedidos') ? 'EstadoPedidos' : window.location.pathname.includes('transportes') ? 'Transportes' : 'Pedidos') }"
+  <nav x-data="{ selected: (window.location.pathname.includes('estado-pedidos') ? 'EstadoPedidos' : window.location.pathname.includes('transportes') ? 'Transportes' : (window.location.pathname.includes('index') || window.location.pathname.includes('presentaciones')) ? 'Pedidos' : 'Pedidos') }"
     role="navigation" aria-label="Menú lateral" class="flex flex-col gap-4">
     <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mt-4 mb-2">
       Mappings
@@ -32,7 +32,7 @@
         </a>
         <div class="overflow-hidden transition-all duration-300 ease-in-out"
           :class="selected === 'Pedidos' ? 'max-h-40' : 'max-h-0'">
-          <ul class="flex flex-col gap-1 mt-2 pl-8 text-sm text-gray-500">
+          <ul class="flex flex-col gap-3 mt-2 pl-8 text-sm text-gray-500">
             <li>
               <a href="index.html" class="hover:text-[#003a4b] flex justify-between items-center"
                 :class="window.location.pathname.includes('index') ? 'text-[#003a4b] font-medium' : ''">
@@ -41,9 +41,16 @@
                   x-show="$store.global.counts.pedidos > 0" x-text="$store.global.counts.pedidos"></span>
               </a>
             </li>
+            <li>
+              <a href="presentaciones.html" class="hover:text-[#003a4b] flex justify-between items-center"
+                :class="window.location.pathname.includes('presentaciones') ? 'text-[#003a4b] font-medium' : ''">
+                Presentaciones
+              </a>
+            </li>
           </ul>
         </div>
       </li>
+
 
       <!-- Transportes Edeka -->
       <li x-show="$store.global.userPermisos.includes('transportes')">
@@ -90,7 +97,7 @@
           <span :class="sidebarToggle ? 'lg:hidden' : ''">Estado Pedidos</span>
         </a>
         <div class="overflow-hidden transition-all duration-300 ease-in-out"
-          :class="selected === 'EstadoPedidos' ? 'max-h-40' : 'max-h-0'">
+          :class="selected === 'EstadoPedidos' ? 'max-h-60' : 'max-h-0'">
           <ul class="flex flex-col gap-3 mt-2 pl-8 text-sm text-gray-500">
             <li>
               <a href="estado-pedidos.html" class="hover:text-[#003a4b] flex justify-between items-center"
@@ -154,6 +161,29 @@
                     }"></span>
                 </span>
               </a>
+              <!-- Sub-item TEST debajo de IBERIANA -->
+              <ul class="flex flex-col gap-2 mt-2 pl-6 text-xs text-gray-500">
+                <li>
+                  <a href="estado-pedidos-iberiana-test.html" class="hover:text-[#003a4b] flex justify-between items-center"
+                    :class="window.location.pathname.includes('estado-pedidos-iberiana-test') ? 'text-[#003a4b] font-medium' : ''">
+                    └─ TEST
+                    <span class="relative flex h-2.5 w-2.5">
+                      <span class="absolute inline-flex h-full w-full rounded-full opacity-75"
+                        :class="{
+                          'bg-gray-400': $store.global.estadoPedidosIberianaTest.pilotColor === 'gray',
+                          'bg-green-500 animate-ping': $store.global.estadoPedidosIberianaTest.pilotColor === 'green',
+                          'bg-red-500 animate-ping': $store.global.estadoPedidosIberianaTest.pilotColor === 'red'
+                        }"></span>
+                      <span class="relative inline-flex rounded-full h-2.5 w-2.5"
+                        :class="{
+                          'bg-gray-400': $store.global.estadoPedidosIberianaTest.pilotColor === 'gray',
+                          'bg-green-500': $store.global.estadoPedidosIberianaTest.pilotColor === 'green',
+                          'bg-red-500': $store.global.estadoPedidosIberianaTest.pilotColor === 'red'
+                        }"></span>
+                    </span>
+                  </a>
+                </li>
+              </ul>
             </li>
           </ul>
         </div>
