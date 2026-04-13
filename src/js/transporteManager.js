@@ -19,11 +19,28 @@ export default function transportesManager() {
                 const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/transportes`);
                 const data = await res.json();
 
-                // Añade campo seleccion para cada item
-                this.transportes = data.map(item => ({
-                    ...item,
-                    seleccion: ""
-                }));
+                const nuevos = [];
+
+                for (const nuevo of data) {
+                    const yaExiste = this.transportes.some(t => t._id === nuevo._id);
+                    if (!yaExiste) {
+                        nuevos.push({
+                            ...nuevo,
+                            seleccion: "",
+                            historico: null,
+                            buscandoHistorico: false,
+                            mostrarHistorico: false
+                        });
+                    }
+                }
+
+                // Quita los que ya no estan
+                this.transportes = this.transportes.filter(t =>
+                    data.some(n => n._id === t._id)
+                );
+
+                // Anade solo los nuevos
+                this.transportes.push(...nuevos);
             } catch (err) {
                 console.error("Error cargando transportes:", err);
             } finally {
@@ -54,17 +71,61 @@ export default function transportesManager() {
 
                 if (res.ok) {
                     this.transportes = this.transportes.filter(t => t._id !== item._id);
-                    this.showToast("✅ Transporte procesado correctamente");
+                    this.showToast("Transporte procesado correctamente");
                 } else {
-                    item.error = "❌ Error: " + (result.message || "Respuesta inesperada");
+                    item.error = "Error: " + (result.message || "Respuesta inesperada");
                 }
 
             } catch (err) {
                 console.error("Error enviando transporte:", err);
-                item.error = "⚠️ No se pudo contactar con el servidor";
+                item.error = "No se pudo contactar con el servidor";
             }
-        }
-        ,
+        },
+
+        async consultarHistorico(item) {
+            // Toggle: si ya estaba abierto, cerrar
+            if (item.mostrarHistorico) {
+                item.mostrarHistorico = false;
+                return;
+            }
+            item.mostrarHistorico = true;
+
+            // Cache: si ya se consulto, no repetir
+            if (item.historico) return;
+
+            // Necesitamos al menos un contenido para derivar el cliente
+            if (!item.contenido || item.contenido.length === 0) {
+                item.historico = { candidatos: [], error: true };
+                return;
+            }
+
+            item.buscandoHistorico = true;
+            try {
+                const params = new URLSearchParams({
+                    direccion: item.direccion || '',
+                    contenido_id: item.contenido[0].id
+                });
+
+                const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/historico-transporte?${params.toString()}`);
+                if (!res.ok) throw new Error('Respuesta no OK');
+                item.historico = await res.json();
+            } catch (err) {
+                console.error('Error consultando historico transporte:', err);
+                item.historico = { candidatos: [], error: true };
+            } finally {
+                item.buscandoHistorico = false;
+            }
+        },
+
+        aplicarHistorico(item, candidato) {
+            if (!candidato || !candidato.idDireccion) {
+                this.showToast("Este candidato no tiene datos validos");
+                return;
+            }
+            // Auto-seleccionar en el dropdown
+            item.seleccion = String(candidato.idDireccion);
+            item.mostrarHistorico = false;
+        },
 
         showToast(msg) {
             Toastify({
@@ -145,7 +206,7 @@ export default function transportesManager() {
                         window.chat.scrollToBottom();
                     }).catch(() => {
                         window.chat.loading = false;
-                        window.chat.proposedMessage = '❌ Error al obtener respuesta.';
+                        window.chat.proposedMessage = 'Error al obtener respuesta.';
                     });
                 }
             }, 800);

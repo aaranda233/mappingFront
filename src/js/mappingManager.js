@@ -92,8 +92,13 @@ export default function mappingManager() {
                     const resultValue = (result.result || result.Result || "").toString().toLowerCase();
 
                     if (resultValue !== "error") {
-                        this.mappings = this.mappings.filter(m => m.id !== item.id);
-                        this.showToast("✅ Enviado correctamente");
+                        // Eliminar este mapping y todos los duplicados con misma descripcion
+                        this.mappings = this.mappings.filter(m => m.descripcion !== item.descripcion);
+                        const dupCount = result.duplicadosProcesados || 0;
+                        const msg = dupCount > 0
+                            ? `Enviado correctamente (+${dupCount} duplicados procesados)`
+                            : "Enviado correctamente";
+                        this.showToast(msg);
                     } else {
                         item.error = "❌ " + (result.message || result.Message || "Error desconocido desde el servidor externo.");
                     }
