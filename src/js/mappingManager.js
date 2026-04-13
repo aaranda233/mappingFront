@@ -202,6 +202,11 @@ export default function mappingManager() {
         },
 
         aplicarHistorico(item, candidato) {
+            // Salvaguarda: si alguno de los IDs es null/undefined, el candidato está roto
+            if (!candidato || candidato.IdGenero == null || candidato.IdPresentacion == null || candidato.IdCategoria == null) {
+                this.showToast("⚠️ Este candidato no tiene datos válidos");
+                return;
+            }
             item.id_genero = String(candidato.IdGenero);
             item.id_gensal = String(candidato.IdPresentacion);
             item.id_categoria = String(candidato.IdCategoria);
