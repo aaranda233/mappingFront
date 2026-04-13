@@ -35,7 +35,10 @@ export default function mappingManager() {
                             buscandoPresentacion: false,
                             mostrarResultados: false,
                             presentacionSeleccionada: null,
-                            _debounceTimer: null
+                            _debounceTimer: null,
+                            historico: null,
+                            buscandoHistorico: false,
+                            mostrarHistorico: false
                         });
                     }
                 }
@@ -166,6 +169,53 @@ export default function mappingManager() {
             item.id_genero = "";
             item.id_gensal = "";
             item.id_categoria = "";
+        },
+
+        async consultarHistorico(item) {
+            // Toggle: si ya estaba abierto, cerrar
+            if (item.mostrarHistorico) {
+                item.mostrarHistorico = false;
+                return;
+            }
+            item.mostrarHistorico = true;
+
+            // Cache: si ya se consultó, no repetir
+            if (item.historico) return;
+
+            item.buscandoHistorico = true;
+            try {
+                const params = new URLSearchParams({
+                    idcliente: item.idcliente || 0,
+                    descripcion: item.descripcion || ''
+                });
+                if (item.ref_pedido) params.set('ref_pedido', item.ref_pedido);
+
+                const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/historico-referencia?${params.toString()}`);
+                if (!res.ok) throw new Error('Respuesta no OK');
+                item.historico = await res.json();
+            } catch (err) {
+                console.error('Error consultando histórico:', err);
+                item.historico = { pedidoActual: null, candidatos: [], error: true };
+            } finally {
+                item.buscandoHistorico = false;
+            }
+        },
+
+        aplicarHistorico(item, candidato) {
+            item.id_genero = String(candidato.IdGenero);
+            item.id_gensal = String(candidato.IdPresentacion);
+            item.id_categoria = String(candidato.IdCategoria);
+            item.presentacionSeleccionada = {
+                Presentacion: candidato.Presentacion,
+                Genero: candidato.NomGenero,
+                IdGenero: candidato.IdGenero,
+                IdPresentacion: candidato.IdPresentacion,
+                IdCategoria: candidato.IdCategoria,
+                NombreCategoria: candidato.NombreCategoria
+            };
+            item.busquedaPresentacion = candidato.Presentacion || '';
+            item.mostrarResultados = false;
+            item.mostrarHistorico = false;
         },
 
         abrirPdf(item) {
