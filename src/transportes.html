@@ -167,8 +167,8 @@
                                   <span x-show="cand.tipo === 'exacto'" class="ml-1 text-green-600 font-medium">(exacto)</span>
                                   <span x-show="cand.tipo === 'similar'" class="ml-1 text-yellow-600 font-medium">(similar)</span>
                                 </div>
-                                <div x-show="cand.fechaLog" class="text-[11px] text-blue-600 mt-0.5">
-                                  Fecha: <span x-text="cand.fechaLog ? new Date(cand.fechaLog).toLocaleDateString() : ''"></span>
+                                <div x-show="cand.fechaLog" class="text-[11px] text-gray-500 mt-0.5">
+                                  Hist&oacute;rico guardado: <span x-text="cand.fechaLog ? new Date(cand.fechaLog).toLocaleDateString() : ''"></span>
                                 </div>
                                 <div x-show="cand.ultimoPedido && ((item.cliente && item.cliente.toUpperCase().includes('IBERIANA') && cand.ultimoPedido.PED_referencia) || ((!item.cliente || !item.cliente.toUpperCase().includes('IBERIANA')) && cand.ultimoPedido.PED_pedido))"
                                   class="text-[11px] text-blue-600 mt-0.5">
