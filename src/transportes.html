@@ -170,6 +170,13 @@
                                 <div x-show="cand.fechaLog" class="text-[11px] text-blue-600 mt-0.5">
                                   Fecha: <span x-text="cand.fechaLog ? new Date(cand.fechaLog).toLocaleDateString() : ''"></span>
                                 </div>
+                                <div x-show="cand.ultimoPedido && ((item.cliente && item.cliente.toUpperCase().includes('IBERIANA') && cand.ultimoPedido.PED_referencia) || ((!item.cliente || !item.cliente.toUpperCase().includes('IBERIANA')) && cand.ultimoPedido.PED_pedido))"
+                                  class="text-[11px] text-blue-600 mt-0.5">
+                                  Pedido: <span class="font-medium" x-text="item.cliente && item.cliente.toUpperCase().includes('IBERIANA') ? cand.ultimoPedido?.PED_referencia : cand.ultimoPedido?.PED_pedido"></span>
+                                  <span x-show="cand.ultimoPedido?.PED_fechasalida">
+                                    &middot; Fecha: <span class="font-medium" x-text="cand.ultimoPedido?.PED_fechasalida ? new Date(cand.ultimoPedido.PED_fechasalida).toLocaleDateString('es-ES') : ''"></span>
+                                  </span>
+                                </div>
                                 <div x-show="!item.contenido.some(c => c.id === cand.idDireccion)"
                                   class="text-[10px] text-red-500 mt-0.5">
                                   (no disponible en opciones actuales)

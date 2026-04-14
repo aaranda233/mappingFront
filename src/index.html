@@ -178,9 +178,9 @@
                               G&eacute;nero: <span class="font-medium" x-text="item.historico.pedidoActual.NomGenero"></span>
                               &middot; Cat: <span class="font-medium" x-text="item.historico.pedidoActual.NombreCategoria"></span>
                             </div>
-                            <div x-show="[2194, 2202, 4319].includes(item.idcliente) && item.historico.pedidoActual.PED_referencia"
+                            <div x-show="([2194, 2202, 4319].includes(item.idcliente) && item.historico.pedidoActual.PED_referencia) || (! [2194, 2202, 4319].includes(item.idcliente) && item.historico.pedidoActual.PED_pedido)"
                               class="text-[11px] text-blue-600 mt-0.5">
-                              Pedido: <span class="font-medium" x-text="item.historico.pedidoActual.PED_referencia"></span>
+                              Pedido: <span class="font-medium" x-text="[2194, 2202, 4319].includes(item.idcliente) ? item.historico.pedidoActual.PED_referencia : item.historico.pedidoActual.PED_pedido"></span>
                               <span x-show="item.historico.pedidoActual.PED_fechasalida">
                                 &middot; Fecha: <span class="font-medium" x-text="item.historico.pedidoActual.PED_fechasalida ? new Date(item.historico.pedidoActual.PED_fechasalida).toLocaleDateString('es-ES') : ''"></span>
                               </span>
@@ -208,9 +208,11 @@
                                 </div>
                                 <div x-show="cand.PPC_Descripcion" class="text-[11px] text-gray-400 italic truncate"
                                   x-text="cand.PPC_Descripcion"></div>
-                                <div x-show="cand.ultimoAlbaran" class="text-[11px] text-blue-600 mt-0.5">
-                                  Alb. <span class="font-medium" x-text="cand.ultimoAlbaran?.NumAlbaran"></span>
-                                  &middot; <span x-text="cand.ultimoAlbaran?.FechaAlbaran ? new Date(cand.ultimoAlbaran.FechaAlbaran).toLocaleDateString() : ''"></span>
+                                <div x-show="cand.ultimoPedido && (([2194, 2202, 4319].includes(item.idcliente) && cand.ultimoPedido.PED_referencia) || (! [2194, 2202, 4319].includes(item.idcliente) && cand.ultimoPedido.PED_pedido))" class="text-[11px] text-blue-600 mt-0.5">
+                                  Pedido: <span class="font-medium" x-text="[2194, 2202, 4319].includes(item.idcliente) ? cand.ultimoPedido?.PED_referencia : cand.ultimoPedido?.PED_pedido"></span>
+                                  <span x-show="cand.ultimoPedido?.PED_fechasalida">
+                                    &middot; Fecha: <span class="font-medium" x-text="cand.ultimoPedido?.PED_fechasalida ? new Date(cand.ultimoPedido.PED_fechasalida).toLocaleDateString('es-ES') : ''"></span>
+                                  </span>
                                 </div>
                               </div>
                               <span class="text-[10px] font-bold uppercase bg-blue-600 text-white px-2 py-0.5 rounded-full shrink-0">Aplicar</span>

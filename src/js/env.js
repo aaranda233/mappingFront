@@ -2,7 +2,8 @@ window.env = {
   IP_BACKEND: "localhost:4000",
   IP_LANGCHAIN: "localhost:4000",
   VERSION: "dev",
-  ADMIN_USERS: ["bluque.garcia"]
+  ADMIN_USERS: ["bluque.garcia"],
+  DEVELOPER_USERS: ["bluque.garcia"]
 };
 
 /*window.env = {
