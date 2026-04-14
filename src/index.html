@@ -164,24 +164,25 @@
                     </div>
 
                     <!-- Pedido actual -->
-                    <div x-show="!item.buscandoHistorico && item.historico && item.historico.pedidoActual"
-                      class="mb-3">
-                      <div class="text-[11px] font-bold text-blue-700 uppercase mb-1">Del pedido actual</div>
-                      <button type="button"
-                        class="w-full text-left px-3 py-2 rounded-lg bg-white border border-blue-300 hover:bg-blue-100 transition"
-                        @click="aplicarHistorico(item, item.historico.pedidoActual)">
-                        <div class="flex items-center justify-between">
-                          <div class="flex-1 min-w-0">
-                            <div class="text-sm font-semibold text-gray-800" x-text="item.historico.pedidoActual.Presentacion"></div>
-                            <div class="text-xs text-gray-500">
-                              G&eacute;nero: <span class="font-medium" x-text="item.historico.pedidoActual.NomGenero"></span>
-                              &middot; Cat: <span class="font-medium" x-text="item.historico.pedidoActual.NombreCategoria"></span>
+                    <template x-if="!item.buscandoHistorico && item.historico && item.historico.pedidoActual">
+                      <div class="mb-3">
+                        <div class="text-[11px] font-bold text-blue-700 uppercase mb-1">Del pedido actual</div>
+                        <button type="button"
+                          class="w-full text-left px-3 py-2 rounded-lg bg-white border border-blue-300 hover:bg-blue-100 transition"
+                          @click="aplicarHistorico(item, item.historico.pedidoActual)">
+                          <div class="flex items-center justify-between">
+                            <div class="flex-1 min-w-0">
+                              <div class="text-sm font-semibold text-gray-800" x-text="item.historico.pedidoActual.Presentacion"></div>
+                              <div class="text-xs text-gray-500">
+                                G&eacute;nero: <span class="font-medium" x-text="item.historico.pedidoActual.NomGenero"></span>
+                                &middot; Cat: <span class="font-medium" x-text="item.historico.pedidoActual.NombreCategoria"></span>
+                              </div>
                             </div>
+                            <span class="text-[10px] font-bold uppercase bg-blue-600 text-white px-2 py-0.5 rounded-full ml-2">Aplicar</span>
                           </div>
-                          <span class="text-[10px] font-bold uppercase bg-blue-600 text-white px-2 py-0.5 rounded-full ml-2">Aplicar</span>
-                        </div>
-                      </button>
-                    </div>
+                        </button>
+                      </div>
+                    </template>
 
                     <!-- Candidatos previos -->
                     <div x-show="!item.buscandoHistorico && item.historico && item.historico.candidatos && item.historico.candidatos.length > 0">
