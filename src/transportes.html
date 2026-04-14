@@ -114,6 +114,7 @@
                   <div class="text-sm text-gray-700 space-y-1 mb-4">
                     <p><strong>Dirección:</strong> <span x-text="item.direccion"></span></p>
                     <p><strong>Cliente:</strong> <span x-text="item.cliente"></span></p>
+                    <p x-show="item.fecha_pedido"><strong>Fecha Pedido:</strong> <span x-text="formatFecha(item.fecha_pedido)"></span></p>
                     <p><strong>Ref. Pedido:</strong> <span x-text="item.ref_pedido"></span></p>
                   </div>
 

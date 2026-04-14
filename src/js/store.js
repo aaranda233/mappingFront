@@ -7,7 +7,7 @@ export default {
     },
     estadoPedidos: {
         current: null,
-        pilotColor: 'gray'
+        pilotColor: 'green'
     },
     estadoPedidosEurogroup: {
         current: null,
@@ -15,11 +15,11 @@ export default {
     },
     estadoPedidosIberiana: {
         current: null,
-        pilotColor: 'gray'
+        pilotColor: 'green'
     },
     estadoPedidosIberianaTest: {
         current: null,
-        pilotColor: 'gray'
+        pilotColor: 'green'
     },
     async fetchUserInfo() {
         // En modo dev, asignar permisos base sin admin y saltar OAuth/BD
@@ -78,10 +78,12 @@ export default {
             this.estadoPedidos.current = data.current;
             if (!data.current) {
                 this.estadoPedidos.pilotColor = 'green';
+            } else if (data.current.estado === 'procesando') {
+                this.estadoPedidos.pilotColor = 'yellow';
             } else if (data.current.estado === 'error') {
                 this.estadoPedidos.pilotColor = 'red';
             } else {
-                this.estadoPedidos.pilotColor = 'yellow';
+                this.estadoPedidos.pilotColor = 'green';
             }
         } catch (e) {
             console.error("Error fetching estado pedidos", e);
@@ -93,11 +95,13 @@ export default {
             const data = await res.json();
             this.estadoPedidosEurogroup.current = data.current;
             if (!data.current) {
-                this.estadoPedidosEurogroup.pilotColor = 'green';
+                this.estadoPedidosEurogroup.pilotColor = 'gray';
+            } else if (data.current.estado === 'procesando') {
+                this.estadoPedidosEurogroup.pilotColor = 'yellow';
             } else if (data.current.estado === 'error') {
                 this.estadoPedidosEurogroup.pilotColor = 'red';
             } else {
-                this.estadoPedidosEurogroup.pilotColor = 'yellow';
+                this.estadoPedidosEurogroup.pilotColor = 'gray';
             }
         } catch (e) {
             console.error("Error fetching estado pedidos eurogroup", e);
@@ -110,10 +114,12 @@ export default {
             this.estadoPedidosIberiana.current = data.current;
             if (!data.current) {
                 this.estadoPedidosIberiana.pilotColor = 'green';
+            } else if (data.current.estado === 'procesando') {
+                this.estadoPedidosIberiana.pilotColor = 'yellow';
             } else if (data.current.estado === 'error') {
                 this.estadoPedidosIberiana.pilotColor = 'red';
             } else {
-                this.estadoPedidosIberiana.pilotColor = 'yellow';
+                this.estadoPedidosIberiana.pilotColor = 'green';
             }
         } catch (e) {
             console.error("Error fetching estado pedidos iberiana", e);
@@ -126,10 +132,12 @@ export default {
             this.estadoPedidosIberianaTest.current = data.current;
             if (!data.current) {
                 this.estadoPedidosIberianaTest.pilotColor = 'green';
+            } else if (data.current.estado === 'procesando') {
+                this.estadoPedidosIberianaTest.pilotColor = 'yellow';
             } else if (data.current.estado === 'error') {
                 this.estadoPedidosIberianaTest.pilotColor = 'red';
             } else {
-                this.estadoPedidosIberianaTest.pilotColor = 'yellow';
+                this.estadoPedidosIberianaTest.pilotColor = 'green';
             }
         } catch (e) {
             console.error("Error fetching estado pedidos iberiana test", e);

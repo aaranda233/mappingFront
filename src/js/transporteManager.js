@@ -142,6 +142,15 @@ export default function transportesManager() {
                 stopOnFocus: true
             }).showToast();
         },
+        formatFecha(fecha) {
+            if (!fecha) return '-';
+            const d = new Date(fecha);
+            const dd = String(d.getDate()).padStart(2, '0');
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const yyyy = d.getFullYear();
+            return `${dd}/${mm}/${yyyy}`;
+        },
+
         abrirPdf(item) {
             if (!item.pdf) return;
             const byteChars = atob(item.pdf);

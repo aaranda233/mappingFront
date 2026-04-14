@@ -134,12 +134,14 @@
                 <span class="relative flex h-3 w-3">
                   <span class="absolute inline-flex h-full w-full rounded-full opacity-75"
                     :class="{
+                      'bg-gray-400': $store.global.estadoPedidosEurogroup.pilotColor === 'gray',
                       'bg-green-500': $store.global.estadoPedidosEurogroup.pilotColor === 'green',
                       'bg-yellow-400 animate-ping': $store.global.estadoPedidosEurogroup.pilotColor === 'yellow',
                       'bg-red-500 animate-ping': $store.global.estadoPedidosEurogroup.pilotColor === 'red'
                     }"></span>
                   <span class="relative inline-flex rounded-full h-3 w-3"
                     :class="{
+                      'bg-gray-400': $store.global.estadoPedidosEurogroup.pilotColor === 'gray',
                       'bg-green-500': $store.global.estadoPedidosEurogroup.pilotColor === 'green',
                       'bg-yellow-400': $store.global.estadoPedidosEurogroup.pilotColor === 'yellow',
                       'bg-red-500': $store.global.estadoPedidosEurogroup.pilotColor === 'red'

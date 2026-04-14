@@ -248,6 +248,15 @@ export default function mappingManager() {
             }
         },
 
+        formatFecha(fecha) {
+            if (!fecha) return '-';
+            const d = new Date(fecha);
+            const dd = String(d.getDate()).padStart(2, '0');
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const yyyy = d.getFullYear();
+            return `${dd}/${mm}/${yyyy}`;
+        },
+
         async eliminar(item) {
             if (!confirm('¿Estás seguro de eliminar este mapping? Se eliminará de ambas bases de datos.')) {
                 return;

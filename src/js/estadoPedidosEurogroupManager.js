@@ -40,8 +40,9 @@ export default function estadoPedidosEurogroupManager() {
 
         pilotColor() {
             if (!this.current) return 'gray';
+            if (this.current.estado === 'procesando') return 'yellow';
             if (this.current.estado === 'error') return 'red';
-            return 'green';
+            return 'gray';
         },
 
         formatFecha(fecha) {
