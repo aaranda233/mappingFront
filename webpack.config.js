@@ -107,6 +107,8 @@ module.exports = {
               if (value === "/env.js") return false;
               // No procesar erp-form.png — recurso estático servido en runtime
               if (value === "/erp-form.png") return false;
+              // No procesar logos de clientes — recursos estáticos
+              if (value === "/edeka.png" || value === "/iberiana.png") return false;
               return true;
             },
           },

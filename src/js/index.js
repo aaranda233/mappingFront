@@ -23,11 +23,13 @@ import estadoPedidosIberianaManager from "./estadoPedidosIberianaManager.js";
 import estadoPedidosIberianaTestManager from "./estadoPedidosIberianaTestManager.js";
 import adminManager from "./adminManager.js";
 import presentacionesManager from "./presentacionesManager.js";
+import direccionesManager from "./direccionesManager.js";
 import tutorialGuide from "./tutorialGuide.js";
 
 window.mappingManager = mappingManager;
 window.transporteManager = transporteManager;
 window.presentacionesManager = presentacionesManager;
+window.direccionesManager = direccionesManager;
 window.estadoPedidosManager = estadoPedidosManager;
 window.estadoPedidosEurogroupManager = estadoPedidosEurogroupManager;
 window.estadoPedidosIberianaManager = estadoPedidosIberianaManager;
