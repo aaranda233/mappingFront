@@ -77,11 +77,11 @@ export default {
             const data = await res.json();
             this.estadoPedidos.current = data.current;
             if (!data.current) {
-                this.estadoPedidos.pilotColor = 'gray';
+                this.estadoPedidos.pilotColor = 'green';
             } else if (data.current.estado === 'error') {
                 this.estadoPedidos.pilotColor = 'red';
             } else {
-                this.estadoPedidos.pilotColor = 'green';
+                this.estadoPedidos.pilotColor = 'yellow';
             }
         } catch (e) {
             console.error("Error fetching estado pedidos", e);
@@ -93,11 +93,11 @@ export default {
             const data = await res.json();
             this.estadoPedidosEurogroup.current = data.current;
             if (!data.current) {
-                this.estadoPedidosEurogroup.pilotColor = 'gray';
+                this.estadoPedidosEurogroup.pilotColor = 'green';
             } else if (data.current.estado === 'error') {
                 this.estadoPedidosEurogroup.pilotColor = 'red';
             } else {
-                this.estadoPedidosEurogroup.pilotColor = 'green';
+                this.estadoPedidosEurogroup.pilotColor = 'yellow';
             }
         } catch (e) {
             console.error("Error fetching estado pedidos eurogroup", e);
@@ -109,11 +109,11 @@ export default {
             const data = await res.json();
             this.estadoPedidosIberiana.current = data.current;
             if (!data.current) {
-                this.estadoPedidosIberiana.pilotColor = 'gray';
+                this.estadoPedidosIberiana.pilotColor = 'green';
             } else if (data.current.estado === 'error') {
                 this.estadoPedidosIberiana.pilotColor = 'red';
             } else {
-                this.estadoPedidosIberiana.pilotColor = 'green';
+                this.estadoPedidosIberiana.pilotColor = 'yellow';
             }
         } catch (e) {
             console.error("Error fetching estado pedidos iberiana", e);
@@ -125,11 +125,11 @@ export default {
             const data = await res.json();
             this.estadoPedidosIberianaTest.current = data.current;
             if (!data.current) {
-                this.estadoPedidosIberianaTest.pilotColor = 'gray';
+                this.estadoPedidosIberianaTest.pilotColor = 'green';
             } else if (data.current.estado === 'error') {
                 this.estadoPedidosIberianaTest.pilotColor = 'red';
             } else {
-                this.estadoPedidosIberianaTest.pilotColor = 'green';
+                this.estadoPedidosIberianaTest.pilotColor = 'yellow';
             }
         } catch (e) {
             console.error("Error fetching estado pedidos iberiana test", e);

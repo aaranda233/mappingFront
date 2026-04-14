@@ -178,6 +178,13 @@
                               G&eacute;nero: <span class="font-medium" x-text="item.historico.pedidoActual.NomGenero"></span>
                               &middot; Cat: <span class="font-medium" x-text="item.historico.pedidoActual.NombreCategoria"></span>
                             </div>
+                            <div x-show="[2194, 2202, 4319].includes(item.idcliente) && item.historico.pedidoActual.PED_referencia"
+                              class="text-[11px] text-blue-600 mt-0.5">
+                              Pedido: <span class="font-medium" x-text="item.historico.pedidoActual.PED_referencia"></span>
+                              <span x-show="item.historico.pedidoActual.PED_fechasalida">
+                                &middot; Fecha: <span class="font-medium" x-text="item.historico.pedidoActual.PED_fechasalida ? new Date(item.historico.pedidoActual.PED_fechasalida).toLocaleDateString('es-ES') : ''"></span>
+                              </span>
+                            </div>
                           </div>
                           <span class="text-[10px] font-bold uppercase bg-blue-600 text-white px-2 py-0.5 rounded-full ml-2">Aplicar</span>
                         </div>
