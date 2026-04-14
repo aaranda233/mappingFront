@@ -100,7 +100,6 @@
                         <svg x-show="sortField === 'FechaLog'" class="w-3 h-3" :class="sortDirection === 'desc' && 'rotate-180'" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20"><path d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"/></svg>
                       </span>
                     </th>
-                    <th class="px-4 py-3 font-semibold text-center">Estado</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -114,16 +113,6 @@
                       <td class="px-4 py-3 text-gray-600 text-xs">
                         <span x-text="formatFecha(item.FechaLog)"></span>
                         <span x-show="item.HoraLog" class="text-gray-400 ml-1" x-text="item.HoraLog"></span>
-                      </td>
-                      <td class="px-4 py-3 text-center">
-                        <span x-show="item.IdDireccion > 0"
-                          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          Mapeada
-                        </span>
-                        <span x-show="!item.IdDireccion || item.IdDireccion === 0"
-                          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                          Pendiente
-                        </span>
                       </td>
                     </tr>
                   </template>
