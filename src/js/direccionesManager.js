@@ -8,11 +8,18 @@ export default function direccionesManager() {
         sortField: '',
         sortDirection: 'asc',
 
+        // Edicion inline
+        editandoId: null,
+        opciones: [],
+        cargandoOpciones: false,
+        seleccion: '',
+
         clientes: [
             { id: '0', nombre: 'Todos' },
             { id: '2194', nombre: '2194 - Iberiana Francia' },
             { id: '2202', nombre: '2202 - Iberiana Alemania' },
-            { id: '4319', nombre: '4319 - Iberiana CZ' }
+            { id: '4319', nombre: '4319 - Iberiana CZ' },
+            { id: '1172', nombre: '1172 - Eurogroup' }
         ],
 
         init() {
@@ -42,6 +49,54 @@ export default function direccionesManager() {
 
         cambiarFiltro() {
             this.cargarDirecciones();
+        },
+
+        async abrirEdicion(item) {
+            if (this.editandoId === item.Id) {
+                this.editandoId = null;
+                return;
+            }
+
+            this.editandoId = item.Id;
+            this.seleccion = String(item.IdDireccion || '');
+            this.opciones = [];
+            this.cargandoOpciones = true;
+
+            try {
+                const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/direcciones/opciones?idcliente=${item.IdCliente}`);
+                this.opciones = await res.json();
+            } catch (err) {
+                console.error("Error cargando opciones:", err);
+            } finally {
+                this.cargandoOpciones = false;
+            }
+        },
+
+        async guardarEdicion(item) {
+            if (!this.seleccion || this.seleccion === '0') return;
+
+            try {
+                const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/direcciones/${item.Id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idDireccion: parseInt(this.seleccion, 10) })
+                });
+
+                if (res.ok) {
+                    item.IdDireccion = parseInt(this.seleccion, 10);
+                    this.editandoId = null;
+                    Toastify({
+                        text: "Dirección actualizada correctamente",
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "#16a34a",
+                        stopOnFocus: true
+                    }).showToast();
+                }
+            } catch (err) {
+                console.error("Error guardando:", err);
+            }
         },
 
         sortBy(field) {

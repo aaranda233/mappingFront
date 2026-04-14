@@ -101,14 +101,14 @@
 
                   <!-- Cabecera -->
                   <div class="flex items-center gap-3 mb-3">
-                    <template x-if="[2194, 2202, 4319, 1172].includes(item.idcliente)">
-                      <div class="rounded-full p-1 shadow-inner bg-white/80 w-10 h-10 flex items-center justify-center overflow-hidden">
-                        <img x-show="[2194, 2202, 4319].includes(item.idcliente)"
-                          src="/iberiana.png" alt="Iberiana" class="w-8 h-8 object-contain" />
-                        <img x-show="item.idcliente === 1172"
-                          src="/eurogroup.png" alt="Eurogroup" class="w-8 h-8 object-contain" />
-                      </div>
-                    </template>
+                    <div class="rounded-full p-1 shadow-inner bg-white/80 w-10 h-10 flex items-center justify-center overflow-hidden">
+                      <img x-show="[2194, 2202, 4319].includes(item.idcliente)"
+                        src="/iberiana.png" alt="Iberiana" class="w-8 h-8 object-contain" />
+                      <img x-show="item.idcliente === 1172"
+                        src="/eurogroup.png" alt="Eurogroup" class="w-8 h-8 object-contain" />
+                      <img x-show="![2194, 2202, 4319, 1172].includes(item.idcliente)"
+                        src="/edeka.png" alt="EDEKA" class="w-8 h-8 object-contain rounded" />
+                    </div>
                     <div>
                       <h2 class="text-lg font-bold text-gray-800">L&iacute;nea: <span x-text="item.id_linea"></span></h2>
                     </div>

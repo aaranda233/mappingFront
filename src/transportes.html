@@ -99,16 +99,14 @@
 
                   <!-- Cabecera -->
                   <div class="flex items-center gap-3 mb-3">
-                    <template x-if="item.cliente && (item.cliente.toUpperCase().includes('EDEKA') || item.cliente.toUpperCase().includes('IBERIANA') || item.cliente.toUpperCase().includes('EUROGROUP'))">
-                      <div class="rounded-full p-1 shadow-inner bg-white/80 w-10 h-10 flex items-center justify-center overflow-hidden">
-                        <img x-show="item.cliente.toUpperCase().includes('EDEKA')"
-                          src="/edeka.png" alt="EDEKA" class="w-8 h-8 object-contain rounded" />
-                        <img x-show="item.cliente.toUpperCase().includes('IBERIANA')"
-                          src="/iberiana.png" alt="Iberiana" class="w-8 h-8 object-contain" />
-                        <img x-show="item.cliente.toUpperCase().includes('EUROGROUP')"
-                          src="/eurogroup.png" alt="Eurogroup" class="w-8 h-8 object-contain" />
-                      </div>
-                    </template>
+                    <div class="rounded-full p-1 shadow-inner bg-white/80 w-10 h-10 flex items-center justify-center overflow-hidden">
+                      <img x-show="item.cliente && item.cliente.toUpperCase().includes('IBERIANA')"
+                        src="/iberiana.png" alt="Iberiana" class="w-8 h-8 object-contain" />
+                      <img x-show="item.cliente && item.cliente.toUpperCase().includes('EUROGROUP')"
+                        src="/eurogroup.png" alt="Eurogroup" class="w-8 h-8 object-contain" />
+                      <img x-show="!item.cliente || (!item.cliente.toUpperCase().includes('IBERIANA') && !item.cliente.toUpperCase().includes('EUROGROUP'))"
+                        src="/edeka.png" alt="EDEKA" class="w-8 h-8 object-contain rounded" />
+                    </div>
                     <h2 class="text-lg font-bold text-gray-800">Transporte</h2>
                   </div>
 
