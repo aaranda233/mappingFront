@@ -47,15 +47,6 @@
                   x-model="busqueda" @input="buscar()" />
               </div>
 
-              <!-- Filtro estado -->
-              <select
-                class="px-4 py-2.5 bg-white/80 border border-gray-300 rounded-xl shadow-sm focus:border-[color:#f97316] focus:ring-1 focus:ring-[color:#f97316] transition min-w-[180px]"
-                x-model="filtroEstado" @change="cambiarFiltro()">
-                <option value="todas">Todas</option>
-                <option value="mapeadas">Mapeadas</option>
-                <option value="pendientes">Pendientes</option>
-              </select>
-
               <!-- Filtro cliente -->
               <select
                 class="px-4 py-2.5 bg-white/80 border border-gray-300 rounded-xl shadow-sm focus:border-[color:#f97316] focus:ring-1 focus:ring-[color:#f97316] transition min-w-[220px]"

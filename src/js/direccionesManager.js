@@ -4,7 +4,6 @@ export default function direccionesManager() {
         loading: false,
         busqueda: '',
         filtroCliente: '0',
-        filtroEstado: 'todas',
         _debounceTimer: null,
         sortField: '',
         sortDirection: 'asc',
@@ -26,7 +25,6 @@ export default function direccionesManager() {
                 const params = new URLSearchParams();
                 if (this.filtroCliente !== '0') params.set('idcliente', this.filtroCliente);
                 if (this.busqueda.trim().length >= 2) params.set('busqueda', this.busqueda.trim());
-                if (this.filtroEstado !== 'todas') params.set('estado', this.filtroEstado);
 
                 const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/direcciones?${params}`);
                 this.direcciones = await res.json();
