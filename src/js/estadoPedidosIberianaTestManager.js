@@ -81,28 +81,21 @@ export default function estadoPedidosIberianaTestManager() {
                     this.pedidoLineas = await resLineas.json();
                 }
 
-                // -- Cargar datos de PRODUCCION (via EstadoPedidosIBERIANA de prod) --
-                const refPedido = item.ref_pedido;
-                const cliente = item.cliente;
-                if (refPedido && cliente) {
-                    const params = new URLSearchParams({ ref_pedido: refPedido, cliente });
-                    console.log('[PROD] Buscando por ref_pedido en prod:', params.toString());
+                // -- Cargar datos de PRODUCCION (por bestellnr + cliente, mismo patron que historico mapping) --
+                const bestellnr = this.pedidoDetail?.PED_BESTELLNR;
+                const cliente = this.pedidoDetail?.PED_idcliente;
+                if (bestellnr && cliente) {
+                    const params = new URLSearchParams({ bestellnr, cliente });
+                    console.log('[PROD] Buscando por bestellnr en prod:', params.toString());
                     const urlProd = `http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana-test/pedido-prod-by-ref?${params.toString()}`;
                     const resProd = await fetch(urlProd);
 
                     if (resProd.status === 404) {
+                        const errData = await resProd.json().catch(() => ({}));
                         console.log('[PROD] No creado todavia en produccion');
                         this.prodNotFound = true;
                         this.prodStatus = 'not_found';
-                        this.prodStatusMsg = 'No creado todavia en produccion';
-                    } else if (resProd.status === 202) {
-                        const pending = await resProd.json();
-                        console.log('[PROD] En proceso en produccion:', pending.status);
-                        this.prodNotFound = true;
-                        this.prodStatus = 'pending';
-                        this.prodStatusMsg = pending.status === 'error'
-                            ? `Error en produccion: ${pending.mensaje || 'sin detalle'}`
-                            : `En proceso en produccion (${pending.status})`;
+                        this.prodStatusMsg = errData.message || `Expediente ${bestellnr} no creado todavia en produccion`;
                     } else if (resProd.ok) {
                         const prodData = await resProd.json();
                         console.log('[PROD] Datos produccion:', JSON.stringify(prodData));
@@ -111,10 +104,10 @@ export default function estadoPedidosIberianaTestManager() {
                         this.prodStatus = 'found';
                     }
                 } else {
-                    console.warn('[PROD] No hay ref_pedido/cliente para buscar en produccion');
+                    console.warn('[PROD] No hay bestellnr/cliente para buscar en produccion');
                     this.prodNotFound = true;
                     this.prodStatus = 'not_found';
-                    this.prodStatusMsg = 'Sin datos para buscar en produccion';
+                    this.prodStatusMsg = bestellnr ? 'Sin cliente para buscar' : 'Sin expediente (BESTELLNR) para buscar';
                 }
             } catch (err) {
                 console.error("Error cargando detalle pedido Iberiana Test:", err);
