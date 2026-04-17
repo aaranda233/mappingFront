@@ -265,11 +265,20 @@
 
             <!-- Mensaje cuando prod no encontrado -->
             <template x-if="pedidoDetail && prodNotFound">
-              <div style="width:95vw; max-width:2750px; background:#fef3c7; border:2px solid #f59e0b; border-radius:12px; padding:14px 20px; display:flex; align-items:center; gap:10px; font-family:Tahoma,sans-serif;">
-                <svg style="width:22px; height:22px; color:#d97706;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+              <div style="width:95vw; max-width:2750px; border-radius:12px; padding:14px 20px; display:flex; align-items:center; gap:10px; font-family:Tahoma,sans-serif;"
+                :style="prodStatus === 'pending' ? 'background:#dbeafe; border:2px solid #3b82f6;' : 'background:#fef3c7; border:2px solid #f59e0b;'">
+                <svg style="width:22px; height:22px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                  :style="prodStatus === 'pending' ? 'color:#2563eb;' : 'color:#d97706;'">
+                  <template x-if="prodStatus === 'pending'">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </template>
+                  <template x-if="prodStatus !== 'pending'">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                  </template>
                 </svg>
-                <span style="font-weight:bold; font-size:11pt; color:#92400e;">No se encontro el pedido en PRODUCCION - No se puede comparar</span>
+                <span style="font-weight:bold; font-size:11pt;"
+                  :style="prodStatus === 'pending' ? 'color:#1e40af;' : 'color:#92400e;'"
+                  x-text="prodStatusMsg || 'No creado todavia en produccion'"></span>
               </div>
             </template>
 
@@ -374,14 +383,24 @@
                 :style="'zoom: ' + Math.min(1, (window.innerWidth / 2 - 8) / 1367, (window.innerHeight - 20) / 690)">
                 <div style="background:#15803d; color:#fff; text-align:center; font-family:Tahoma,sans-serif; font-weight:bold; font-size:14pt; padding:6px 0; width:1367px; border-radius:6px 6px 0 0;">PRODUCCION</div>
 
-                <!-- No encontrado -->
+                <!-- No encontrado / en proceso -->
                 <template x-if="prodNotFound">
-                  <div style="width:1367px; height:652px; display:flex; align-items:center; justify-content:center; background:#f3f4f6; border:2px solid #15803d; border-top:none; border-radius:0 0 6px 6px;">
+                  <div style="width:1367px; height:652px; display:flex; align-items:center; justify-content:center; border:2px solid #15803d; border-top:none; border-radius:0 0 6px 6px;"
+                    :style="prodStatus === 'pending' ? 'background:#eff6ff;' : 'background:#f3f4f6;'">
                     <div style="text-align:center;">
-                      <svg style="width:64px; height:64px; margin:0 auto 16px; color:#9ca3af;" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                      <svg style="width:64px; height:64px; margin:0 auto 16px;" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
+                        :style="prodStatus === 'pending' ? 'color:#3b82f6;' : 'color:#9ca3af;'"
+                        :class="prodStatus === 'pending' ? 'animate-spin' : ''">
+                        <template x-if="prodStatus === 'pending'">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </template>
+                        <template x-if="prodStatus !== 'pending'">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                        </template>
                       </svg>
-                      <p style="font-family:Tahoma,sans-serif; font-size:16pt; font-weight:bold; color:#6b7280;">TODAVIA NO SE HA INSERTADO EN PRODUCCION</p>
+                      <p style="font-family:Tahoma,sans-serif; font-size:16pt; font-weight:bold;"
+                        :style="prodStatus === 'pending' ? 'color:#1e40af;' : 'color:#6b7280;'"
+                        x-text="prodStatusMsg || 'No creado todavia en produccion'"></p>
                     </div>
                   </div>
                 </template>

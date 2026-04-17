@@ -14,6 +14,8 @@ export default function estadoPedidosIberianaTestManager() {
         pedidoLineasProd: [],
         selectedLineaProd: null,
         prodNotFound: false,
+        prodStatus: null, // null | 'not_found' | 'pending' | 'found'
+        prodStatusMsg: '',
 
         init() {
             this.loadEstadoActual();
@@ -56,6 +58,8 @@ export default function estadoPedidosIberianaTestManager() {
             this.pedidoLineasProd = [];
             this.selectedLineaProd = null;
             this.prodNotFound = false;
+            this.prodStatus = null;
+            this.prodStatusMsg = '';
             console.log('[TEST] Item del historial clicado:', JSON.stringify(item));
             try {
                 // -- Cargar datos de TEST --
@@ -66,53 +70,51 @@ export default function estadoPedidosIberianaTestManager() {
                 const urlHeader = usarNumPedido
                     ? `http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana-test/pedido-by-num/${numPedido}`
                     : `http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana-test/pedido/${idpedido}`;
-                console.log('[TEST] Fetch cabecera URL:', urlHeader);
                 const resHeader = await fetch(urlHeader);
-                console.log('[TEST] Respuesta cabecera status:', resHeader.status);
                 const header = await resHeader.json();
                 console.log('[TEST] Datos cabecera:', JSON.stringify(header));
                 this.pedidoDetail = header;
 
                 if (this.pedidoDetail?.PED_idpedido) {
                     const urlLineas = `http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana-test/pedido-lineas/${this.pedidoDetail.PED_idpedido}`;
-                    console.log('[TEST] Fetch lineas URL:', urlLineas);
                     const resLineas = await fetch(urlLineas);
-                    console.log('[TEST] Respuesta lineas status:', resLineas.status);
-                    const lineas = await resLineas.json();
-                    console.log('[TEST] Datos lineas:', JSON.stringify(lineas));
-                    this.pedidoLineas = lineas;
-                } else {
-                    console.warn('[TEST] No se encontro PED_idpedido en la cabecera, no se buscan lineas');
+                    this.pedidoLineas = await resLineas.json();
                 }
 
-                // -- Cargar datos de PRODUCCION --
-                const bestellnr = this.pedidoDetail?.PED_BESTELLNR;
-                const cliente = this.pedidoDetail?.PED_idcliente;
-                const fechapedido = this.pedidoDetail?.PED_fechapedido ? new Date(this.pedidoDetail.PED_fechapedido).toISOString().split('T')[0] : '';
-                const iddestino = this.pedidoDetail?.PED_iddestino;
-                const referencia = this.pedidoDetail?.PED_referencia;
-                if (cliente) {
-                    const params = new URLSearchParams();
-                    params.set('cliente', cliente);
-                    if (bestellnr) params.set('bestellnr', bestellnr);
-                    if (fechapedido) params.set('fechapedido', fechapedido);
-                    if (iddestino) params.set('iddestino', iddestino);
-                    if (referencia) params.set('referencia', referencia);
-                    console.log('[PROD] Buscando en produccion:', params.toString());
-                    const urlProd = `http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana-test/pedido-prod?${params.toString()}`;
+                // -- Cargar datos de PRODUCCION (via EstadoPedidosIBERIANA de prod) --
+                const refPedido = item.ref_pedido;
+                const cliente = item.cliente;
+                if (refPedido && cliente) {
+                    const params = new URLSearchParams({ ref_pedido: refPedido, cliente });
+                    console.log('[PROD] Buscando por ref_pedido en prod:', params.toString());
+                    const urlProd = `http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana-test/pedido-prod-by-ref?${params.toString()}`;
                     const resProd = await fetch(urlProd);
+
                     if (resProd.status === 404) {
-                        console.log('[PROD] No encontrado en produccion');
+                        console.log('[PROD] No creado todavia en produccion');
                         this.prodNotFound = true;
+                        this.prodStatus = 'not_found';
+                        this.prodStatusMsg = 'No creado todavia en produccion';
+                    } else if (resProd.status === 202) {
+                        const pending = await resProd.json();
+                        console.log('[PROD] En proceso en produccion:', pending.status);
+                        this.prodNotFound = true;
+                        this.prodStatus = 'pending';
+                        this.prodStatusMsg = pending.status === 'error'
+                            ? `Error en produccion: ${pending.mensaje || 'sin detalle'}`
+                            : `En proceso en produccion (${pending.status})`;
                     } else if (resProd.ok) {
                         const prodData = await resProd.json();
                         console.log('[PROD] Datos produccion:', JSON.stringify(prodData));
                         this.pedidoDetailProd = prodData.header;
                         this.pedidoLineasProd = prodData.lineas;
+                        this.prodStatus = 'found';
                     }
                 } else {
-                    console.warn('[PROD] No hay cliente para buscar en produccion');
+                    console.warn('[PROD] No hay ref_pedido/cliente para buscar en produccion');
                     this.prodNotFound = true;
+                    this.prodStatus = 'not_found';
+                    this.prodStatusMsg = 'Sin datos para buscar en produccion';
                 }
             } catch (err) {
                 console.error("Error cargando detalle pedido Iberiana Test:", err);
@@ -128,6 +130,8 @@ export default function estadoPedidosIberianaTestManager() {
             this.pedidoLineasProd = [];
             this.selectedLineaProd = null;
             this.prodNotFound = false;
+            this.prodStatus = null;
+            this.prodStatusMsg = '';
         },
 
         pilotColor() {
