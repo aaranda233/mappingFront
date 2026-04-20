@@ -81,12 +81,18 @@ export default function estadoPedidosIberianaTestManager() {
                     this.pedidoLineas = await resLineas.json();
                 }
 
-                // -- Cargar datos de PRODUCCION (por bestellnr + cliente, mismo patron que historico mapping) --
+                // -- Cargar datos de PRODUCCION (por bestellnr + cliente + fechapedido) --
+                // Matching: mismo expediente (BESTELLNR) + mismo cliente + misma fecha de pedido
+                // Esto garantiza que comparamos exactamente el mismo PDF procesado en ambos entornos
                 const bestellnr = this.pedidoDetail?.PED_BESTELLNR;
                 const cliente = this.pedidoDetail?.PED_idcliente;
+                const fechapedido = this.pedidoDetail?.PED_fechapedido
+                    ? new Date(this.pedidoDetail.PED_fechapedido).toISOString().split('T')[0]
+                    : '';
                 if (bestellnr && cliente) {
                     const params = new URLSearchParams({ bestellnr, cliente });
-                    console.log('[PROD] Buscando por bestellnr en prod:', params.toString());
+                    if (fechapedido) params.set('fechapedido', fechapedido);
+                    console.log('[PROD] Buscando por bestellnr+cliente+fecha en prod:', params.toString());
                     const urlProd = `http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana-test/pedido-prod-by-ref?${params.toString()}`;
                     const resProd = await fetch(urlProd);
 
