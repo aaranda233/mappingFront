@@ -115,14 +115,11 @@ export default function estadoPedidosIberianaTestManager() {
                     cliente = header?.PED_idcliente || cliente;
                 }
 
-                // -- Cargar datos de PRODUCCION (por bestellnr + cliente + fechapedido) --
-                // Matching: mismo expediente (BESTELLNR) + mismo cliente + misma fecha de pedido
-                const fechapedido = this.pedidoDetail?.PED_fechapedido
-                    ? new Date(this.pedidoDetail.PED_fechapedido).toISOString().split('T')[0]
-                    : '';
+                // -- Cargar datos de PRODUCCION (por bestellnr + cliente) --
+                // Busca en PED_BESTELLNR (bio) y PED_NumeroPedido (conv)
                 if (bestellnr && cliente) {
-                    const params = new URLSearchParams({ bestellnr, cliente, fechapedido });
-                    console.log('[PROD] Buscando por bestellnr+cliente+fecha en prod:', params.toString());
+                    const params = new URLSearchParams({ bestellnr, cliente });
+                    console.log('[PROD] Buscando por bestellnr+cliente en prod:', params.toString());
                     const urlProd = `http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana-test/pedido-prod-by-ref?${params.toString()}`;
                     const resProd = await fetch(urlProd);
 
