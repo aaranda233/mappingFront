@@ -62,30 +62,61 @@ export default function estadoPedidosIberianaTestManager() {
             this.prodStatusMsg = '';
             console.log('[TEST] Item del historial clicado:', JSON.stringify(item));
             try {
-                // -- Cargar datos de TEST --
-                const idpedido = item.id_pedido_net;
+                // -- Cargar datos de TEST desde Desarrollo (donde el PHP inserta) --
+                // El historial tiene ref_pedido y cliente, pero necesitamos el bestellnr
+                // Primero obtenemos el bestellnr del pedido viejo en NetAgroComer (solo para lookup)
                 const numPedido = item.pedido;
-                const usarNumPedido = !idpedido || idpedido === 0;
-                console.log('[TEST] id_pedido_net:', idpedido, '| pedido:', numPedido, '| buscar por:', usarNumPedido ? 'numPedido' : 'idpedido');
-                const urlHeader = usarNumPedido
-                    ? `http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana-test/pedido-by-num/${numPedido}`
-                    : `http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana-test/pedido/${idpedido}`;
-                const resHeader = await fetch(urlHeader);
-                const header = await resHeader.json();
-                console.log('[TEST] Datos cabecera:', JSON.stringify(header));
-                this.pedidoDetail = header;
+                let bestellnr = '';
+                let cliente = item.cliente;
+                if (numPedido && numPedido !== '0') {
+                    const resOld = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana-test/pedido-by-num/${numPedido}`);
+                    if (resOld.ok) {
+                        const oldHeader = await resOld.json();
+                        bestellnr = oldHeader.PED_BESTELLNR || '';
+                        if (!cliente) cliente = oldHeader.PED_idcliente;
+                    }
+                }
 
-                if (this.pedidoDetail?.PED_idpedido) {
-                    const urlLineas = `http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana-test/pedido-lineas/${this.pedidoDetail.PED_idpedido}`;
-                    const resLineas = await fetch(urlLineas);
-                    this.pedidoLineas = await resLineas.json();
+                // Con el bestellnr, buscar el pedido REAL en Desarrollo.dbo.Pedidos
+                if (bestellnr && cliente) {
+                    const params = new URLSearchParams({ bestellnr, cliente });
+                    console.log('[TEST] Buscando en Desarrollo por bestellnr:', params.toString());
+                    const resTest = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana-test/pedido-test-desarrollo?${params.toString()}`);
+                    if (resTest.ok) {
+                        const testData = await resTest.json();
+                        this.pedidoDetail = testData.header;
+                        this.pedidoLineas = testData.lineas;
+                        console.log('[TEST] Datos desde Desarrollo:', JSON.stringify(testData.header));
+                    } else {
+                        console.warn('[TEST] No encontrado en Desarrollo, fallback a NetAgroComer');
+                        // Fallback: usar el pedido viejo de NetAgroComer
+                        const resHeader = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana-test/pedido-by-num/${numPedido}`);
+                        const header = await resHeader.json();
+                        this.pedidoDetail = header;
+                        if (header?.PED_idpedido) {
+                            const resLineas = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana-test/pedido-lineas/${header.PED_idpedido}`);
+                            this.pedidoLineas = await resLineas.json();
+                        }
+                    }
+                } else {
+                    // Sin bestellnr, usar el endpoint viejo
+                    const idpedido = item.id_pedido_net;
+                    const urlHeader = (!idpedido || idpedido === 0)
+                        ? `http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana-test/pedido-by-num/${numPedido}`
+                        : `http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana-test/pedido/${idpedido}`;
+                    const resHeader = await fetch(urlHeader);
+                    const header = await resHeader.json();
+                    this.pedidoDetail = header;
+                    if (header?.PED_idpedido) {
+                        const resLineas = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana-test/pedido-lineas/${header.PED_idpedido}`);
+                        this.pedidoLineas = await resLineas.json();
+                    }
+                    bestellnr = header?.PED_BESTELLNR || '';
+                    cliente = header?.PED_idcliente || cliente;
                 }
 
                 // -- Cargar datos de PRODUCCION (por bestellnr + cliente + fechapedido) --
                 // Matching: mismo expediente (BESTELLNR) + mismo cliente + misma fecha de pedido
-                // Esto garantiza que comparamos exactamente el mismo PDF procesado en ambos entornos
-                const bestellnr = this.pedidoDetail?.PED_BESTELLNR;
-                const cliente = this.pedidoDetail?.PED_idcliente;
                 const fechapedido = this.pedidoDetail?.PED_fechapedido
                     ? new Date(this.pedidoDetail.PED_fechapedido).toISOString().split('T')[0]
                     : '';
