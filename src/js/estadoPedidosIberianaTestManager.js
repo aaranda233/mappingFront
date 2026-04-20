@@ -90,8 +90,7 @@ export default function estadoPedidosIberianaTestManager() {
                     ? new Date(this.pedidoDetail.PED_fechapedido).toISOString().split('T')[0]
                     : '';
                 if (bestellnr && cliente) {
-                    const params = new URLSearchParams({ bestellnr, cliente });
-                    if (fechapedido) params.set('fechapedido', fechapedido);
+                    const params = new URLSearchParams({ bestellnr, cliente, fechapedido });
                     console.log('[PROD] Buscando por bestellnr+cliente+fecha en prod:', params.toString());
                     const urlProd = `http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana-test/pedido-prod-by-ref?${params.toString()}`;
                     const resProd = await fetch(urlProd);
