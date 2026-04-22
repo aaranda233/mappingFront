@@ -21,6 +21,14 @@ export default {
         current: null,
         pilotColor: 'green'
     },
+    estadoPedidosAnecoop: {
+        current: null,
+        pilotColor: 'green'
+    },
+    estadoPedidosAnecoopTest: {
+        current: null,
+        pilotColor: 'green'
+    },
     async fetchUserInfo() {
         // En modo dev, asignar permisos base sin admin y saltar OAuth/BD
         if (window.env.VERSION && window.env.VERSION.toLowerCase() === 'dev') {
@@ -141,6 +149,42 @@ export default {
             }
         } catch (e) {
             console.error("Error fetching estado pedidos iberiana test", e);
+        }
+    },
+    async fetchEstadoPedidosAnecoop() {
+        try {
+            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-anecoop/actual`);
+            const data = await res.json();
+            this.estadoPedidosAnecoop.current = data.current;
+            if (!data.current) {
+                this.estadoPedidosAnecoop.pilotColor = 'green';
+            } else if (data.current.estado === 'procesando') {
+                this.estadoPedidosAnecoop.pilotColor = 'yellow';
+            } else if (data.current.estado === 'error') {
+                this.estadoPedidosAnecoop.pilotColor = 'red';
+            } else {
+                this.estadoPedidosAnecoop.pilotColor = 'green';
+            }
+        } catch (e) {
+            console.error("Error fetching estado pedidos anecoop", e);
+        }
+    },
+    async fetchEstadoPedidosAnecoopTest() {
+        try {
+            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-anecoop-test/actual`);
+            const data = await res.json();
+            this.estadoPedidosAnecoopTest.current = data.current;
+            if (!data.current) {
+                this.estadoPedidosAnecoopTest.pilotColor = 'green';
+            } else if (data.current.estado === 'procesando') {
+                this.estadoPedidosAnecoopTest.pilotColor = 'yellow';
+            } else if (data.current.estado === 'error') {
+                this.estadoPedidosAnecoopTest.pilotColor = 'red';
+            } else {
+                this.estadoPedidosAnecoopTest.pilotColor = 'green';
+            }
+        } catch (e) {
+            console.error("Error fetching estado pedidos anecoop test", e);
         }
     }
 }
