@@ -131,10 +131,10 @@ export default function estadoPedidosAnecoopTestManager() {
         },
 
         pilotColor() {
-            if (!this.current) return 'green';
+            if (!this.current) return 'gray';
             if (this.current.estado === 'procesando') return 'yellow';
             if (this.current.estado === 'error') return 'red';
-            return 'green';
+            return 'gray';
         },
 
         formatFecha(fecha) {

@@ -23,11 +23,11 @@ export default {
     },
     estadoPedidosAnecoop: {
         current: null,
-        pilotColor: 'green'
+        pilotColor: 'gray'
     },
     estadoPedidosAnecoopTest: {
         current: null,
-        pilotColor: 'green'
+        pilotColor: 'gray'
     },
     async fetchUserInfo() {
         // En modo dev, asignar permisos base sin admin y saltar OAuth/BD
@@ -157,13 +157,13 @@ export default {
             const data = await res.json();
             this.estadoPedidosAnecoop.current = data.current;
             if (!data.current) {
-                this.estadoPedidosAnecoop.pilotColor = 'green';
+                this.estadoPedidosAnecoop.pilotColor = 'gray';
             } else if (data.current.estado === 'procesando') {
                 this.estadoPedidosAnecoop.pilotColor = 'yellow';
             } else if (data.current.estado === 'error') {
                 this.estadoPedidosAnecoop.pilotColor = 'red';
             } else {
-                this.estadoPedidosAnecoop.pilotColor = 'green';
+                this.estadoPedidosAnecoop.pilotColor = 'gray';
             }
         } catch (e) {
             console.error("Error fetching estado pedidos anecoop", e);
@@ -175,13 +175,13 @@ export default {
             const data = await res.json();
             this.estadoPedidosAnecoopTest.current = data.current;
             if (!data.current) {
-                this.estadoPedidosAnecoopTest.pilotColor = 'green';
+                this.estadoPedidosAnecoopTest.pilotColor = 'gray';
             } else if (data.current.estado === 'procesando') {
                 this.estadoPedidosAnecoopTest.pilotColor = 'yellow';
             } else if (data.current.estado === 'error') {
                 this.estadoPedidosAnecoopTest.pilotColor = 'red';
             } else {
-                this.estadoPedidosAnecoopTest.pilotColor = 'green';
+                this.estadoPedidosAnecoopTest.pilotColor = 'gray';
             }
         } catch (e) {
             console.error("Error fetching estado pedidos anecoop test", e);
