@@ -104,7 +104,9 @@
                         src="/iberiana.png" alt="Iberiana" class="w-8 h-8 object-contain" />
                       <img x-show="item.cliente && item.cliente.toUpperCase().includes('EUROGROUP')"
                         src="/eurogroup.png" alt="Eurogroup" class="w-8 h-8 object-contain" />
-                      <img x-show="!item.cliente || (!item.cliente.toUpperCase().includes('IBERIANA') && !item.cliente.toUpperCase().includes('EUROGROUP'))"
+                      <img x-show="item.cliente && item.cliente.toUpperCase().includes('ANECOOP')"
+                        src="/anecoop.png" alt="Anecoop" class="w-8 h-8 object-contain" />
+                      <img x-show="!item.cliente || (!item.cliente.toUpperCase().includes('IBERIANA') && !item.cliente.toUpperCase().includes('EUROGROUP') && !item.cliente.toUpperCase().includes('ANECOOP'))"
                         src="/edeka.png" alt="EDEKA" class="w-8 h-8 object-contain rounded" />
                     </div>
                     <h2 class="text-lg font-bold text-gray-800">Transporte</h2>
