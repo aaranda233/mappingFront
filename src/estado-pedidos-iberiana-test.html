@@ -300,7 +300,7 @@
               <span style="position:absolute; top:179px; left:493px;" :class="{'diff-hl': diffH('PED_TransporteRapidoSN')}" x-text="pedidoDetail?.PED_TransporteRapidoSN"></span>
               <span style="position:absolute; top:179px; left:656px;" :class="{'diff-hl': diffH('PED_Lote')}" x-text="pedidoDetail?.PED_Lote"></span>
               <span style="position:absolute; top:86px; left:1155px; font-size:8pt;" :class="{'diff-hl': diffH('PED_BESTELLNR')}" x-text="pedidoDetail?.PED_BESTELLNR"></span>
-              <span style="position:absolute; top:125px; left:960px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" x-show="!(pedidoDetailProd && !prodNotFound)" :class="{'diff-hl': diffH('PED_obs1')}" x-text="pedidoDetail?.PED_obs1"></span>
+              <span style="position:absolute; top:125px; left:960px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" :class="{'diff-hl': diffH('PED_obs1')}" x-text="pedidoDetail?.PED_obs1"></span>
               <span style="position:absolute; top:147px; left:960px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap;" x-show="!(pedidoDetailProd && !prodNotFound)" :class="{'diff-hl': diffH('PED_obs2')}" x-text="pedidoDetail?.PED_obs2"></span>
               <span style="position:absolute; top:169px; left:960px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap;" x-show="!(pedidoDetailProd && !prodNotFound)" :class="{'diff-hl': diffH('PED_obs3')}" x-text="pedidoDetail?.PED_obs3"></span>
               <template x-if="pedidoLineas.length > 0">
@@ -398,7 +398,7 @@
                 <span style="position:absolute; top:179px; left:493px;" :class="{'diff-hl': diffH('PED_TransporteRapidoSN')}" x-text="pedidoDetailProd?.PED_TransporteRapidoSN"></span>
                 <span style="position:absolute; top:179px; left:656px;" :class="{'diff-hl': diffH('PED_Lote')}" x-text="pedidoDetailProd?.PED_Lote"></span>
                 <span style="position:absolute; top:86px; left:1155px; font-size:8pt;" :class="{'diff-hl': diffH('PED_BESTELLNR')}" x-text="pedidoDetailProd?.PED_BESTELLNR"></span>
-                <span style="position:absolute; top:125px; left:960px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" x-show="!(pedidoDetail && pedidoDetailProd)" :class="{'diff-hl': diffH('PED_obs1')}" x-text="pedidoDetailProd?.PED_obs1"></span>
+                <span style="position:absolute; top:125px; left:960px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" :class="{'diff-hl': diffH('PED_obs1')}" x-text="pedidoDetailProd?.PED_obs1"></span>
                 <span style="position:absolute; top:147px; left:960px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap;" x-show="!(pedidoDetail && pedidoDetailProd)" :class="{'diff-hl': diffH('PED_obs2')}" x-text="pedidoDetailProd?.PED_obs2"></span>
                 <span style="position:absolute; top:169px; left:960px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap;" x-show="!(pedidoDetail && pedidoDetailProd)" :class="{'diff-hl': diffH('PED_obs3')}" x-text="pedidoDetailProd?.PED_obs3"></span>
                 <template x-if="pedidoLineasProd.length > 0">
