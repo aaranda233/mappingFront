@@ -223,9 +223,9 @@
               <span style="position:absolute; top:179px; left:493px;" x-text="pedidoDetail?.PED_TransporteRapidoSN"></span>
               <span style="position:absolute; top:179px; left:656px;" x-text="pedidoDetail?.PED_Lote"></span>
               <span style="position:absolute; top:86px; left:1155px; font-size:8pt;" x-text="pedidoDetail?.PED_BESTELLNR"></span>
-              <span style="position:absolute; top:125px; left:960px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" x-text="pedidoDetail?.PED_obs1"></span>
-              <span style="position:absolute; top:147px; left:960px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap;" x-text="pedidoDetail?.PED_obs2"></span>
-              <span style="position:absolute; top:169px; left:960px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap;" x-text="pedidoDetail?.PED_obs3"></span>
+              <span x-show="!(pedidoDetailProd && !prodNotFound)" style="position:absolute; top:125px; left:960px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" x-text="pedidoDetail?.PED_obs1"></span>
+              <span x-show="!(pedidoDetailProd && !prodNotFound)" style="position:absolute; top:147px; left:960px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap;" x-text="pedidoDetail?.PED_obs2"></span>
+              <span x-show="!(pedidoDetailProd && !prodNotFound)" style="position:absolute; top:169px; left:960px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap;" x-text="pedidoDetail?.PED_obs3"></span>
               <template x-if="pedidoLineas.length > 0">
                 <div>
                   <span style="position:absolute; top:240px; left:155px;" x-text="pedidoLineas[selectedLinea ?? 0]?.PEL_idgenero"></span>
@@ -321,9 +321,9 @@
                 <span style="position:absolute; top:179px; left:493px;" x-text="pedidoDetailProd?.PED_TransporteRapidoSN"></span>
                 <span style="position:absolute; top:179px; left:656px;" x-text="pedidoDetailProd?.PED_Lote"></span>
                 <span style="position:absolute; top:86px; left:1155px; font-size:8pt;" x-text="pedidoDetailProd?.PED_BESTELLNR"></span>
-                <span style="position:absolute; top:125px; left:960px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" x-text="pedidoDetailProd?.PED_obs1"></span>
-                <span style="position:absolute; top:147px; left:960px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap;" x-text="pedidoDetailProd?.PED_obs2"></span>
-                <span style="position:absolute; top:169px; left:960px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap;" x-text="pedidoDetailProd?.PED_obs3"></span>
+                <span x-show="!(pedidoDetail && pedidoDetailProd)" style="position:absolute; top:125px; left:960px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" x-text="pedidoDetailProd?.PED_obs1"></span>
+                <span x-show="!(pedidoDetail && pedidoDetailProd)" style="position:absolute; top:147px; left:960px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap;" x-text="pedidoDetailProd?.PED_obs2"></span>
+                <span x-show="!(pedidoDetail && pedidoDetailProd)" style="position:absolute; top:169px; left:960px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap;" x-text="pedidoDetailProd?.PED_obs3"></span>
                 <template x-if="pedidoLineasProd.length > 0">
                   <div>
                     <span style="position:absolute; top:240px; left:155px;" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.PEL_idgenero"></span>
