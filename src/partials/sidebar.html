@@ -1,5 +1,5 @@
 <aside :class="sidebarToggle ? 'translate-x-0 lg:w-[90px]' : '-translate-x-full'"
-  class="sidebar fixed left-0 top-0 z-50 flex h-screen w-[290px] flex-col overflow-y-auto border-r border-gray-200 bg-white px-5 dark:border-gray-800 dark:bg-black lg:static lg:translate-x-0">
+  class="sidebar fixed left-0 top-0 z-50 flex h-screen w-[290px] flex-col overflow-y-auto border-r border-gray-200 bg-white px-5 pb-4 dark:border-gray-800 dark:bg-black lg:static lg:translate-x-0">
   <!-- SIDEBAR HEADER -->
   <div :class="sidebarToggle ? 'justify-center' : 'justify-between'"
     class="flex items-center gap-2 pt-8 sidebar-header pb-7">
@@ -265,4 +265,30 @@
     </ul>
 
   </nav>
+
+  <!-- Switch global BIO / Convencional (persistente en localStorage) -->
+  <div class="mt-auto pt-6" :class="sidebarToggle ? 'lg:hidden' : ''">
+    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+      Filtro
+    </p>
+    <div role="radiogroup" aria-label="Filtro BIO / Convencional"
+      class="relative flex items-center bg-gray-100 dark:bg-gray-800 rounded-full p-1 w-full">
+      <span aria-hidden="true"
+        class="absolute top-1 bottom-1 w-1/2 rounded-full shadow transition-all duration-300 ease-out"
+        :class="$store.global.bioMode === 'BIO' ? 'left-1 bg-green-500' : 'left-[calc(50%-0.25rem)] bg-[#003a4b]'">
+      </span>
+      <button type="button" role="radio" :aria-checked="$store.global.bioMode === 'BIO'"
+        @click="$store.global.setBioMode('BIO')"
+        class="relative z-10 flex-1 px-3 py-1.5 text-xs font-semibold rounded-full transition-colors duration-200"
+        :class="$store.global.bioMode === 'BIO' ? 'text-white' : 'text-gray-600 dark:text-gray-300 hover:text-gray-800'">
+        BIO
+      </button>
+      <button type="button" role="radio" :aria-checked="$store.global.bioMode === 'Convencional'"
+        @click="$store.global.setBioMode('Convencional')"
+        class="relative z-10 flex-1 px-3 py-1.5 text-xs font-semibold rounded-full transition-colors duration-200"
+        :class="$store.global.bioMode === 'Convencional' ? 'text-white' : 'text-gray-600 dark:text-gray-300 hover:text-gray-800'">
+        Convencional
+      </button>
+    </div>
+  </div>
 </aside>

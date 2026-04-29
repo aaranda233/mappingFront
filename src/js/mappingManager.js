@@ -7,6 +7,15 @@ export default function mappingManager() {
         pdfModalOpen: false,
         pdfBlobUrl: null,
 
+        get filteredMappings() {
+            const mode = (window.Alpine && window.Alpine.store('global')?.bioMode) || 'BIO';
+            const isBio = mode === 'BIO';
+            return this.mappings.filter(m => {
+                const desc = (m.descripcion || '').toUpperCase();
+                return isBio ? desc.includes('BIO') : !desc.includes('BIO');
+            });
+        },
+
         init() {
             this.loadMappings();
             setInterval(() => this.loadMappings(), 10000); // refresco continuo

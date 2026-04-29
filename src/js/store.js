@@ -1,6 +1,23 @@
 export default {
     userEmail: '',
     userPermisos: [],
+    bioMode: (typeof localStorage !== 'undefined' && localStorage.getItem('bioMode')) || 'BIO',
+    setBioMode(value) {
+        if (value !== 'BIO' && value !== 'Convencional') return;
+        this.bioMode = value;
+        try { localStorage.setItem('bioMode', value); } catch (e) {}
+        // Refrescar fuentes que dependen del filtro
+        this.fetchCounts();
+        this.fetchEstadoPedidos();
+        this.fetchEstadoPedidosEurogroup();
+        this.fetchEstadoPedidosIberiana();
+        this.fetchEstadoPedidosIberianaTest();
+        this.fetchEstadoPedidosAnecoop();
+        this.fetchEstadoPedidosAnecoopTest();
+    },
+    get bioCentro() {
+        return this.bioMode === 'BIO' ? 10 : 1;
+    },
     counts: {
         pedidos: 0,
         transportes: 0
@@ -66,10 +83,14 @@ export default {
     },
     async fetchCounts() {
         try {
-            // Fetch Pedidos count
+            // Fetch Pedidos count (filtrado por modo BIO/Convencional)
             const resPedidos = await fetch(`http://${window.env.IP_BACKEND}/api/mapping`);
             const pedidos = await resPedidos.json();
-            this.counts.pedidos = pedidos.length;
+            const isBio = this.bioMode === 'BIO';
+            this.counts.pedidos = pedidos.filter(p => {
+                const desc = (p.descripcion || '').toUpperCase();
+                return isBio ? desc.includes('BIO') : !desc.includes('BIO');
+            }).length;
 
             // Fetch Transportes count
             const resTransportes = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/transportes`);
@@ -81,7 +102,7 @@ export default {
     },
     async fetchEstadoPedidos() {
         try {
-            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos/actual`);
+            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos/actual?centro=${this.bioCentro}`);
             const data = await res.json();
             this.estadoPedidos.current = data.current;
             if (!data.current) {
@@ -99,7 +120,7 @@ export default {
     },
     async fetchEstadoPedidosEurogroup() {
         try {
-            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-eurogroup/actual`);
+            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-eurogroup/actual?centro=${this.bioCentro}`);
             const data = await res.json();
             this.estadoPedidosEurogroup.current = data.current;
             if (!data.current) {
@@ -117,7 +138,7 @@ export default {
     },
     async fetchEstadoPedidosIberiana() {
         try {
-            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana/actual`);
+            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana/actual?centro=${this.bioCentro}`);
             const data = await res.json();
             this.estadoPedidosIberiana.current = data.current;
             if (!data.current) {
@@ -135,7 +156,7 @@ export default {
     },
     async fetchEstadoPedidosIberianaTest() {
         try {
-            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana-test/actual`);
+            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana-test/actual?centro=${this.bioCentro}`);
             const data = await res.json();
             this.estadoPedidosIberianaTest.current = data.current;
             if (!data.current) {
@@ -153,7 +174,7 @@ export default {
     },
     async fetchEstadoPedidosAnecoop() {
         try {
-            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-anecoop/actual`);
+            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-anecoop/actual?centro=${this.bioCentro}`);
             const data = await res.json();
             this.estadoPedidosAnecoop.current = data.current;
             if (!data.current) {
@@ -171,7 +192,7 @@ export default {
     },
     async fetchEstadoPedidosAnecoopTest() {
         try {
-            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-anecoop-test/actual`);
+            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-anecoop-test/actual?centro=${this.bioCentro}`);
             const data = await res.json();
             this.estadoPedidosAnecoopTest.current = data.current;
             if (!data.current) {

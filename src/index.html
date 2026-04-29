@@ -51,7 +51,7 @@
 
         <!--  Cards o mensaje vacío -->
         <div class="p-6">
-          <template x-if="mappings.length === 0 && !loading">
+          <template x-if="filteredMappings.length === 0 && !loading">
             <div class="flex flex-col items-center justify-center text-center text-gray-600 mt-10">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-400 mb-4" fill="none"
                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -62,8 +62,8 @@
             </div>
           </template>
 
-          <div x-show="mappings.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            <template x-for="(item, index) in mappings" :key="item.id">
+          <div x-show="filteredMappings.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <template x-for="(item, index) in filteredMappings" :key="item.id">
               <div x-show="!item.enviado" x-transition.duration.300ms
                 :class="item.mostrarResultados ? 'relative z-50' : 'relative z-0'">
                 <div
