@@ -105,8 +105,8 @@ export default {
             const pedidos = await resPedidos.json();
             this.counts.pedidos = pedidos.length;
 
-            // Fetch Transportes count
-            const resTransportes = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/transportes`);
+            // Fetch Transportes count (filtrado por PED_idcentro en backend si no es Mostrar Todos)
+            const resTransportes = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/transportes${this._centroQuery()}`);
             const transportes = await resTransportes.json();
             this.counts.transportes = transportes.length;
         } catch (e) {

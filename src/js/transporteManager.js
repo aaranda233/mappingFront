@@ -10,13 +10,27 @@ export default function transportesManager() {
         init() {
             this.loadTransportes();
             setInterval(() => this.loadTransportes(), 10000);
+            // Recargar al cambiar el filtro BIO/Convencional o Mostrar Todos sin vaciar la lista
+            if (window.Alpine) {
+                let primero = true;
+                window.Alpine.effect(() => {
+                    void window.Alpine.store('global').bioCentro;
+                    if (primero) { primero = false; return; }
+                    this.loadTransportes();
+                });
+            }
         },
 
         async loadTransportes() {
             if (this.primeraCarga) this.loading = true;
 
             try {
-                const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/transportes`);
+                const store = window.Alpine && window.Alpine.store('global');
+                const centro = store ? store.bioCentro : null;
+                const url = centro === null
+                    ? `http://${window.env.IP_BACKEND}/api/mapping/transportes`
+                    : `http://${window.env.IP_BACKEND}/api/mapping/transportes?centro=${centro}`;
+                const res = await fetch(url);
                 const data = await res.json();
 
                 const nuevos = [];
