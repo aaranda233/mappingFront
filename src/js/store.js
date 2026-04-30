@@ -2,7 +2,11 @@ export default {
     userEmail: '',
     userPermisos: [],
     bioMode: (typeof localStorage !== 'undefined' && localStorage.getItem('bioMode')) || 'BIO',
-    mostrarTodos: (typeof localStorage !== 'undefined' && localStorage.getItem('mostrarTodos') === 'true') || false,
+    mostrarTodos: (() => {
+        if (typeof localStorage === 'undefined') return true;
+        const v = localStorage.getItem('mostrarTodos');
+        return v === null ? true : v === 'true';
+    })(),
     setBioMode(value) {
         if (this.mostrarTodos) return;
         if (value !== 'BIO' && value !== 'Convencional') return;
