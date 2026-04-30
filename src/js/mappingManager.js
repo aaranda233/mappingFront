@@ -16,12 +16,12 @@ export default function mappingManager() {
         init() {
             this.loadMappings();
             setInterval(() => this.loadMappings(), 10000); // refresco continuo
-            // Recargar al cambiar el filtro BIO/Convencional o Mostrar Todos
+            // Recargar al cambiar el filtro BIO/Convencional o Mostrar Todos sin vaciar la lista
             if (window.Alpine) {
+                let primero = true;
                 window.Alpine.effect(() => {
-                    const _ = window.Alpine.store('global').bioCentro;
-                    this.mappings = [];
-                    this.primeraCarga = true;
+                    void window.Alpine.store('global').bioCentro;
+                    if (primero) { primero = false; return; }
                     this.loadMappings();
                 });
             }
