@@ -10,6 +10,15 @@ export default function estadoPedidosEurogroupManager() {
             this.loadEstadoActual();
             setInterval(() => this.loadEstadoActual(), 1000);
             setInterval(() => { if (this.showHistorial) this.loadHistorial(); }, 5000);
+            if (window.Alpine) {
+                let primero = true;
+                window.Alpine.effect(() => {
+                    void window.Alpine.store('global').bioCentro;
+                    if (primero) { primero = false; return; }
+                    this.loadEstadoActual();
+                    if (this.showHistorial) this.loadHistorial();
+                });
+            }
         },
 
         _centroQuery() {
