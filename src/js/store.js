@@ -2,11 +2,20 @@ export default {
     userEmail: '',
     userPermisos: [],
     bioMode: (typeof localStorage !== 'undefined' && localStorage.getItem('bioMode')) || 'BIO',
+    mostrarTodos: (typeof localStorage !== 'undefined' && localStorage.getItem('mostrarTodos') === 'true') || false,
     setBioMode(value) {
+        if (this.mostrarTodos) return;
         if (value !== 'BIO' && value !== 'Convencional') return;
         this.bioMode = value;
         try { localStorage.setItem('bioMode', value); } catch (e) {}
-        // Refrescar fuentes que dependen del filtro
+        this._refreshAllSources();
+    },
+    setMostrarTodos(value) {
+        this.mostrarTodos = !!value;
+        try { localStorage.setItem('mostrarTodos', this.mostrarTodos ? 'true' : 'false'); } catch (e) {}
+        this._refreshAllSources();
+    },
+    _refreshAllSources() {
         this.fetchCounts();
         this.fetchEstadoPedidos();
         this.fetchEstadoPedidosEurogroup();
@@ -16,7 +25,11 @@ export default {
         this.fetchEstadoPedidosAnecoopTest();
     },
     get bioCentro() {
+        if (this.mostrarTodos) return null;
         return this.bioMode === 'BIO' ? 10 : 1;
+    },
+    _centroQuery() {
+        return this.bioCentro === null ? '' : `?centro=${this.bioCentro}`;
     },
     counts: {
         pedidos: 0,
@@ -83,14 +96,10 @@ export default {
     },
     async fetchCounts() {
         try {
-            // Fetch Pedidos count (filtrado por modo BIO/Convencional)
-            const resPedidos = await fetch(`http://${window.env.IP_BACKEND}/api/mapping`);
+            // Fetch Pedidos count (filtrado por PED_idCentro en backend si no es Mostrar Todos)
+            const resPedidos = await fetch(`http://${window.env.IP_BACKEND}/api/mapping${this._centroQuery()}`);
             const pedidos = await resPedidos.json();
-            const isBio = this.bioMode === 'BIO';
-            this.counts.pedidos = pedidos.filter(p => {
-                const desc = (p.descripcion || '').toUpperCase();
-                return isBio ? desc.includes('BIO') : !desc.includes('BIO');
-            }).length;
+            this.counts.pedidos = pedidos.length;
 
             // Fetch Transportes count
             const resTransportes = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/transportes`);
@@ -102,7 +111,7 @@ export default {
     },
     async fetchEstadoPedidos() {
         try {
-            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos/actual?centro=${this.bioCentro}`);
+            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos/actual${this._centroQuery()}`);
             const data = await res.json();
             this.estadoPedidos.current = data.current;
             if (!data.current) {
@@ -120,7 +129,7 @@ export default {
     },
     async fetchEstadoPedidosEurogroup() {
         try {
-            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-eurogroup/actual?centro=${this.bioCentro}`);
+            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-eurogroup/actual${this._centroQuery()}`);
             const data = await res.json();
             this.estadoPedidosEurogroup.current = data.current;
             if (!data.current) {
@@ -138,7 +147,7 @@ export default {
     },
     async fetchEstadoPedidosIberiana() {
         try {
-            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana/actual?centro=${this.bioCentro}`);
+            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana/actual${this._centroQuery()}`);
             const data = await res.json();
             this.estadoPedidosIberiana.current = data.current;
             if (!data.current) {
@@ -156,7 +165,7 @@ export default {
     },
     async fetchEstadoPedidosIberianaTest() {
         try {
-            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana-test/actual?centro=${this.bioCentro}`);
+            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana-test/actual${this._centroQuery()}`);
             const data = await res.json();
             this.estadoPedidosIberianaTest.current = data.current;
             if (!data.current) {
@@ -174,7 +183,7 @@ export default {
     },
     async fetchEstadoPedidosAnecoop() {
         try {
-            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-anecoop/actual?centro=${this.bioCentro}`);
+            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-anecoop/actual${this._centroQuery()}`);
             const data = await res.json();
             this.estadoPedidosAnecoop.current = data.current;
             if (!data.current) {
@@ -192,7 +201,7 @@ export default {
     },
     async fetchEstadoPedidosAnecoopTest() {
         try {
-            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-anecoop-test/actual?centro=${this.bioCentro}`);
+            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-anecoop-test/actual${this._centroQuery()}`);
             const data = await res.json();
             this.estadoPedidosAnecoopTest.current = data.current;
             if (!data.current) {

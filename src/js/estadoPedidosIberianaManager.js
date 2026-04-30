@@ -12,13 +12,14 @@ export default function estadoPedidosIberianaManager() {
             setInterval(() => { if (this.showHistorial) this.loadHistorial(); }, 5000);
         },
 
-        get _centro() {
-            return (window.Alpine && window.Alpine.store('global')?.bioCentro) || 10;
+        _centroQuery() {
+            const c = window.Alpine && window.Alpine.store('global')?.bioCentro;
+            return c == null ? '' : `?centro=${c}`;
         },
 
         async loadEstadoActual() {
             try {
-                const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana/actual?centro=${this._centro}`);
+                const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana/actual${this._centroQuery()}`);
                 const data = await res.json();
                 this.current = data.current;
             } catch (err) {
@@ -28,7 +29,7 @@ export default function estadoPedidosIberianaManager() {
 
         async loadHistorial() {
             try {
-                const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana/historial?centro=${this._centro}`);
+                const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-iberiana/historial${this._centroQuery()}`);
                 this.historial = await res.json();
             } catch (err) {
                 console.error("Error cargando historial Iberiana:", err);

@@ -8,24 +8,35 @@ export default function mappingManager() {
         pdfBlobUrl: null,
 
         get filteredMappings() {
-            const mode = (window.Alpine && window.Alpine.store('global')?.bioMode) || 'BIO';
-            const isBio = mode === 'BIO';
-            return this.mappings.filter(m => {
-                const desc = (m.descripcion || '').toUpperCase();
-                return isBio ? desc.includes('BIO') : !desc.includes('BIO');
-            });
+            // El backend ya filtra por PED_idCentro cuando hay centro en la URL.
+            // Devolvemos tal cual lo recibido.
+            return this.mappings;
         },
 
         init() {
             this.loadMappings();
             setInterval(() => this.loadMappings(), 10000); // refresco continuo
+            // Recargar al cambiar el filtro BIO/Convencional o Mostrar Todos
+            if (window.Alpine) {
+                window.Alpine.effect(() => {
+                    const _ = window.Alpine.store('global').bioCentro;
+                    this.mappings = [];
+                    this.primeraCarga = true;
+                    this.loadMappings();
+                });
+            }
         },
 
         async loadMappings() {
             if (this.primeraCarga) this.loading = true;
 
             try {
-                const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping`);
+                const store = window.Alpine && window.Alpine.store('global');
+                const centro = store ? store.bioCentro : null;
+                const url = centro === null
+                    ? `http://${window.env.IP_BACKEND}/api/mapping`
+                    : `http://${window.env.IP_BACKEND}/api/mapping?centro=${centro}`;
+                const res = await fetch(url);
                 const data = await res.json();
 
                 const nuevos = [];

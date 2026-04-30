@@ -271,19 +271,30 @@
     <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
       Filtro
     </p>
+    <label class="flex items-center gap-2 mb-2 cursor-pointer select-none">
+      <input type="checkbox"
+        :checked="$store.global.mostrarTodos"
+        @change="$store.global.setMostrarTodos($event.target.checked)"
+        class="h-4 w-4 rounded border-gray-300 text-[#003a4b] focus:ring-[#003a4b] focus:ring-offset-0" />
+      <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Mostrar Todos</span>
+    </label>
     <div role="radiogroup" aria-label="Filtro BIO / Convencional"
-      class="relative flex items-center bg-gray-100 dark:bg-gray-800 rounded-full p-1 w-full">
+      :aria-disabled="$store.global.mostrarTodos"
+      class="relative flex items-center bg-gray-100 dark:bg-gray-800 rounded-full p-1 w-full transition-opacity"
+      :class="$store.global.mostrarTodos ? 'opacity-50 pointer-events-none' : ''">
       <span aria-hidden="true"
         class="absolute top-1 bottom-1 w-1/2 rounded-full shadow transition-all duration-300 ease-out"
         :class="$store.global.bioMode === 'BIO' ? 'left-1 bg-green-500' : 'left-[calc(50%-0.25rem)] bg-[#003a4b]'">
       </span>
       <button type="button" role="radio" :aria-checked="$store.global.bioMode === 'BIO'"
+        :disabled="$store.global.mostrarTodos"
         @click="$store.global.setBioMode('BIO')"
         class="relative z-10 flex-1 px-3 py-1.5 text-xs font-semibold rounded-full transition-colors duration-200"
         :class="$store.global.bioMode === 'BIO' ? 'text-white' : 'text-gray-600 dark:text-gray-300 hover:text-gray-800'">
         BIO
       </button>
       <button type="button" role="radio" :aria-checked="$store.global.bioMode === 'Convencional'"
+        :disabled="$store.global.mostrarTodos"
         @click="$store.global.setBioMode('Convencional')"
         class="relative z-10 flex-1 px-3 py-1.5 text-xs font-semibold rounded-full transition-colors duration-200"
         :class="$store.global.bioMode === 'Convencional' ? 'text-white' : 'text-gray-600 dark:text-gray-300 hover:text-gray-800'">
