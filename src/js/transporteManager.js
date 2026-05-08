@@ -66,17 +66,12 @@ export default function transportesManager() {
                 this.primeraCarga = false;
             }
         },
-        enviar(item) {
+        async enviar(item) {
             if (!item.seleccion) {
                 item.error = "Por favor selecciona una dirección antes de enviar.";
                 return;
             }
             item.error = "";
-            item.confirmando = true;
-        },
-
-        async confirmarEnvio(item) {
-            item.confirmando = false;
             try {
                 const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/transportes/consumir`, {
                     method: "POST",
