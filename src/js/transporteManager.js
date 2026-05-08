@@ -44,6 +44,7 @@ export default function transportesManager() {
                             seleccionNombre: "",
                             busquedaDireccion: "",
                             mostrarLista: false,
+                            confirmando: false,
                             historico: null,
                             buscandoHistorico: false,
                             mostrarHistorico: false
@@ -65,14 +66,17 @@ export default function transportesManager() {
                 this.primeraCarga = false;
             }
         },
-        async enviar(item) {
+        enviar(item) {
             if (!item.seleccion) {
                 item.error = "Por favor selecciona una dirección antes de enviar.";
                 return;
             }
+            item.error = "";
+            item.confirmando = true;
+        },
 
-            item.error = ""; // limpiamos errores anteriores
-
+        async confirmarEnvio(item) {
+            item.confirmando = false;
             try {
                 const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/transportes/consumir`, {
                     method: "POST",
@@ -87,7 +91,6 @@ export default function transportesManager() {
                 const result = await res.json();
 
                 if (res.ok) {
-                    // Eliminar este transporte y todos los duplicados con misma direccion
                     this.transportes = this.transportes.filter(t => t.direccion !== item.direccion);
                     const dupCount = result.duplicadosProcesados || 0;
                     const msg = dupCount > 0
@@ -97,11 +100,20 @@ export default function transportesManager() {
                 } else {
                     item.error = "Error: " + (result.message || "Respuesta inesperada");
                 }
-
             } catch (err) {
                 console.error("Error enviando transporte:", err);
                 item.error = "No se pudo contactar con el servidor";
             }
+        },
+
+        contenidoFiltrado(item) {
+            const bio = window.Alpine?.store('global')?.bioCentro;
+            const clienteFiltro = bio === 10 ? 2267 : bio === 1 ? 2232 : null;
+            return item.contenido.filter(c => {
+                const clienteMatch = clienteFiltro === null || c.cliente === clienteFiltro;
+                const searchMatch = !item.busquedaDireccion || c.direccion.toLowerCase().includes(item.busquedaDireccion.toLowerCase());
+                return clienteMatch && searchMatch;
+            });
         },
 
         async consultarHistorico(item) {

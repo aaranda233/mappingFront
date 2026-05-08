@@ -221,7 +221,7 @@
                     <div x-show="item.mostrarLista"
                       class="absolute left-0 right-0 z-50 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto"
                       style="max-height: 200px;">
-                      <template x-for="c in item.contenido.filter(c => !item.busquedaDireccion || c.direccion.toLowerCase().includes(item.busquedaDireccion.toLowerCase()))" :key="c.id">
+                      <template x-for="c in contenidoFiltrado(item)" :key="c.id">
                         <button type="button"
                           @mousedown.prevent="item.seleccion = String(c.id); item.seleccionNombre = c.direccion + ' - Nº ' + c.numero; item.busquedaDireccion = ''; item.mostrarLista = false"
                           class="w-full text-left px-4 py-2 hover:bg-gray-50 border-b border-gray-100 last:border-0 flex items-center justify-between gap-2">
@@ -230,7 +230,7 @@
                           <span x-show="c.cliente === 2232" class="shrink-0 text-xs font-semibold text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded">Conv</span>
                         </button>
                       </template>
-                      <div x-show="item.contenido.filter(c => !item.busquedaDireccion || c.direccion.toLowerCase().includes(item.busquedaDireccion.toLowerCase())).length === 0"
+                      <div x-show="contenidoFiltrado(item).length === 0"
                         class="px-4 py-3 text-sm text-gray-400 italic text-center">Sin resultados</div>
                     </div>
 
@@ -246,8 +246,28 @@
                     </div>
                   </div>
 
+                  <!-- Panel de confirmación -->
+                  <div x-show="item.confirmando" x-transition
+                    class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-sm space-y-1">
+                    <p class="font-semibold text-amber-800 mb-2">Confirmar asignación</p>
+                    <p class="text-gray-600"><span class="font-medium text-gray-800">MDD_id:</span> <span x-text="item.id_mapping"></span></p>
+                    <p class="text-gray-600"><span class="font-medium text-gray-800">CLD_Id:</span> <span x-text="item.seleccion"></span></p>
+                    <p class="text-gray-600"><span class="font-medium text-gray-800">CLD_IdCliente:</span> <span x-text="(item.contenido.find(c => String(c.id) === String(item.seleccion)) || {}).cliente"></span></p>
+                    <p class="text-gray-600"><span class="font-medium text-gray-800">Dirección:</span> <span x-text="item.seleccionNombre"></span></p>
+                    <div class="flex gap-2 mt-3">
+                      <button type="button" @click="confirmarEnvio(item)"
+                        class="flex-1 py-2 bg-[color:#f97316] hover:bg-[#e25d1c] text-white font-semibold rounded-lg text-sm">
+                        Confirmar
+                      </button>
+                      <button type="button" @click="item.confirmando = false"
+                        class="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg text-sm">
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+
                   <!-- Botón -->
-                  <button
+                  <button x-show="!item.confirmando"
                     class="mt-5 w-full py-2.5 bg-[color:#f97316] hover:bg-[#e25d1c] text-white font-semibold rounded-xl flex items-center justify-center gap-2"
                     @click="enviar(item)">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 animate-bounce" fill="none"
