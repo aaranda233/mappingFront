@@ -151,16 +151,22 @@ export default function transportesManager() {
             return `${dd}/${mm}/${yyyy}`;
         },
 
-        abrirPdf(item) {
-            if (!item.pdf) return;
-            const byteChars = atob(item.pdf);
-            const byteArray = new Uint8Array(byteChars.length);
-            for (let i = 0; i < byteChars.length; i++) {
-                byteArray[i] = byteChars.charCodeAt(i);
+        async abrirPdf(item) {
+            try {
+                const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/transportes/${item._id}/pdf`);
+                if (!res.ok) return;
+                const data = await res.json();
+                const byteChars = atob(data.pdf);
+                const byteArray = new Uint8Array(byteChars.length);
+                for (let i = 0; i < byteChars.length; i++) {
+                    byteArray[i] = byteChars.charCodeAt(i);
+                }
+                const blob = new Blob([byteArray], { type: 'application/pdf' });
+                this.pdfBlobUrl = URL.createObjectURL(blob);
+                this.pdfModalOpen = true;
+            } catch (err) {
+                console.error('Error cargando PDF:', err);
             }
-            const blob = new Blob([byteArray], { type: 'application/pdf' });
-            this.pdfBlobUrl = URL.createObjectURL(blob);
-            this.pdfModalOpen = true;
         },
 
         cerrarPdf() {
