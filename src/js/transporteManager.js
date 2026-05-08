@@ -41,6 +41,9 @@ export default function transportesManager() {
                         nuevos.push({
                             ...nuevo,
                             seleccion: "",
+                            seleccionNombre: "",
+                            busquedaDireccion: "",
+                            mostrarLista: false,
                             historico: null,
                             buscandoHistorico: false,
                             mostrarHistorico: false
@@ -141,8 +144,9 @@ export default function transportesManager() {
                 this.showToast("Este candidato no tiene datos validos");
                 return;
             }
-            // Auto-seleccionar en el dropdown
             item.seleccion = String(candidato.idDireccion);
+            const encontrado = item.contenido.find(c => String(c.id) === String(candidato.idDireccion));
+            item.seleccionNombre = encontrado ? encontrado.direccion + ' - Nº ' + encontrado.numero : candidato.direccion || String(candidato.idDireccion);
             item.mostrarHistorico = false;
         },
 
