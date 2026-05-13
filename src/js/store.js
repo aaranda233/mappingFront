@@ -23,6 +23,7 @@ export default {
         this.fetchCounts();
         this.fetchEstadoPedidos();
         this.fetchEstadoPedidosEurogroup();
+        this.fetchEstadoPedidosEurogroupTest();
         this.fetchEstadoPedidosIberiana();
         this.fetchEstadoPedidosIberianaTest();
         this.fetchEstadoPedidosAnecoop();
@@ -44,6 +45,10 @@ export default {
         pilotColor: 'green'
     },
     estadoPedidosEurogroup: {
+        current: null,
+        pilotColor: 'gray'
+    },
+    estadoPedidosEurogroupTest: {
         current: null,
         pilotColor: 'gray'
     },
@@ -147,6 +152,24 @@ export default {
             }
         } catch (e) {
             console.error("Error fetching estado pedidos eurogroup", e);
+        }
+    },
+    async fetchEstadoPedidosEurogroupTest() {
+        try {
+            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-eurogroup-test/actual${this._centroQuery()}`);
+            const data = await res.json();
+            this.estadoPedidosEurogroupTest.current = data.current;
+            if (!data.current) {
+                this.estadoPedidosEurogroupTest.pilotColor = 'gray';
+            } else if (data.current.estado === 'procesando') {
+                this.estadoPedidosEurogroupTest.pilotColor = 'yellow';
+            } else if (data.current.estado === 'error') {
+                this.estadoPedidosEurogroupTest.pilotColor = 'red';
+            } else {
+                this.estadoPedidosEurogroupTest.pilotColor = 'gray';
+            }
+        } catch (e) {
+            console.error("Error fetching estado pedidos eurogroup test", e);
         }
     },
     async fetchEstadoPedidosIberiana() {
