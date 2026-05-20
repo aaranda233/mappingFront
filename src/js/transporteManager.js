@@ -103,7 +103,11 @@ export default function transportesManager() {
 
         contenidoFiltrado(item) {
             const bio = window.Alpine?.store('global')?.bioCentro;
-            const clienteFiltro = bio === 10 ? 2267 : bio === 1 ? 2232 : null;
+            // BIO/Conv solo se distingue a nivel dirección para EDEKA (2267=BIO, 2232=Conv).
+            // En el resto de clientes la separación no existe en ClientesDescargas, así que
+            // se muestran todas las direcciones del cliente sin filtrar por BIO/Conv.
+            const esEdeka = item.contenido.some(c => c.cliente === 2232 || c.cliente === 2267);
+            const clienteFiltro = esEdeka ? (bio === 10 ? 2267 : bio === 1 ? 2232 : null) : null;
             return item.contenido.filter(c => {
                 const clienteMatch = clienteFiltro === null || c.cliente === clienteFiltro;
                 const searchMatch = !item.busquedaDireccion || c.direccion.toLowerCase().includes(item.busquedaDireccion.toLowerCase());
