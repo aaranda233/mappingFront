@@ -200,15 +200,38 @@
                     </div>
                   </div>
 
+                  <!-- Botón Especificar / Cambiar Destino -->
+                  <button type="button"
+                    @click="item.especificando = !item.especificando"
+                    class="w-full py-2 border border-[color:#f97316] text-[color:#f97316] font-semibold rounded-xl hover:bg-orange-50 transition text-sm"
+                    x-text="item.seleccion ? 'Cambiar Destino' : 'Especificar Destino'">
+                  </button>
+
                   <!-- Selector de dirección -->
-                  <div class="space-y-3">
+                  <div class="space-y-3" x-show="item.especificando" x-transition>
+                    <!-- Modo de búsqueda -->
+                    <div class="flex gap-4 text-sm">
+                      <label class="flex items-center gap-1.5 cursor-pointer">
+                        <input type="radio" :name="'modo-' + item._id" value="nombre" x-model="item.modoBusqueda" class="accent-orange-500">
+                        <span class="text-gray-700">Por nombre</span>
+                      </label>
+                      <label class="flex items-center gap-1.5 cursor-pointer">
+                        <input type="radio" :name="'modo-' + item._id" value="numero" x-model="item.modoBusqueda" class="accent-orange-500">
+                        <span class="text-gray-700">Por número</span>
+                      </label>
+                    </div>
+                    <!-- Filtro -->
+                    <input type="text"
+                      x-model="item.filtroDireccion"
+                      :placeholder="item.modoBusqueda === 'numero' ? 'Ej: 17' : 'Buscar por nombre...'"
+                      class="w-full px-4 py-2 bg-white/80 border border-gray-300 rounded-xl shadow-sm text-sm"
+                    />
+                    <!-- Select filtrado -->
                     <select class="w-full px-4 py-2 bg-white/80 border border-gray-300 rounded-xl shadow-sm"
                       x-model="item.seleccion">
                       <option value="" disabled selected>Selecciona una dirección</option>
-                      <template x-for="contenido in item.contenido" :key="contenido.id">
-                        <option :value="contenido.id">
-                          <span x-text="`${contenido.direccion} - Nº ${contenido.numero}`"></span>
-                        </option>
+                      <template x-for="c in contenidoFiltrado(item)" :key="c.id">
+                        <option :value="c.id" x-text="`${c.direccion} - Nº ${c.numero}`"></option>
                       </template>
                     </select>
 

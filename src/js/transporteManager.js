@@ -41,6 +41,9 @@ export default function transportesManager() {
                         nuevos.push({
                             ...nuevo,
                             seleccion: "",
+                            filtroDireccion: "",
+                            modoBusqueda: "nombre",
+                            especificando: false,
                             historico: null,
                             buscandoHistorico: false,
                             mostrarHistorico: false
@@ -101,6 +104,15 @@ export default function transportesManager() {
             }
         },
 
+        contenidoFiltrado(item) {
+            const filtro = item.filtroDireccion.trim();
+            if (!filtro) return item.contenido;
+            if (item.modoBusqueda === "numero") {
+                return item.contenido.filter(c => String(c.numero).includes(filtro));
+            }
+            return item.contenido.filter(c => c.direccion.toLowerCase().includes(filtro.toLowerCase()));
+        },
+
         async consultarHistorico(item) {
             // Toggle: si ya estaba abierto, cerrar
             if (item.mostrarHistorico) {
@@ -143,6 +155,7 @@ export default function transportesManager() {
             }
             // Auto-seleccionar en el dropdown
             item.seleccion = String(candidato.idDireccion);
+            item.especificando = false;
             item.mostrarHistorico = false;
         },
 

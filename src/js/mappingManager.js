@@ -50,6 +50,7 @@ export default function mappingManager() {
                             id_categoria: "",
                             id_gensal: "",
                             error: "",
+                            especificando: false,
                             busquedaPresentacion: "",
                             resultadosPresentacion: [],
                             buscandoPresentacion: false,
@@ -184,6 +185,7 @@ export default function mappingManager() {
             item.presentacionSeleccionada = presentacion;
             item.mostrarResultados = false;
             item.busquedaPresentacion = presentacion.Presentacion;
+            item.especificando = false;
         },
 
         limpiarPresentacion(item) {
@@ -246,6 +248,7 @@ export default function mappingManager() {
             item.busquedaPresentacion = candidato.Presentacion || '';
             item.mostrarResultados = false;
             item.mostrarHistorico = false;
+            item.especificando = false;
         },
 
         abrirPdf(item) {
