@@ -8,6 +8,7 @@ export default function estadoPedidosAnecoopManager() {
         showHistorial: false,
 
         init() {
+            this._hydrateFromCache();
             this.loadEstadoActual();
             setInterval(() => this.loadEstadoActual(), 1000);
             setInterval(() => { if (this.showHistorial) this.loadHistorial(); }, 5000);
@@ -16,6 +17,7 @@ export default function estadoPedidosAnecoopManager() {
                 window.Alpine.effect(() => {
                     void window.Alpine.store('global').bioCentro;
                     if (primero) { primero = false; return; }
+                    this._hydrateFromCache();
                     this.loadEstadoActual();
                     if (this.showHistorial) this.loadHistorial();
                 });
@@ -27,6 +29,35 @@ export default function estadoPedidosAnecoopManager() {
             return c == null ? '' : `?centro=${c}`;
         },
 
+        _endpoint: 'estado-pedidos-anecoop',
+
+        _centroKey() {
+            const c = window.Alpine && window.Alpine.store('global')?.bioCentro;
+            return c == null ? 'todos' : String(c);
+        },
+
+        _cacheKeyCurrent() { return `${this._endpoint}:current:${this._centroKey()}`; },
+        _cacheKeyHistorial() { return `${this._endpoint}:historial:${this._centroKey()}`; },
+
+        _hydrateFromCache() {
+            try {
+                const c = sessionStorage.getItem(this._cacheKeyCurrent());
+                const h = sessionStorage.getItem(this._cacheKeyHistorial());
+                if (c !== null) {
+                    this.current = JSON.parse(c);
+                    this.loaded = true;
+                } else {
+                    this.current = null;
+                    this.loaded = false;
+                }
+                this.historial = h !== null ? JSON.parse(h) : [];
+            } catch (e) {
+                this.current = null;
+                this.historial = [];
+                this.loaded = false;
+            }
+        },
+
         async loadEstadoActual() {
             try {
                 const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-anecoop/actual${this._centroQuery()}`);
@@ -34,6 +65,7 @@ export default function estadoPedidosAnecoopManager() {
                 if (JSON.stringify(this.current) !== JSON.stringify(data.current)) {
                     this.current = data.current;
                 }
+                try { sessionStorage.setItem(this._cacheKeyCurrent(), JSON.stringify(data.current ?? null)); } catch (e) {}
             } catch (err) {
                 console.error("Error cargando estado actual Anecoop:", err);
             } finally {
@@ -55,6 +87,7 @@ export default function estadoPedidosAnecoopManager() {
                 }
                 const orden = new Map(lista.map((h, i) => [h.id, i]));
                 this.historial.sort((a, b) => orden.get(a.id) - orden.get(b.id));
+                try { sessionStorage.setItem(this._cacheKeyHistorial(), JSON.stringify(lista)); } catch (e) {}
             } catch (err) {
                 console.error("Error cargando historial Anecoop:", err);
             }
