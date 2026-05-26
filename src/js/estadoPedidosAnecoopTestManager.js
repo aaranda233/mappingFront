@@ -2,6 +2,7 @@ export default function estadoPedidosAnecoopTestManager() {
     return {
         current: null,
         historial: [],
+        loaded: false,
         loading: false,
         loadingHistorial: false,
         showHistorial: false,
@@ -39,16 +40,30 @@ export default function estadoPedidosAnecoopTestManager() {
             try {
                 const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-anecoop-test/actual${this._centroQuery()}`);
                 const data = await res.json();
-                this.current = data.current;
+                if (JSON.stringify(this.current) !== JSON.stringify(data.current)) {
+                    this.current = data.current;
+                }
             } catch (err) {
                 console.error("Error cargando estado actual Anecoop Test:", err);
+            } finally {
+                this.loaded = true;
             }
         },
 
         async loadHistorial() {
             try {
                 const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-anecoop-test/historial${this._centroQuery()}`);
-                this.historial = await res.json();
+                const incoming = await res.json();
+                const lista = Array.isArray(incoming) ? incoming : [];
+                const ids = new Set(lista.map(h => h.id));
+                this.historial = this.historial.filter(h => ids.has(h.id));
+                for (const item of lista) {
+                    const idx = this.historial.findIndex(h => h.id === item.id);
+                    if (idx === -1) this.historial.push(item);
+                    else if (JSON.stringify(this.historial[idx]) !== JSON.stringify(item)) this.historial[idx] = item;
+                }
+                const orden = new Map(lista.map((h, i) => [h.id, i]));
+                this.historial.sort((a, b) => orden.get(a.id) - orden.get(b.id));
             } catch (err) {
                 console.error("Error cargando historial Anecoop Test:", err);
             }

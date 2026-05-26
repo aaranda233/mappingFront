@@ -58,7 +58,10 @@
                     <span class="text-gray-400 ml-2" x-text="'(' + formatFecha(current.fecha_inicio) + ')'"></span>
                   </p>
                 </template>
-                <template x-if="!current">
+                <template x-if="!loaded">
+                  <p class="text-sm text-gray-500">Cargando&hellip;</p>
+                </template>
+                <template x-if="loaded && !current">
                   <p class="text-sm text-gray-500">Sin pedidos activos</p>
                 </template>
               </div>
