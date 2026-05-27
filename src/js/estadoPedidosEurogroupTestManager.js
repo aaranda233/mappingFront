@@ -88,7 +88,7 @@ export default function estadoPedidosEurogroupTestManager() {
             try {
                 const res = await fetch(url);
                 const data = await res.json();
-                if (seq !== this._seqActual || filtro !== this._centroKey()) {
+                if (filtro !== this._centroKey()) {
                     this._log('loadEstadoActual #' + seq + ' DESCARTADA stale (filtroEnvio=' + filtro + ' filtroActual=' + this._centroKey() + ' seqActual=' + this._seqActual + ')');
                     return;
                 }
@@ -112,7 +112,7 @@ export default function estadoPedidosEurogroupTestManager() {
             try {
                 const res = await fetch(url);
                 const incoming = await res.json();
-                if (seq !== this._seqHist || filtro !== this._centroKey()) {
+                if (filtro !== this._centroKey()) {
                     this._log('loadHistorial #' + seq + ' DESCARTADA stale (filtroEnvio=' + filtro + ' filtroActual=' + this._centroKey() + ')');
                     return;
                 }
