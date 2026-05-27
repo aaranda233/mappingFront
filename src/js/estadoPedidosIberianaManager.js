@@ -3,6 +3,7 @@ export default function estadoPedidosIberianaManager() {
         current: null,
         historial: [],
         loaded: false,
+        historialLoaded: false,
         loading: false,
         loadingHistorial: false,
         showHistorial: false,
@@ -62,6 +63,7 @@ export default function estadoPedidosIberianaManager() {
                     this.loaded = false;
                 }
                 this.historial = h !== null ? JSON.parse(h) : [];
+                if (h !== null) this.historialLoaded = true;
                 this._log('hydrateFromCache ' + kc + ' ' + (c !== null ? 'HIT' : 'MISS') + ' | ' + kh + ' historial=' + this.historial.length);
             } catch (e) {
                 this.current = null;
@@ -118,6 +120,7 @@ export default function estadoPedidosIberianaManager() {
                 const orden = new Map(lista.map((h, i) => [h.id, i]));
                 this.historial.sort((a, b) => orden.get(a.id) - orden.get(b.id));
                 try { sessionStorage.setItem(this._cacheKeyHistorial(), JSON.stringify(lista)); } catch (e) {}
+                this.historialLoaded = true;
                 this._log('loadHistorial #' + seq + ' OK status=' + res.status + ' recibidos=' + lista.length + ' total=' + this.historial.length + ' filtro=' + filtro);
             } catch (err) {
                 this._log('loadHistorial #' + seq + ' ERROR ' + (err && err.message));
