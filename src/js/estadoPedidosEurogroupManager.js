@@ -8,21 +8,30 @@ export default function estadoPedidosEurogroupManager() {
         showHistorial: false,
 
         init() {
+            this._log('init() montado, filtro=' + this._centroKey());
             this._hydrateFromCache();
             this.loadEstadoActual();
             setInterval(() => this.loadEstadoActual(), 1000);
             setInterval(() => { if (this.showHistorial) this.loadHistorial(); }, 5000);
             if (window.Alpine) {
                 let primero = true;
+                let centroPrev = this._centroKey();
                 window.Alpine.effect(() => {
-                    void window.Alpine.store('global').bioCentro;
+                    const centroNew = window.Alpine.store('global').bioCentro;
+                    void centroNew;
                     if (primero) { primero = false; return; }
+                    this._log('CAMBIO DE FILTRO ' + centroPrev + ' -> ' + this._centroKey());
+                    centroPrev = this._centroKey();
                     this._hydrateFromCache();
                     this.loadEstadoActual();
                     if (this.showHistorial) this.loadHistorial();
                 });
             }
         },
+
+        _seqActual: 0,
+        _seqHist: 0,
+        _log(...a) { try { console.log('[' + this._endpoint + ' ' + new Date().toISOString().slice(11, 23) + ']', ...a); } catch (e) {} },
 
         _centroQuery() {
             const c = window.Alpine && window.Alpine.store('global')?.bioCentro;
@@ -41,8 +50,10 @@ export default function estadoPedidosEurogroupManager() {
 
         _hydrateFromCache() {
             try {
-                const c = sessionStorage.getItem(this._cacheKeyCurrent());
-                const h = sessionStorage.getItem(this._cacheKeyHistorial());
+                const kc = this._cacheKeyCurrent();
+                const kh = this._cacheKeyHistorial();
+                const c = sessionStorage.getItem(kc);
+                const h = sessionStorage.getItem(kh);
                 if (c !== null) {
                     this.current = JSON.parse(c);
                     this.loaded = true;
@@ -51,32 +62,51 @@ export default function estadoPedidosEurogroupManager() {
                     this.loaded = false;
                 }
                 this.historial = h !== null ? JSON.parse(h) : [];
+                this._log('hydrateFromCache ' + kc + ' ' + (c !== null ? 'HIT' : 'MISS') + ' | ' + kh + ' historial=' + this.historial.length);
             } catch (e) {
                 this.current = null;
                 this.historial = [];
                 this.loaded = false;
+                this._log('hydrateFromCache ERROR ' + (e && e.message));
             }
         },
 
         async loadEstadoActual() {
+            const seq = ++this._seqActual;
+            const filtro = this._centroKey();
+            const url = `http://${window.env.IP_BACKEND}/api/mapping/${this._endpoint}/actual${this._centroQuery()}`;
+            this._log('loadEstadoActual #' + seq + ' GET ' + url);
             try {
-                const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-eurogroup/actual${this._centroQuery()}`);
+                const res = await fetch(url);
                 const data = await res.json();
-                if (JSON.stringify(this.current) !== JSON.stringify(data.current)) {
-                    this.current = data.current;
+                if (seq !== this._seqActual || filtro !== this._centroKey()) {
+                    this._log('loadEstadoActual #' + seq + ' DESCARTADA stale (filtroEnvio=' + filtro + ' filtroActual=' + this._centroKey() + ' seqActual=' + this._seqActual + ')');
+                    return;
                 }
+                const changed = JSON.stringify(this.current) !== JSON.stringify(data.current);
+                if (changed) this.current = data.current;
                 try { sessionStorage.setItem(this._cacheKeyCurrent(), JSON.stringify(data.current ?? null)); } catch (e) {}
+                this._log('loadEstadoActual #' + seq + ' OK status=' + res.status + ' changed=' + changed + ' current=' + (data.current ? ('ref=' + data.current.ref_pedido + ' estado=' + data.current.estado + ' centro=' + data.current.centro) : 'null'));
             } catch (err) {
-                console.error("Error cargando estado actual Eurogroup:", err);
+                this._log('loadEstadoActual #' + seq + ' ERROR ' + (err && err.message));
+                console.error('Error cargando estado actual ' + this._endpoint + ':', err);
             } finally {
                 this.loaded = true;
             }
         },
 
         async loadHistorial() {
+            const seq = ++this._seqHist;
+            const filtro = this._centroKey();
+            const url = `http://${window.env.IP_BACKEND}/api/mapping/${this._endpoint}/historial${this._centroQuery()}`;
+            this._log('loadHistorial #' + seq + ' GET ' + url);
             try {
-                const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-eurogroup/historial${this._centroQuery()}`);
+                const res = await fetch(url);
                 const incoming = await res.json();
+                if (seq !== this._seqHist || filtro !== this._centroKey()) {
+                    this._log('loadHistorial #' + seq + ' DESCARTADA stale (filtroEnvio=' + filtro + ' filtroActual=' + this._centroKey() + ')');
+                    return;
+                }
                 const lista = Array.isArray(incoming) ? incoming : [];
                 const ids = new Set(lista.map(h => h.id));
                 this.historial = this.historial.filter(h => ids.has(h.id));
@@ -88,8 +118,10 @@ export default function estadoPedidosEurogroupManager() {
                 const orden = new Map(lista.map((h, i) => [h.id, i]));
                 this.historial.sort((a, b) => orden.get(a.id) - orden.get(b.id));
                 try { sessionStorage.setItem(this._cacheKeyHistorial(), JSON.stringify(lista)); } catch (e) {}
+                this._log('loadHistorial #' + seq + ' OK status=' + res.status + ' recibidos=' + lista.length + ' total=' + this.historial.length + ' filtro=' + filtro);
             } catch (err) {
-                console.error("Error cargando historial Eurogroup:", err);
+                this._log('loadHistorial #' + seq + ' ERROR ' + (err && err.message));
+                console.error('Error cargando historial ' + this._endpoint + ':', err);
             }
         },
 
