@@ -72,7 +72,7 @@ export default function estadoPedidosAnecoopTestManager() {
                     this.loaded = false;
                 }
                 this.historial = h !== null ? JSON.parse(h) : [];
-                if (h !== null) this.historialLoaded = true;
+                this.historialLoaded = (h !== null);
                 this._log('hydrateFromCache ' + kc + ' ' + (c !== null ? 'HIT' : 'MISS') + ' | ' + kh + ' historial=' + this.historial.length);
             } catch (e) {
                 this.current = null;
