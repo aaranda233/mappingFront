@@ -178,16 +178,27 @@ export default function transportesManager() {
             return `${dd}/${mm}/${yyyy}`;
         },
 
-        abrirPdf(item) {
-            if (!item.pdf) return;
-            const byteChars = atob(item.pdf);
-            const byteArray = new Uint8Array(byteChars.length);
-            for (let i = 0; i < byteChars.length; i++) {
-                byteArray[i] = byteChars.charCodeAt(i);
+        async abrirPdf(item) {
+            if (!item.tiene_pdf) return;
+            try {
+                const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/transportes/${item._id}/pdf`);
+                if (!res.ok) {
+                    console.error(`[abrirPdf] Error ${res.status} al obtener el PDF del transporte ${item._id}`);
+                    return;
+                }
+                const data = await res.json();
+                if (!data.pdf) return;
+                const byteChars = atob(data.pdf);
+                const byteArray = new Uint8Array(byteChars.length);
+                for (let i = 0; i < byteChars.length; i++) {
+                    byteArray[i] = byteChars.charCodeAt(i);
+                }
+                const blob = new Blob([byteArray], { type: 'application/pdf' });
+                this.pdfBlobUrl = URL.createObjectURL(blob);
+                this.pdfModalOpen = true;
+            } catch (error) {
+                console.error(`[abrirPdf] Error al cargar el PDF del transporte ${item._id}: ${error.message}`);
             }
-            const blob = new Blob([byteArray], { type: 'application/pdf' });
-            this.pdfBlobUrl = URL.createObjectURL(blob);
-            this.pdfModalOpen = true;
         },
 
         cerrarPdf() {
