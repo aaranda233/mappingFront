@@ -9,6 +9,8 @@ export default function previewIberianaManager() {
 
         // resultado
         resultado: null,
+        pedidoERP: null,
+        loadingERP: false,
 
         init() {},
 
@@ -66,6 +68,7 @@ export default function previewIberianaManager() {
                     this.error = data.error || `Error ${res.status}`;
                 } else {
                     this.resultado = data;
+                    this.buscarPedidoERP();
                 }
             } catch (e) {
                 this.error = 'No se pudo conectar con el parser: ' + e.message;
@@ -74,10 +77,49 @@ export default function previewIberianaManager() {
             }
         },
 
+        async buscarPedidoERP() {
+            const bestellNr = this.resultado?.cabecera?.bestellNr;
+            const clienteId = this.resultado?.cabecera?.cliente?.id;
+            if (!bestellNr || !clienteId) return;
+            this.loadingERP = true;
+            this.pedidoERP = null;
+            try {
+                const params = new URLSearchParams({ bestellnr: bestellNr, cliente: clienteId, centro: 10 });
+                const base = window.env?.IP_BACKEND || 'localhost';
+                const res = await fetch(`http://${base}/api/mapping/estado-pedidos-iberiana-test/pedido-prod?${params}`);
+                if (res.ok) this.pedidoERP = await res.json();
+                // 404 = todavía no insertado en producción, ignorar
+            } catch (e) {
+                console.error('Error buscando pedido ERP:', e);
+            } finally {
+                this.loadingERP = false;
+            }
+        },
+
+        erpLinea(idx) {
+            return this.pedidoERP?.lineas?.[idx] ?? null;
+        },
+
+        erpDiffs(l, erpL) {
+            if (!erpL || !l?.resolucion) return null;
+            const r = l.resolucion;
+            const diffs = [];
+            if (erpL.PEL_idgensal !== r.id_presentacion)
+                diffs.push({ campo: 'Presentación', erp: erpL.PEL_idgensal + (erpL.Presentacion ? ' — ' + erpL.Presentacion : ''), nuevo: r.id_presentacion + (r.nombre_gensal ? ' — ' + r.nombre_gensal : '') });
+            if (erpL.PEL_idgenero !== r.id_genero)
+                diffs.push({ campo: 'Género', erp: erpL.PEL_idgenero + (erpL.NomGenero ? ' — ' + erpL.NomGenero : ''), nuevo: r.id_genero + (r.nom_genero ? ' — ' + r.nom_genero : '') });
+            if (erpL.PEL_idtipoconfeccion !== r.id_tipo_confeccion)
+                diffs.push({ campo: 'Confección', erp: erpL.PEL_idtipoconfeccion + (erpL.NomConfeccion ? ' — ' + erpL.NomConfeccion : ''), nuevo: r.id_tipo_confeccion });
+            if (erpL.PEL_idcategoria !== r.id_categoria)
+                diffs.push({ campo: 'Categoría', erp: erpL.PEL_idcategoria + (erpL.NomCategoria ? ' — ' + erpL.NomCategoria : ''), nuevo: r.id_categoria + (r.nom_cate ? ' — ' + r.nom_cate : '') });
+            return diffs;
+        },
+
         reset() {
             this.fileObj = null;
             this.fileName = null;
             this.resultado = null;
+            this.pedidoERP = null;
             this.error = null;
         },
 
