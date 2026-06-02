@@ -30,6 +30,9 @@ export default function presentacionesManager() {
         ],
 
         init() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('busqueda')) this.busqueda = params.get('busqueda');
+            if (params.get('idcliente')) this.filtroCliente = params.get('idcliente');
             this.cargarPresentaciones();
         },
 
