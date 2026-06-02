@@ -115,31 +115,6 @@ export default function previewIberianaManager() {
             return diffs;
         },
 
-        // ── Evaluación global de mappings ────────────────────────
-        eval: { data: [], loading: false, error: null, filtro: 'todos' },
-
-        async cargarEval() {
-            this.eval.loading = true;
-            this.eval.error = null;
-            try {
-                const base = window.env?.IP_BACKEND || 'localhost';
-                const res = await fetch(`http://${base}/api/mapping/iberiana-eval`);
-                if (!res.ok) throw new Error(`Error ${res.status}`);
-                this.eval.data = await res.json();
-            } catch (e) {
-                this.eval.error = e.message;
-            } finally {
-                this.eval.loading = false;
-            }
-        },
-
-        evalFiltrado() {
-            if (this.eval.filtro === 'ok')        return this.eval.data.filter(r => r.status === 'OK');
-            if (this.eval.filtro === 'diferente') return this.eval.data.filter(r => r.status === 'DIFERENTE');
-            if (this.eval.filtro === 'sin_datos') return this.eval.data.filter(r => r.status === 'SIN_DATOS');
-            return this.eval.data;
-        },
-
         reset() {
             this.fileObj = null;
             this.fileName = null;
