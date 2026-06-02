@@ -192,7 +192,7 @@
                     }"></span>
                 </span>
               </a>
-              <!-- Sub-item TEST debajo de IBERIANA -->
+              <!-- Sub-items debajo de IBERIANA -->
               <ul class="flex flex-col gap-2 mt-2 pl-6 text-xs text-gray-500">
                 <li>
                   <a href="estado-pedidos-iberiana-test.html" class="hover:text-[#003a4b] flex justify-between items-center"
@@ -212,6 +212,16 @@
                           'bg-red-500': $store.global.estadoPedidosIberianaTest.pilotColor === 'red'
                         }"></span>
                     </span>
+                  </a>
+                </li>
+                <li>
+                  <a href="preview-iberiana.html" class="hover:text-[#003a4b] flex items-center gap-1"
+                    :class="window.location.pathname.includes('preview-iberiana') ? 'text-[#003a4b] font-medium' : ''">
+                    └─ Preview PDF
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-auto opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
                   </a>
                 </li>
               </ul>

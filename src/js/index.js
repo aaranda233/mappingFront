@@ -28,11 +28,13 @@ import adminManager from "./adminManager.js";
 import presentacionesManager from "./presentacionesManager.js";
 import direccionesManager from "./direccionesManager.js";
 import tutorialGuide from "./tutorialGuide.js";
+import previewIberianaManager from "./previewIberianaManager.js";
 
 window.mappingManager = mappingManager;
 window.transporteManager = transporteManager;
 window.presentacionesManager = presentacionesManager;
 window.direccionesManager = direccionesManager;
+window.previewIberianaManager = previewIberianaManager;
 window.estadoPedidosManager = estadoPedidosManager;
 window.estadoPedidosEurogroupManager = estadoPedidosEurogroupManager;
 window.estadoPedidosEurogroupTestManager = estadoPedidosEurogroupTestManager;

@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+  <title>Hortichuelas - Preview Pedido Iberiana</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+  <script src="/env.js"></script>
+</head>
+
+<body :class="{'dark bg-gray-900': darkMode === true}"
+  x-data="{ loaded: true, darkMode: false, stickyMenu: false, sidebarToggle: false, scrollTop: false }"
+  x-init="
+    darkMode = JSON.parse(localStorage.getItem('darkMode'));
+    $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)))
+  " x-cloak>
+
+  <div class="flex h-screen overflow-hidden">
+    <include src="./partials/sidebar.html"></include>
+
+    <div class="relative flex flex-col flex-1 overflow-x-hidden overflow-y-auto">
+      <include src="./partials/overlay.html" />
+      <include src="./partials/header.html" />
+
+      <main x-data="previewIberianaManager()" x-init="init()" x-cloak>
+        <div class="p-6 flex flex-col gap-6">
+
+          <!-- Título -->
+          <div class="flex items-center gap-3">
+            <div class="rounded-full p-2 bg-[#003a4b]/10 text-[#003a4b]">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <div>
+              <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Preview Pedido Iberiana</h1>
+              <p class="text-sm text-gray-500">Sube un PDF para ver c&oacute;mo quedar&iacute;a el pedido en el ERP, sin crearlo</p>
+            </div>
+          </div>
+
+          <!-- Zona de upload -->
+          <div class="bg-white/60 backdrop-blur-xl shadow-xl rounded-3xl p-6 border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+            <!-- Drop zone -->
+            <div
+              class="relative flex flex-col items-center justify-center w-full border-2 border-dashed rounded-2xl p-10 transition-all duration-200 cursor-pointer"
+              :class="dragging ? 'border-[#003a4b] bg-[#003a4b]/5' : 'border-gray-300 hover:border-[#003a4b] hover:bg-gray-50'"
+              @dragover="onDragOver($event)"
+              @dragleave="onDragLeave()"
+              @drop="onDrop($event)"
+              @click="$refs.fileInput.click()">
+
+              <input type="file" accept=".pdf" x-ref="fileInput" class="hidden" @change="onFileSelect($event)" />
+
+              <template x-if="!fileName">
+                <div class="text-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                  <p class="text-sm font-medium text-gray-600">Arrastra el PDF aqu&iacute; o haz clic para seleccionarlo</p>
+                  <p class="text-xs text-gray-400 mt-1">Solo ficheros PDF</p>
+                </div>
+              </template>
+
+              <template x-if="fileName">
+                <div class="flex items-center gap-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <div>
+                    <p class="font-medium text-gray-800 dark:text-white" x-text="fileName"></p>
+                    <p class="text-xs text-gray-400">PDF seleccionado</p>
+                  </div>
+                </div>
+              </template>
+            </div>
+
+            <!-- Botones -->
+            <div class="flex gap-3 mt-4">
+              <button
+                class="flex-1 py-2.5 bg-[#003a4b] hover:bg-[#004f66] text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                :disabled="!fileObj || loading"
+                @click="analizar()">
+                <template x-if="!loading">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
+                  </svg>
+                </template>
+                <template x-if="loading">
+                  <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                  </svg>
+                </template>
+                <span x-text="loading ? 'Analizando...' : 'Analizar Pedido'"></span>
+              </button>
+
+              <button x-show="resultado || fileName"
+                class="px-5 py-2.5 border border-gray-300 text-gray-600 font-semibold rounded-xl hover:bg-gray-50 transition"
+                @click="reset()">
+                Limpiar
+              </button>
+            </div>
+
+            <!-- Error -->
+            <div x-show="error" x-transition
+              class="mt-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M12 2a10 10 0 1010 10A10 10 0 0012 2z" />
+              </svg>
+              <span x-text="error"></span>
+            </div>
+          </div>
+
+          <!-- Resultado -->
+          <template x-if="resultado">
+            <div class="flex flex-col gap-4 animate__animated animate__fadeIn">
+
+              <!-- Banner resultado -->
+              <div class="rounded-2xl px-6 py-4 flex items-center gap-4 shadow-lg"
+                :class="resultado.resultado.pasaria ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'">
+                <div class="rounded-full p-2" :class="resultado.resultado.pasaria ? 'bg-green-100' : 'bg-red-100'">
+                  <template x-if="resultado.resultado.pasaria">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </template>
+                  <template x-if="!resultado.resultado.pasaria">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </template>
+                </div>
+                <div>
+                  <p class="font-bold text-lg" :class="resultado.resultado.pasaria ? 'text-green-800' : 'text-red-800'"
+                    x-text="resultado.resultado.pasaria ? 'Este pedido pasaría correctamente' : 'Este pedido NO pasaría'">
+                  </p>
+                  <template x-if="!resultado.resultado.pasaria">
+                    <p class="text-sm text-red-700 mt-0.5">
+                      Confecciones sin mapping:
+                      <span class="font-semibold" x-text="resultado.resultado.errores.join(', ')"></span>
+                    </p>
+                  </template>
+                </div>
+                <!-- Totales -->
+                <div class="ml-auto flex gap-6 text-right">
+                  <div>
+                    <p class="text-xs text-gray-500 uppercase tracking-wide">Kg Netos</p>
+                    <p class="font-bold text-gray-800 text-lg" x-text="totalKgNetos() + ' kg'"></p>
+                  </div>
+                  <div>
+                    <p class="text-xs text-gray-500 uppercase tracking-wide">Kg Brutos</p>
+                    <p class="font-bold text-gray-800 text-lg" x-text="totalKgBrutos() + ' kg'"></p>
+                  </div>
+                  <div>
+                    <p class="text-xs text-gray-500 uppercase tracking-wide">L&iacute;neas OK</p>
+                    <p class="font-bold text-green-700 text-lg" x-text="lineasOk().length + '/' + resultado.lineas.length"></p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Cabecera del pedido -->
+              <div class="bg-white/60 backdrop-blur-xl shadow-xl rounded-3xl p-6 border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                <h2 class="text-base font-bold text-gray-700 dark:text-white mb-4 uppercase tracking-wide">Cabecera del pedido</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+
+                  <!-- Cliente -->
+                  <div class="bg-gray-50 dark:bg-gray-700 rounded-xl px-4 py-3">
+                    <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Cliente</p>
+                    <div class="flex items-center gap-1.5">
+                      <span x-show="resultado.cabecera.cliente.ok" class="h-2 w-2 rounded-full bg-green-500 shrink-0"></span>
+                      <span x-show="!resultado.cabecera.cliente.ok" class="h-2 w-2 rounded-full bg-red-500 shrink-0"></span>
+                      <span class="font-semibold text-gray-800 dark:text-white text-xs truncate" x-text="resultado.cabecera.cliente.nombre || resultado.cabecera.cliente.nif || '—'"></span>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1" x-text="'NIF: ' + (resultado.cabecera.cliente.nif || '—')"></p>
+                  </div>
+
+                  <!-- Dirección -->
+                  <div class="bg-gray-50 dark:bg-gray-700 rounded-xl px-4 py-3">
+                    <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Direcci&oacute;n descarga</p>
+                    <div class="flex items-center gap-1.5">
+                      <span x-show="resultado.cabecera.direccion.ok" class="h-2 w-2 rounded-full bg-green-500 shrink-0"></span>
+                      <span x-show="!resultado.cabecera.direccion.ok" class="h-2 w-2 rounded-full bg-red-500 shrink-0"></span>
+                      <span class="font-semibold text-gray-800 dark:text-white text-xs truncate" x-text="resultado.cabecera.direccion.raw || '—'"></span>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1" x-text="resultado.cabecera.direccion.ok ? 'ID: ' + resultado.cabecera.direccion.id : 'Sin mapping'"></p>
+                  </div>
+
+                  <!-- Ref / BestellNr -->
+                  <div class="bg-gray-50 dark:bg-gray-700 rounded-xl px-4 py-3">
+                    <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Referencia</p>
+                    <p class="font-semibold text-gray-800 dark:text-white" x-text="resultado.cabecera.ref || '—'"></p>
+                    <p class="text-xs text-gray-400 mt-1" x-text="'BestellNr: ' + (resultado.cabecera.bestellNr || '—')"></p>
+                  </div>
+
+                  <!-- Fechas -->
+                  <div class="bg-gray-50 dark:bg-gray-700 rounded-xl px-4 py-3">
+                    <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Fechas</p>
+                    <p class="font-semibold text-gray-800 dark:text-white text-xs" x-text="'Pedido: ' + (resultado.cabecera.fecha_pedido || '—')"></p>
+                    <p class="text-xs text-gray-500 mt-0.5" x-text="'Salida: ' + (resultado.cabecera.fecha_salida || '—')"></p>
+                    <span x-show="resultado.cabecera.es_bio"
+                      class="mt-1 inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">BIO</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tabla de líneas -->
+              <div class="bg-white/60 backdrop-blur-xl shadow-xl rounded-3xl border border-gray-200 dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                  <h2 class="text-base font-bold text-gray-700 dark:text-white uppercase tracking-wide">
+                    L&iacute;neas del pedido
+                    <span class="ml-2 text-sm font-normal text-gray-400" x-text="'(' + resultado.lineas.length + ' l&iacute;neas)'"></span>
+                  </h2>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-sm text-left">
+                    <thead class="bg-gradient-to-r from-[#00394a] to-[#00394a]/80 text-white">
+                      <tr>
+                        <th class="px-4 py-3 font-semibold">Confecci&oacute;n PDF</th>
+                        <th class="px-4 py-3 font-semibold">ERP — G&eacute;nero / Categor&iacute;a</th>
+                        <th class="px-4 py-3 font-semibold text-right">Bultos</th>
+                        <th class="px-4 py-3 font-semibold text-right">Palets</th>
+                        <th class="px-4 py-3 font-semibold text-right">Kg/Bulto</th>
+                        <th class="px-4 py-3 font-semibold text-right">Kg Netos</th>
+                        <th class="px-4 py-3 font-semibold text-right">Kg Brutos</th>
+                        <th class="px-4 py-3 font-semibold text-center">Precio</th>
+                        <th class="px-4 py-3 font-semibold text-center">Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <template x-for="(l, idx) in resultado.lineas" :key="idx">
+                        <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-[#003a4b]/5 transition-colors"
+                          :class="idx % 2 === 0 ? 'bg-white/40' : 'bg-gray-50/40'">
+
+                          <!-- Confección raw -->
+                          <td class="px-4 py-3">
+                            <p class="font-medium text-gray-800 dark:text-white" x-text="l.raw.confeccion"></p>
+                            <p x-show="l.raw.marca" class="text-xs text-gray-400" x-text="'Marca: ' + l.raw.marca"></p>
+                            <p x-show="l.confeccion_buscada !== l.raw.confeccion" class="text-xs text-[#003a4b] font-mono mt-0.5" x-text="'→ ' + l.confeccion_buscada"></p>
+                            <p class="text-xs text-gray-400" x-text="'Tipo palet: ' + (l.raw.tipo_palet || '—')"></p>
+                          </td>
+
+                          <!-- ERP resuelto -->
+                          <td class="px-4 py-3">
+                            <template x-if="l.ok">
+                              <div>
+                                <p class="font-medium text-gray-800 dark:text-white" x-text="l.resolucion.nom_cate || '—'"></p>
+                                <p class="text-xs text-gray-500 font-mono">
+                                  G:<span x-text="l.resolucion.id_genero"></span>
+                                  C:<span x-text="l.resolucion.id_categoria"></span>
+                                  Conf:<span x-text="l.resolucion.id_tipo_confeccion"></span>
+                                </p>
+                              </div>
+                            </template>
+                            <template x-if="!l.ok">
+                              <span class="text-red-500 text-xs font-medium" x-text="l.error || 'Sin mapping'"></span>
+                            </template>
+                          </td>
+
+                          <!-- Bultos -->
+                          <td class="px-4 py-3 text-right font-mono text-gray-700" x-text="l.raw.bultos"></td>
+
+                          <!-- Palets -->
+                          <td class="px-4 py-3 text-right font-mono text-gray-700" x-text="l.raw.palets"></td>
+
+                          <!-- Kg/Bulto -->
+                          <td class="px-4 py-3 text-right font-mono text-gray-700" x-text="l.ok ? l.resolucion.kgbulto + ' kg' : '—'"></td>
+
+                          <!-- Kg Netos -->
+                          <td class="px-4 py-3 text-right font-mono text-gray-700" x-text="l.ok ? l.resolucion.kg_netos + ' kg' : '—'"></td>
+
+                          <!-- Kg Brutos -->
+                          <td class="px-4 py-3 text-right font-mono text-gray-700" x-text="l.ok ? l.resolucion.kg_brutos + ' kg' : '—'"></td>
+
+                          <!-- Tipo precio -->
+                          <td class="px-4 py-3 text-center">
+                            <template x-if="l.ok">
+                              <span class="inline-block px-2 py-0.5 rounded-full text-xs font-semibold"
+                                :class="l.resolucion.tipo_precio === 'B' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'"
+                                x-text="l.resolucion.tipo_precio === 'B' ? 'Bulto' : 'Pieza'"></span>
+                            </template>
+                            <template x-if="!l.ok">
+                              <span class="text-gray-300">—</span>
+                            </template>
+                          </td>
+
+                          <!-- Estado -->
+                          <td class="px-4 py-3 text-center">
+                            <template x-if="l.ok">
+                              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                                OK
+                              </span>
+                            </template>
+                            <template x-if="!l.ok">
+                              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                                Error
+                              </span>
+                            </template>
+                          </td>
+
+                        </tr>
+                      </template>
+                    </tbody>
+                    <!-- Totales footer -->
+                    <tfoot class="bg-gray-50/80 dark:bg-gray-700/50 border-t-2 border-gray-200">
+                      <tr>
+                        <td colspan="5" class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Totales</td>
+                        <td class="px-4 py-3 text-right font-bold text-gray-800 dark:text-white font-mono" x-text="totalKgNetos() + ' kg'"></td>
+                        <td class="px-4 py-3 text-right font-bold text-gray-800 dark:text-white font-mono" x-text="totalKgBrutos() + ' kg'"></td>
+                        <td colspan="2"></td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          </template>
+
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+
+</html>
