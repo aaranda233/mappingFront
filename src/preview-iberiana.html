@@ -211,9 +211,18 @@
                     L&iacute;neas del pedido
                     <span class="ml-2 text-sm font-normal text-gray-400" x-text="'(' + resultado.lineas.length + ' l&iacute;neas)'"></span>
                   </h2>
-                  <div class="flex gap-4 text-sm font-mono text-gray-500">
-                    <span>Total neto: <strong class="text-gray-800 dark:text-white" x-text="totalKgNetos() + ' kg'"></strong></span>
-                    <span>Total bruto: <strong class="text-gray-800 dark:text-white" x-text="totalKgBrutos() + ' kg'"></strong></span>
+                  <div class="flex items-center gap-4 flex-wrap">
+                    <div class="flex gap-4 text-sm font-mono text-gray-500">
+                      <span>Total neto: <strong class="text-gray-800 dark:text-white" x-text="totalKgNetos() + ' kg'"></strong></span>
+                      <span>Total bruto: <strong class="text-gray-800 dark:text-white" x-text="totalKgBrutos() + ' kg'"></strong></span>
+                    </div>
+                    <button @click="analizar()" :disabled="loading"
+                      class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-gray-300 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      <span x-text="loading ? 'Actualizando...' : 'Reanalizar'"></span>
+                    </button>
                   </div>
                 </div>
 
