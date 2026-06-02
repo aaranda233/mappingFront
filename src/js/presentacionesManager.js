@@ -8,6 +8,8 @@ export default function presentacionesManager() {
         _debounceTimer: null,
         sortField: '',
         sortDirection: 'asc',
+        modoAaMapping: false,   // true cuando venimos del preview con id_mapping
+        idAaMapping: null,
 
         // Edicion
         editando: null, // el item que se esta editando
@@ -31,9 +33,32 @@ export default function presentacionesManager() {
 
         init() {
             const params = new URLSearchParams(window.location.search);
-            if (params.get('busqueda')) this.busqueda = params.get('busqueda');
-            if (params.get('idcliente')) this.filtroCliente = params.get('idcliente');
-            this.cargarPresentaciones();
+            if (params.get('id_mapping')) {
+                this.modoAaMapping = true;
+                this.idAaMapping = params.get('id_mapping');
+                if (params.get('idcliente')) this.filtroCliente = params.get('idcliente');
+                this.cargarAaMapping();
+            } else {
+                if (params.get('busqueda')) this.busqueda = params.get('busqueda');
+                if (params.get('idcliente')) this.filtroCliente = params.get('idcliente');
+                this.cargarPresentaciones();
+            }
+        },
+
+        async cargarAaMapping() {
+            this.loading = true;
+            try {
+                const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/aa-confecciones/${this.idAaMapping}`);
+                if (!res.ok) throw new Error('No encontrado');
+                const item = await res.json();
+                this.presentaciones = [item];
+                this.abrirEdicion(item);
+            } catch (err) {
+                console.error("Error cargando aa-mapping:", err);
+                this.presentaciones = [];
+            } finally {
+                this.loading = false;
+            }
         },
 
         async cargarPresentaciones() {
@@ -162,7 +187,10 @@ export default function presentacionesManager() {
             this.editError = '';
 
             try {
-                const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/presentaciones/${this.editando.Id}`, {
+                const endpoint = this.modoAaMapping
+                    ? `http://${window.env.IP_BACKEND}/api/mapping/aa-confecciones/${this.editando.Id}`
+                    : `http://${window.env.IP_BACKEND}/api/mapping/presentaciones/${this.editando.Id}`;
+                const res = await fetch(endpoint, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -188,7 +216,11 @@ export default function presentacionesManager() {
                 }).showToast();
 
                 this.cerrarEdicion();
-                this.cargarPresentaciones();
+                if (this.modoAaMapping) {
+                    this.cargarAaMapping();
+                } else {
+                    this.cargarPresentaciones();
+                }
             } catch (err) {
                 console.error("Error guardando:", err);
                 this.editError = 'No se pudo contactar con el servidor';

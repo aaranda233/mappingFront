@@ -249,7 +249,7 @@
                           </template>
                           <!-- Botón editar mapping -->
                           <a
-                            :href="'presentaciones.html?busqueda=' + encodeURIComponent(l.ok ? l.resolucion.descripcion_mapping : l.confeccion_buscada) + (resultado.cabecera.cliente.id ? '&idcliente=' + resultado.cabecera.cliente.id : '')"
+                            :href="l.ok ? 'presentaciones.html?id_mapping=' + l.resolucion.id_mapping + (resultado.cabecera.cliente.id ? '&idcliente=' + resultado.cabecera.cliente.id : '') : 'presentaciones.html?busqueda=' + encodeURIComponent(l.confeccion_buscada) + (resultado.cabecera.cliente.id ? '&idcliente=' + resultado.cabecera.cliente.id : '')"
                             target="_blank"
                             class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-white border border-gray-300 text-gray-600 hover:bg-[#003a4b] hover:text-white hover:border-[#003a4b] transition"
                             title="Ver / editar este mapping en presentaciones">
