@@ -436,6 +436,133 @@
           </template>
 
         </div>
+
+        <!-- ── Evaluación global de mappings Iberiana ── -->
+        <div class="max-w-6xl mx-auto px-4 pb-10">
+          <div class="bg-white/60 backdrop-blur-xl shadow-xl rounded-3xl border border-gray-200 dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
+
+            <!-- Header -->
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 class="text-base font-bold text-gray-700 dark:text-white uppercase tracking-wide">Evaluación de Mappings Iberiana</h2>
+                <p class="text-xs text-gray-400 mt-0.5">Mappings TEST vs pedidos PROD (últimos 6 meses)</p>
+              </div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <!-- Filtros -->
+                <div class="flex rounded-lg border border-gray-200 overflow-hidden text-xs font-semibold">
+                  <button @click="eval.filtro = 'todos'"
+                    :class="eval.filtro === 'todos' ? 'bg-gray-800 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'"
+                    class="px-3 py-1.5 transition-colors">Todos</button>
+                  <button @click="eval.filtro = 'ok'"
+                    :class="eval.filtro === 'ok' ? 'bg-green-600 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'"
+                    class="px-3 py-1.5 border-l border-gray-200 transition-colors">
+                    ✓ Correctos
+                    <span x-text="'(' + eval.data.filter(r => r.status === 'OK').length + ')'" class="ml-1"></span>
+                  </button>
+                  <button @click="eval.filtro = 'diferente'"
+                    :class="eval.filtro === 'diferente' ? 'bg-orange-500 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'"
+                    class="px-3 py-1.5 border-l border-gray-200 transition-colors">
+                    ⚠ Incorrectos
+                    <span x-text="'(' + eval.data.filter(r => r.status === 'DIFERENTE').length + ')'" class="ml-1"></span>
+                  </button>
+                  <button @click="eval.filtro = 'sin_datos'"
+                    :class="eval.filtro === 'sin_datos' ? 'bg-gray-500 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'"
+                    class="px-3 py-1.5 border-l border-gray-200 transition-colors">
+                    — Sin datos
+                    <span x-text="'(' + eval.data.filter(r => r.status === 'SIN_DATOS').length + ')'" class="ml-1"></span>
+                  </button>
+                </div>
+                <!-- Botón cargar/recargar -->
+                <button @click="cargarEval()" :disabled="eval.loading"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-gray-300 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" :class="eval.loading ? 'animate-spin' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  <span x-text="eval.loading ? 'Cargando...' : (eval.data.length ? 'Recargar' : 'Cargar evaluación')"></span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Estado vacío -->
+            <template x-if="!eval.loading && eval.data.length === 0 && !eval.error">
+              <div class="px-6 py-12 text-center text-gray-400 text-sm">
+                Pulsa "Cargar evaluación" para analizar los mappings contra pedidos PROD.
+              </div>
+            </template>
+
+            <!-- Error -->
+            <template x-if="eval.error">
+              <div class="px-6 py-4 text-sm text-red-600">Error: <span x-text="eval.error"></span></div>
+            </template>
+
+            <!-- Tabla -->
+            <template x-if="eval.data.length > 0">
+              <div class="overflow-x-auto">
+                <table class="w-full text-xs">
+                  <thead>
+                    <tr class="bg-gray-50 dark:bg-gray-700 text-gray-500 uppercase tracking-wide text-[10px]">
+                      <th class="px-4 py-2 text-left w-8">#</th>
+                      <th class="px-4 py-2 text-left">Descripción mapping</th>
+                      <th class="px-4 py-2 text-left">Cliente</th>
+                      <th class="px-4 py-2 text-left">GenSal TEST</th>
+                      <th class="px-4 py-2 text-left">GenSal ERP (más usado)</th>
+                      <th class="px-4 py-2 text-center">Pedidos</th>
+                      <th class="px-4 py-2 text-center">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <template x-for="(r, i) in evalFiltrado()" :key="r.id">
+                      <tr class="border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                        :class="r.status === 'DIFERENTE' ? 'bg-orange-50/50' : ''">
+                        <td class="px-4 py-2 text-gray-400 font-mono" x-text="r.id"></td>
+                        <td class="px-4 py-2 font-mono text-gray-700 dark:text-gray-200" x-text="r.descripcion"></td>
+                        <td class="px-4 py-2 text-gray-500" x-text="r.idCliente"></td>
+                        <!-- GenSal TEST -->
+                        <td class="px-4 py-2">
+                          <span class="font-mono text-gray-800 dark:text-gray-100" x-text="r.gensalTest"></span>
+                          <span class="block text-gray-400 text-[10px] leading-tight truncate max-w-[160px]" x-text="r.nomGensalTest"></span>
+                        </td>
+                        <!-- GenSal ERP más usado -->
+                        <td class="px-4 py-2">
+                          <template x-if="r.erpGensals.length > 0">
+                            <div>
+                              <template x-for="g in r.erpGensals" :key="g.id">
+                                <div class="flex items-center gap-1 mb-0.5">
+                                  <span class="font-mono" :class="g.id === r.gensalTest ? 'text-green-700' : 'text-red-600 line-through'" x-text="g.id"></span>
+                                  <span class="text-gray-400 text-[10px] truncate max-w-[140px]" x-text="g.nombre"></span>
+                                  <span class="ml-auto text-gray-400 shrink-0" x-text="g.veces + 'x'"></span>
+                                </div>
+                              </template>
+                            </div>
+                          </template>
+                          <template x-if="r.erpGensals.length === 0">
+                            <span class="text-gray-300">—</span>
+                          </template>
+                        </td>
+                        <!-- Pedidos -->
+                        <td class="px-4 py-2 text-center font-mono text-gray-500" x-text="r.totalLineas || '—'"></td>
+                        <!-- Estado -->
+                        <td class="px-4 py-2 text-center">
+                          <template x-if="r.status === 'OK'">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-700">✓ OK</span>
+                          </template>
+                          <template x-if="r.status === 'DIFERENTE'">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 text-orange-700">⚠ Diferente</span>
+                          </template>
+                          <template x-if="r.status === 'SIN_DATOS'">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-500">— Sin datos</span>
+                          </template>
+                        </td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+              </div>
+            </template>
+
+          </div>
+        </div>
+
       </main>
     </div>
   </div>
