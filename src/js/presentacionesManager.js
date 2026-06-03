@@ -28,7 +28,10 @@ export default function presentacionesManager() {
             { id: '0', nombre: 'Todos' },
             { id: '2194', nombre: '2194 - Iberiana Francia' },
             { id: '2202', nombre: '2202 - Iberiana Alemania' },
-            { id: '4319', nombre: '4319 - Iberiana CZ' }
+            { id: '4319', nombre: '4319 - Iberiana CZ' },
+            { id: '2232', nombre: '2232 - Edeka' },
+            { id: '2267', nombre: '2267 - Edeka BIO' },
+            { id: '2453', nombre: '2453 - Edeka NL' }
         ],
 
         init() {
