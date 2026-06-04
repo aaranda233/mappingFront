@@ -241,7 +241,7 @@ export default function estadoPedidosIberianaTestManager() {
 
         formatFecha(fecha) {
             if (!fecha) return '-';
-            const s = /[Z+]/.test(fecha) ? fecha : fecha + 'Z';
+            const s = fecha.replace(/Z$/, '').replace(/[+-]\d{2}:\d{2}$/, '');
             const d = new Date(s);
             const dd = String(d.getDate()).padStart(2, '0');
             const mm = String(d.getMonth() + 1).padStart(2, '0');
