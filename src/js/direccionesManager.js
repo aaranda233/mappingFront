@@ -124,7 +124,8 @@ export default function direccionesManager() {
 
         formatFecha(fecha) {
             if (!fecha) return '';
-            const d = new Date(fecha);
+            const s = /[Z+]/.test(fecha) ? fecha : fecha + 'Z';
+            const d = new Date(s);
             if (isNaN(d)) return fecha;
             return d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
         }

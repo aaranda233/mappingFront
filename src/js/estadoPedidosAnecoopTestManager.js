@@ -237,7 +237,8 @@ export default function estadoPedidosAnecoopTestManager() {
 
         formatFecha(fecha) {
             if (!fecha) return '-';
-            const d = new Date(fecha);
+            const s = /[Z+]/.test(fecha) ? fecha : fecha + 'Z';
+            const d = new Date(s);
             const dd = String(d.getDate()).padStart(2, '0');
             const mm = String(d.getMonth() + 1).padStart(2, '0');
             const yyyy = d.getFullYear();
