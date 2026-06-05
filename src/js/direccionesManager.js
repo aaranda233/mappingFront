@@ -19,7 +19,9 @@ export default function direccionesManager() {
             { id: '2194', nombre: '2194 - Iberiana Francia' },
             { id: '2202', nombre: '2202 - Iberiana Alemania' },
             { id: '4319', nombre: '4319 - Iberiana CZ' },
-            { id: '1172', nombre: '1172 - Eurogroup' }
+            { id: '1172', nombre: '1172 - Eurogroup' },
+            { id: '2267', nombre: '2267 - EDEKA Bio' },
+            { id: '2232', nombre: '2232 - EDEKA Convencional' }
         ],
 
         init() {
