@@ -116,15 +116,31 @@ export default function presentacionesManager() {
         // ---- Edicion con card ----
         abrirEdicion(item) {
             this.editando = { ...item };
-            this.editBusqueda = '';
             this.editResultados = [];
             this.editBuscando = false;
             this.editMostrarResultados = false;
-            this.editSeleccionada = null;
-            this.editIdGensal = String(item.IdPresentacion || '');
-            this.editIdCategoria = String(item.Categoria || '');
-            this.editIdGenero = '';
             this.editError = '';
+
+            // Pre-fill with current mapping so user sees what is already set
+            if (item.IdPresentacion) {
+                this.editSeleccionada = {
+                    Presentacion: item.Presentacion || '',
+                    Genero: item.Genero || '',
+                    IdGenero: item.IdGenero || '',
+                    IdPresentacion: item.IdPresentacion,
+                    IdCategoria: item.Categoria
+                };
+                this.editBusqueda = item.Presentacion || '';
+                this.editIdGensal = String(item.IdPresentacion);
+                this.editIdCategoria = String(item.Categoria || '');
+                this.editIdGenero = String(item.IdGenero || '');
+            } else {
+                this.editSeleccionada = null;
+                this.editBusqueda = '';
+                this.editIdGensal = '';
+                this.editIdCategoria = '';
+                this.editIdGenero = '';
+            }
         },
 
         cerrarEdicion() {
