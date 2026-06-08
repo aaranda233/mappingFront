@@ -400,7 +400,7 @@
 
                       <!-- ERP comparison -->
                       <template x-if="pedidoERP">
-                        <div x-data="{ erpL: erpLinea(idx), diffs: erpDiffs(l, erpLinea(idx)) }"
+                        <div x-data="{ erpL: erpLinea(l.resolucion), diffs: erpDiffs(l, erpLinea(l.resolucion)) }"
                           class="px-4 pb-3">
                           <template x-if="diffs !== null && diffs.length > 0">
                             <div class="rounded-xl bg-orange-50 border border-orange-200 p-3">

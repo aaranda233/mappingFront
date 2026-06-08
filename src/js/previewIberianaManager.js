@@ -96,8 +96,10 @@ export default function previewIberianaManager() {
             }
         },
 
-        erpLinea(idx) {
-            return this.pedidoERP?.lineas?.[idx] ?? null;
+        erpLinea(resolucion) {
+            if (!this.pedidoERP?.lineas || !resolucion?.id_presentacion) return null;
+            // Match by GenSal instead of by index — ERP may store lines in different order than PDF
+            return this.pedidoERP.lineas.find(l => l.PEL_idgensal === resolucion.id_presentacion) ?? null;
         },
 
         erpDiffs(l, erpL) {
