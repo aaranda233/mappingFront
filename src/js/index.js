@@ -31,6 +31,10 @@ import tutorialGuide from "./tutorialGuide.js";
 import previewIberianaManager from "./previewIberianaManager.js";
 import greenyardManager from "./greenyardManager.js";
 
+// Salvaguarda: si /env.js no se cargó (404, ConfigMap ausente en dev…),
+// evitar que window.env undefined haga reventar todo el store.
+window.env = window.env || {};
+
 window.mappingManager = mappingManager;
 window.transporteManager = transporteManager;
 window.presentacionesManager = presentacionesManager;

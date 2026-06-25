@@ -7,24 +7,84 @@ export default function greenyardManager() {
         fileObj: null,
         error: null,
 
+        // ── alta de claves (Casting -> Grupo) ──
+        claveInput: '',
+        grupoInput: '',
+        castings: [],
+        grupos: [],
+        grupoOpen: false,
+        insertLoading: false,
+        insertMsg: '',
+        insertError: '',
+
         // PDF original (mitad izquierda)
         originalUrl: null,
 
         // resultado del /split
         resultado: null,
 
-        // modal del PDF partido
+        // modal del PDF (partido u original)
         modalOpen: false,
         modalPedido: null,
         modalUrl: null,
+        modalTitle: '',
+        modalSub: '',
 
         // blobs creados (para revocar y no fugar memoria)
         _blobUrls: [],
 
-        init() {},
+        init() { this.loadCastings(); },
 
         parserBase() {
             return (window.env && window.env.IP_GREENYARD_PARSER) || '192.168.10.119:5005';
+        },
+
+        // ── alta de claves ───────────────────────────────────────────
+        async loadCastings() {
+            try {
+                const res = await fetch(`http://${this.parserBase()}/castings`);
+                const data = await res.json();
+                if (data.ok) {
+                    this.castings = data.castings || [];
+                    this.grupos = [...new Set(this.castings.map(c => c.Grupo).filter(Boolean))].sort();
+                }
+            } catch (e) { /* el piloto ya refleja si el parser está caído */ }
+        },
+
+        filteredGrupos() {
+            const q = (this.grupoInput || '').toLowerCase().trim();
+            if (!q) return this.grupos;
+            return this.grupos.filter(g => g.toLowerCase().includes(q));
+        },
+
+        selectGrupo(g) { this.grupoInput = g; this.grupoOpen = false; },
+
+        async insertarClave() {
+            const casting = (this.claveInput || '').trim();
+            const grupo = (this.grupoInput || '').trim();
+            this.insertMsg = ''; this.insertError = '';
+            if (!casting || !grupo) { this.insertError = 'Rellena Clave y Grupo.'; return; }
+            this.insertLoading = true;
+            try {
+                const res = await fetch(`http://${this.parserBase()}/castings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ casting, grupo })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) {
+                    this.insertError = data.error || `Error ${res.status}`;
+                } else {
+                    this.insertMsg = `Insertada "${casting}" → "${grupo}"`;
+                    this.claveInput = '';
+                    this.grupoInput = '';
+                    await this.loadCastings();
+                }
+            } catch (e) {
+                this.insertError = 'No se pudo conectar con el parser: ' + e.message;
+            } finally {
+                this.insertLoading = false;
+            }
         },
 
         // ── Drag & Drop / selección ──────────────────────────────────
@@ -105,12 +165,24 @@ export default function greenyardManager() {
         openModal(pedido) {
             this.modalPedido = pedido;
             this.modalUrl = pedido.url;
+            this.modalTitle = pedido.nombre;
+            this.modalSub = pedido.n_lineas + ' líneas · Lote ' + (pedido.lote || '—');
+            this.modalOpen = true;
+        },
+        openOriginal() {
+            if (!this.originalUrl) return;
+            this.modalPedido = null;
+            this.modalUrl = this.originalUrl;
+            this.modalTitle = 'PDF original';
+            this.modalSub = this.fileName || '';
             this.modalOpen = true;
         },
         closeModal() {
             this.modalOpen = false;
             this.modalPedido = null;
             this.modalUrl = null;
+            this.modalTitle = '';
+            this.modalSub = '';
         },
 
         reset() {

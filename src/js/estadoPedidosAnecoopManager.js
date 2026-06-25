@@ -12,7 +12,7 @@ export default function estadoPedidosAnecoopManager() {
             this._log('init() montado, filtro=' + this._centroKey());
             this._hydrateFromCache();
             this.loadEstadoActual();
-            setInterval(() => this.loadEstadoActual(), 1000);
+            setInterval(() => this.loadEstadoActual(), 5000);
             setInterval(() => { if (this.showHistorial) this.loadHistorial(); }, 5000);
             if (window.Alpine) {
                 let primero = true;
@@ -24,8 +24,9 @@ export default function estadoPedidosAnecoopManager() {
                     this._log('CAMBIO DE FILTRO ' + centroPrev + ' -> ' + this._centroKey());
                     centroPrev = this._centroKey();
                     this._hydrateFromCache();
+                    this.historialLoaded = false; this.historial = [];
                     this.loadEstadoActual();
-                    if (this.showHistorial) this.loadHistorial();
+                    this.loadHistorial();
                 });
             }
         },
@@ -133,6 +134,13 @@ export default function estadoPedidosAnecoopManager() {
             if (this.showHistorial) {
                 this.loadHistorial();
             }
+        },
+
+        refrescar() {
+            this.historialLoaded = false;
+            this.historial = [];
+            this.loadEstadoActual();
+            this.loadHistorial();
         },
 
         pilotColor() {
