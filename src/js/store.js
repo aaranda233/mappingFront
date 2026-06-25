@@ -68,6 +68,22 @@ export default {
         current: null,
         pilotColor: 'gray'
     },
+    greenyard: {
+        pilotColor: 'gray'  // gray = sin comprobar, green = parser activo, red = inactivo
+    },
+    async fetchGreenyardHealth() {
+        const base = window.env?.IP_GREENYARD_PARSER;
+        if (!base) { this.greenyard.pilotColor = 'gray'; return; }
+        try {
+            const ctrl = new AbortController();
+            const t = setTimeout(() => ctrl.abort(), 4000);
+            const res = await fetch(`http://${base}/health`, { signal: ctrl.signal });
+            clearTimeout(t);
+            this.greenyard.pilotColor = res.ok ? 'green' : 'red';
+        } catch (e) {
+            this.greenyard.pilotColor = 'red';
+        }
+    },
     async fetchUserInfo() {
         // En modo dev, asignar permisos base sin admin y saltar OAuth/BD
         if (window.env.VERSION && window.env.VERSION.toLowerCase() === 'dev') {

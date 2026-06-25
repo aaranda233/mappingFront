@@ -29,12 +29,14 @@ import presentacionesManager from "./presentacionesManager.js";
 import direccionesManager from "./direccionesManager.js";
 import tutorialGuide from "./tutorialGuide.js";
 import previewIberianaManager from "./previewIberianaManager.js";
+import greenyardManager from "./greenyardManager.js";
 
 window.mappingManager = mappingManager;
 window.transporteManager = transporteManager;
 window.presentacionesManager = presentacionesManager;
 window.direccionesManager = direccionesManager;
 window.previewIberianaManager = previewIberianaManager;
+window.greenyardManager = greenyardManager;
 window.estadoPedidosManager = estadoPedidosManager;
 window.estadoPedidosEurogroupManager = estadoPedidosEurogroupManager;
 window.estadoPedidosEurogroupTestManager = estadoPedidosEurogroupTestManager;
@@ -60,6 +62,7 @@ Alpine.store("global").fetchEstadoPedidosIberiana(); // Initial fetch estado ped
 Alpine.store("global").fetchEstadoPedidosIberianaTest(); // Initial fetch estado pedidos IBERIANA TEST
 Alpine.store("global").fetchEstadoPedidosAnecoop(); // Initial fetch estado pedidos ANECOOP
 Alpine.store("global").fetchEstadoPedidosAnecoopTest(); // Initial fetch estado pedidos ANECOOP TEST
+Alpine.store("global").fetchGreenyardHealth(); // Initial ping al parser Greenyard (piloto)
 setInterval(() => Alpine.store("global").fetchCounts(), 30000); // Refresh every 30s
 setInterval(() => Alpine.store("global").fetchEstadoPedidos(), 1000); // Refresh estado pedidos EDEKA every 1s
 setInterval(() => Alpine.store("global").fetchEstadoPedidosEurogroup(), 1000); // Refresh estado pedidos EUROGROUP every 1s
@@ -68,6 +71,7 @@ setInterval(() => Alpine.store("global").fetchEstadoPedidosIberiana(), 1000); //
 setInterval(() => Alpine.store("global").fetchEstadoPedidosIberianaTest(), 1000); // Refresh estado pedidos IBERIANA TEST every 1s
 setInterval(() => Alpine.store("global").fetchEstadoPedidosAnecoop(), 1000); // Refresh estado pedidos ANECOOP every 1s
 setInterval(() => Alpine.store("global").fetchEstadoPedidosAnecoopTest(), 1000); // Refresh estado pedidos ANECOOP TEST every 1s
+setInterval(() => Alpine.store("global").fetchGreenyardHealth(), 5000); // Ping parser Greenyard cada 5s (piloto)
 
 Alpine.start();
 

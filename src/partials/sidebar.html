@@ -274,6 +274,37 @@
         </div>
       </li>
 
+      <!-- Greenyard -->
+      <li x-show="$store.global.userPermisos.includes('pedidos')">
+        <a href="greenyard.html"
+          class="menu-item group flex items-center gap-3 text-sm font-medium transition-colors"
+          :class="window.location.pathname.includes('greenyard') ? 'text-[#2D5A27]' : 'text-gray-600 hover:text-[#2D5A27]'">
+          <!-- Icono Caja/Split -->
+          <svg :class="window.location.pathname.includes('greenyard') ? 'text-[#2D5A27]' : 'text-gray-400 group-hover:text-[#2D5A27]'"
+            width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M3 7.5L12 12l9-4.5M3 7.5v9l9 4.5M3 7.5l9-4.5 9 4.5M21 7.5v9M12 12v9" />
+          </svg>
+          <span :class="sidebarToggle ? 'lg:hidden' : ''">Greenyard</span>
+          <!-- Piloto del parser -->
+          <span class="relative flex h-3 w-3 ml-auto" :class="sidebarToggle ? 'lg:hidden' : ''">
+            <span class="absolute inline-flex h-full w-full rounded-full opacity-75"
+              :class="{
+                'bg-gray-400': $store.global.greenyard.pilotColor === 'gray',
+                'bg-green-500': $store.global.greenyard.pilotColor === 'green',
+                'bg-red-500 animate-ping': $store.global.greenyard.pilotColor === 'red'
+              }"></span>
+            <span class="relative inline-flex rounded-full h-3 w-3"
+              :class="{
+                'bg-gray-400': $store.global.greenyard.pilotColor === 'gray',
+                'bg-green-500': $store.global.greenyard.pilotColor === 'green',
+                'bg-red-500': $store.global.greenyard.pilotColor === 'red'
+              }"></span>
+          </span>
+        </a>
+      </li>
+
     </ul>
 
     <!-- Admin -->
