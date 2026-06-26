@@ -429,10 +429,17 @@
       <!-- Cabecera -->
       <div class="flex items-center justify-between px-4 py-3 bg-[#f17533] text-white">
         <div class="flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm3.75 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm3.75 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
           </svg>
-          <span class="font-semibold text-sm">Asistente de Mapping</span>
+          <div class="leading-tight min-w-0">
+            <span class="font-semibold text-sm block">Asistente de Mapping</span>
+            <span x-show="contexto && (contexto.cliente || contexto.idcliente)"
+              class="text-[11px] text-white/85 block truncate"
+              x-text="'Cliente: ' + ((contexto && contexto.cliente) ? contexto.cliente : '') + ((contexto && contexto.idcliente) ? ' (' + contexto.idcliente + ')' : '')"></span>
+            <span x-show="!contexto || (!contexto.cliente && !contexto.idcliente)"
+              class="text-[11px] text-white/75 block">Sin cliente seleccionado</span>
+          </div>
         </div>
         <div class="flex items-center gap-1">
           <button @click="reset()" title="Limpiar conversaci&oacute;n"
