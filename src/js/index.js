@@ -30,6 +30,7 @@ import direccionesManager from "./direccionesManager.js";
 import tutorialGuide from "./tutorialGuide.js";
 import previewIberianaManager from "./previewIberianaManager.js";
 import greenyardManager from "./greenyardManager.js";
+import chatbotManager from "./chatbotManager.js";
 
 // Salvaguarda: si /env.js no se cargó (404, ConfigMap ausente en dev…),
 // evitar que window.env undefined haga reventar todo el store.
@@ -50,6 +51,7 @@ window.estadoPedidosAnecoopManager = estadoPedidosAnecoopManager;
 window.estadoPedidosAnecoopTestManager = estadoPedidosAnecoopTestManager;
 window.adminManager = adminManager;
 window.tutorialGuide = tutorialGuide;
+window.chatbotManager = chatbotManager;
 
 Alpine.plugin(persist);
 window.Alpine = Alpine;

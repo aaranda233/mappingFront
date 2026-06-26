@@ -97,6 +97,18 @@
                       </svg>
                       Hist&oacute;rico
                     </button>
+
+                    <button
+                      class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#f17533]/60 bg-white/70 text-[#f17533] font-semibold text-xs shadow-md hover:shadow-lg hover:scale-105 backdrop-blur-md transition-all duration-300"
+                      @click="$dispatch('abrir-chat-mapping', { descripcion: item.descripcion, ref_pedido: item.ref_pedido, cliente: item.cliente, idcliente: item.idcliente, id_linea: item.id_linea, fecha_pedido: item.fecha_pedido })"
+                      title="Pregunta al asistente por qu&eacute; se pide este mapping">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+                      </svg>
+                      &iquest;Por qu&eacute;?
+                    </button>
                   </div>
 
                   <!-- Cabecera -->
@@ -406,6 +418,76 @@
 
       </main>
     </div>
+  </div>
+
+  <!-- Asistente IA (chatbot del mapping) -->
+  <div x-data="chatbotManager()" x-init="init" x-cloak class="fixed bottom-6 right-6 z-[60] flex flex-col items-end">
+    <!-- Panel del chat -->
+    <div x-show="open" x-transition.opacity.duration.200ms
+      class="mb-3 w-[92vw] max-w-sm h-[32rem] flex flex-col bg-white shadow-2xl rounded-3xl border border-gray-200 overflow-hidden">
+      <!-- Cabecera -->
+      <div class="flex items-center justify-between px-4 py-3 bg-[#f17533] text-white">
+        <div class="flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm3.75 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm3.75 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+          </svg>
+          <span class="font-semibold text-sm">Asistente de Mapping</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <button @click="reset()" title="Limpiar conversaci&oacute;n"
+            class="p-1.5 rounded-full hover:bg-white/20 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992V4.356M2.985 19.644v-4.992h4.992M19.5 8.25A7.5 7.5 0 006.34 5.66M4.5 15.75a7.5 7.5 0 0013.16 2.59" />
+            </svg>
+          </button>
+          <button @click="open = false" title="Cerrar"
+            class="p-1.5 rounded-full hover:bg-white/20 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mensajes -->
+      <div x-ref="scroll" class="flex-1 overflow-y-auto px-4 py-3 space-y-3 bg-gray-50">
+        <template x-if="messages.length === 0">
+          <p class="text-xs text-gray-400 text-center mt-6">Pregunta por qu&eacute; se pide un mapping, qu&eacute; presentaci&oacute;n usar, o pulsa &laquo;&iquest;Por qu&eacute;?&raquo; en un pedido.</p>
+        </template>
+        <template x-for="(m, mi) in messages" :key="mi">
+          <div :class="m.role === 'user' ? 'flex justify-end' : 'flex justify-start'">
+            <div :class="m.role === 'user' ? 'bg-[#f17533] text-white' : 'bg-white text-gray-800 border border-gray-200'"
+              class="max-w-[85%] rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap shadow-sm" x-text="m.content"></div>
+          </div>
+        </template>
+        <div x-show="loading" class="flex justify-start">
+          <div class="bg-white border border-gray-200 rounded-2xl px-3 py-2 text-sm text-gray-400 shadow-sm">Escribiendo&hellip;</div>
+        </div>
+      </div>
+
+      <!-- Entrada -->
+      <form @submit.prevent="send()" class="flex items-center gap-2 p-3 border-t border-gray-200 bg-white">
+        <input x-model="input" type="text" :disabled="loading" placeholder="Escribe tu pregunta&hellip;"
+          class="flex-1 rounded-full border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f17533]/40" />
+        <button type="submit" :disabled="loading || !input.trim()"
+          class="shrink-0 w-9 h-9 flex items-center justify-center rounded-full bg-[#f17533] text-white disabled:opacity-40 hover:scale-105 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+          </svg>
+        </button>
+      </form>
+    </div>
+
+    <!-- Bot&oacute;n flotante -->
+    <button @click="open = !open"
+      class="w-14 h-14 rounded-full bg-[#f17533] text-white shadow-2xl flex items-center justify-center hover:scale-110 transition-transform">
+      <svg x-show="!open" xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm3.75 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm3.75 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+      </svg>
+      <svg x-show="open" xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
   </div>
 
 </body>

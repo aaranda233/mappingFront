@@ -1,0 +1,32 @@
+# Pruebas en local: docker compose up -d --build
+# - Backend Node/Express (mapping + bot) en http://localhost:4000
+# - Frontend (nginx con el build) en http://localhost:8080
+#
+# Requisitos:
+# - mappingBackend/.env relleno (incluye ANTHROPIC_API_KEY y credenciales SQL).
+# - Acceso de red al SQL Server configurado en ese .env (p.ej. 192.168.2.36).
+
+services:
+  mapping-backend:
+    build:
+      context: ../mappingBackend
+    container_name: mapping-backend
+    env_file:
+      - ../mappingBackend/.env
+    ports:
+      - "4000:4000"
+    restart: unless-stopped
+
+  mapping-front:
+    build:
+      context: .
+      target: production
+    container_name: mapping-front
+    depends_on:
+      - mapping-backend
+    ports:
+      - "8080:80"
+    volumes:
+      # Inyecta la config del frontend en runtime (no va en el build).
+      - ./env.docker.js:/usr/share/nginx/html/env.js:ro
+    restart: unless-stopped
