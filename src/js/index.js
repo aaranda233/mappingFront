@@ -72,9 +72,15 @@ Alpine.store("global").fetchGreenyardHealth(); // Initial ping al parser Greenya
 setInterval(() => Alpine.store("global").fetchCounts(), 30000); // Refresh every 30s
 setInterval(() => Alpine.store("global").fetchEstadoPedidos(), 1000); // Refresh estado pedidos EDEKA every 1s
 setInterval(() => Alpine.store("global").fetchEstadoPedidosEurogroup(), 1000); // Refresh estado pedidos EUROGROUP every 1s
-setInterval(() => Alpine.store("global").fetchEstadoPedidosEurogroupTest(), 1000); // Refresh estado pedidos EUROGROUP TEST every 1s
+setInterval(
+  () => Alpine.store("global").fetchEstadoPedidosEurogroupTest(),
+  1000,
+); // Refresh estado pedidos EUROGROUP TEST every 1s
 setInterval(() => Alpine.store("global").fetchEstadoPedidosIberiana(), 1000); // Refresh estado pedidos IBERIANA every 1s
-setInterval(() => Alpine.store("global").fetchEstadoPedidosIberianaTest(), 1000); // Refresh estado pedidos IBERIANA TEST every 1s
+setInterval(
+  () => Alpine.store("global").fetchEstadoPedidosIberianaTest(),
+  1000,
+); // Refresh estado pedidos IBERIANA TEST every 1s
 setInterval(() => Alpine.store("global").fetchEstadoPedidosAnecoop(), 1000); // Refresh estado pedidos ANECOOP every 1s
 setInterval(() => Alpine.store("global").fetchEstadoPedidosAnecoopTest(), 1000); // Refresh estado pedidos ANECOOP TEST every 1s
 setInterval(() => Alpine.store("global").fetchGreenyardHealth(), 5000); // Ping parser Greenyard cada 5s (piloto)

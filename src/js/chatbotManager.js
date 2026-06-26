@@ -1,10 +1,28 @@
+import { marked } from "marked";
+import DOMPurify from "dompurify";
+
+marked.setOptions({ gfm: true, breaks: true });
+
 export default function chatbotManager() {
   return {
     open: false,
+    expanded: false, // panel grande
     loading: false,
     input: "",
     messages: [], // { role: 'user' | 'assistant', content: string }
     contexto: null, // datos del mapping que el comercial está mirando
+
+    // Convierte el markdown del asistente (tablas, negritas, listas) en HTML seguro.
+    renderMarkdown(content) {
+      try {
+        return DOMPurify.sanitize(marked.parse(content || ""));
+      } catch (e) {
+        return (content || "").replace(
+          /[&<>]/g,
+          (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c],
+        );
+      }
+    },
 
     init() {
       // Abre el chat con el contexto de un pedido cuando se pulsa "¿Por qué?" en una tarjeta.
