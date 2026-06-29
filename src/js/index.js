@@ -22,6 +22,8 @@ import estadoPedidosEurogroupManager from "./estadoPedidosEurogroupManager.js";
 import estadoPedidosEurogroupTestManager from "./estadoPedidosEurogroupTestManager.js";
 import estadoPedidosIberianaManager from "./estadoPedidosIberianaManager.js";
 import estadoPedidosIberianaTestManager from "./estadoPedidosIberianaTestManager.js";
+import estadoPedidosGreenyardManager from "./estadoPedidosGreenyardManager.js";
+import estadoPedidosGreenyardTestManager from "./estadoPedidosGreenyardTestManager.js";
 import estadoPedidosAnecoopManager from "./estadoPedidosAnecoopManager.js";
 import estadoPedidosAnecoopTestManager from "./estadoPedidosAnecoopTestManager.js";
 import adminManager from "./adminManager.js";
@@ -47,6 +49,8 @@ window.estadoPedidosEurogroupManager = estadoPedidosEurogroupManager;
 window.estadoPedidosEurogroupTestManager = estadoPedidosEurogroupTestManager;
 window.estadoPedidosIberianaManager = estadoPedidosIberianaManager;
 window.estadoPedidosIberianaTestManager = estadoPedidosIberianaTestManager;
+window.estadoPedidosGreenyardManager = estadoPedidosGreenyardManager;
+window.estadoPedidosGreenyardTestManager = estadoPedidosGreenyardTestManager;
 window.estadoPedidosAnecoopManager = estadoPedidosAnecoopManager;
 window.estadoPedidosAnecoopTestManager = estadoPedidosAnecoopTestManager;
 window.adminManager = adminManager;
@@ -66,6 +70,8 @@ Alpine.store("global").fetchEstadoPedidosEurogroup(); // Initial fetch estado pe
 Alpine.store("global").fetchEstadoPedidosEurogroupTest(); // Initial fetch estado pedidos EUROGROUP TEST
 Alpine.store("global").fetchEstadoPedidosIberiana(); // Initial fetch estado pedidos IBERIANA
 Alpine.store("global").fetchEstadoPedidosIberianaTest(); // Initial fetch estado pedidos IBERIANA TEST
+Alpine.store("global").fetchEstadoPedidosGreenyard(); // Initial fetch estado pedidos GREENYARD
+Alpine.store("global").fetchEstadoPedidosGreenyardTest(); // Initial fetch estado pedidos GREENYARD TEST
 Alpine.store("global").fetchEstadoPedidosAnecoop(); // Initial fetch estado pedidos ANECOOP
 Alpine.store("global").fetchEstadoPedidosAnecoopTest(); // Initial fetch estado pedidos ANECOOP TEST
 Alpine.store("global").fetchGreenyardHealth(); // Initial ping al parser Greenyard (piloto)
@@ -81,6 +87,11 @@ setInterval(
   () => Alpine.store("global").fetchEstadoPedidosIberianaTest(),
   1000,
 ); // Refresh estado pedidos IBERIANA TEST every 1s
+setInterval(() => Alpine.store("global").fetchEstadoPedidosGreenyard(), 1000); // Refresh estado pedidos GREENYARD every 1s
+setInterval(
+  () => Alpine.store("global").fetchEstadoPedidosGreenyardTest(),
+  1000,
+); // Refresh estado pedidos GREENYARD TEST every 1s
 setInterval(() => Alpine.store("global").fetchEstadoPedidosAnecoop(), 1000); // Refresh estado pedidos ANECOOP every 1s
 setInterval(() => Alpine.store("global").fetchEstadoPedidosAnecoopTest(), 1000); // Refresh estado pedidos ANECOOP TEST every 1s
 setInterval(() => Alpine.store("global").fetchGreenyardHealth(), 5000); // Ping parser Greenyard cada 5s (piloto)

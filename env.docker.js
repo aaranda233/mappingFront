@@ -4,7 +4,8 @@
 window.env = {
   IP_BACKEND: "localhost:4000",
   IP_LANGCHAIN: "localhost:4000",
-  VERSION: "local-docker",
+  IP_GREENYARD_PARSER: "localhost:5005",
+  VERSION: "dev",
   ADMIN_USERS: ["bluque.garcia"],
   DEVELOPER_USERS: ["bluque.garcia"],
 };

@@ -103,7 +103,7 @@
           <span :class="sidebarToggle ? 'lg:hidden' : ''">Estado Pedidos</span>
         </a>
         <div class="overflow-hidden transition-all duration-300 ease-in-out"
-          :class="selected === 'EstadoPedidos' ? 'max-h-60' : 'max-h-0'">
+          :class="selected === 'EstadoPedidos' ? 'max-h-[40rem]' : 'max-h-0'">
           <ul class="flex flex-col gap-3 mt-2 pl-8 text-sm text-gray-500">
             <li>
               <a href="estado-pedidos.html" class="hover:text-[#003a4b] flex justify-between items-center"
@@ -227,6 +227,64 @@
               </ul>
             </li>
             <li>
+              <a href="estado-pedidos-greenyard.html" class="hover:text-[#003a4b] flex justify-between items-center"
+                :class="window.location.pathname.includes('estado-pedidos-greenyard') ? 'text-[#003a4b] font-medium' : ''">
+                GREENYARD
+                <!-- Piloto de estado -->
+                <span class="relative flex h-3 w-3">
+                  <span class="absolute inline-flex h-full w-full rounded-full opacity-75"
+                    :class="{
+                      'bg-gray-400': $store.global.estadoPedidosGreenyard.pilotColor === 'gray',
+                      'bg-green-500': $store.global.estadoPedidosGreenyard.pilotColor === 'green',
+                      'bg-yellow-400 animate-ping': $store.global.estadoPedidosGreenyard.pilotColor === 'yellow',
+                      'bg-red-500 animate-ping': $store.global.estadoPedidosGreenyard.pilotColor === 'red'
+                    }"></span>
+                  <span class="relative inline-flex rounded-full h-3 w-3"
+                    :class="{
+                      'bg-gray-400': $store.global.estadoPedidosGreenyard.pilotColor === 'gray',
+                      'bg-green-500': $store.global.estadoPedidosGreenyard.pilotColor === 'green',
+                      'bg-yellow-400': $store.global.estadoPedidosGreenyard.pilotColor === 'yellow',
+                      'bg-red-500': $store.global.estadoPedidosGreenyard.pilotColor === 'red'
+                    }"></span>
+                </span>
+              </a>
+              <!-- Sub-items debajo de GREENYARD -->
+              <ul class="flex flex-col gap-2 mt-2 pl-6 text-xs text-gray-500">
+                <li>
+                  <a href="estado-pedidos-greenyard-test.html" class="hover:text-[#003a4b] flex justify-between items-center"
+                    :class="window.location.pathname.includes('estado-pedidos-greenyard-test') ? 'text-[#003a4b] font-medium' : ''">
+                    └─ TEST
+                    <span class="relative flex h-2.5 w-2.5">
+                      <span class="absolute inline-flex h-full w-full rounded-full opacity-75"
+                        :class="{
+                          'bg-gray-400': $store.global.estadoPedidosGreenyardTest.pilotColor === 'gray',
+                          'bg-green-500': $store.global.estadoPedidosGreenyardTest.pilotColor === 'green',
+                          'bg-yellow-400 animate-ping': $store.global.estadoPedidosGreenyardTest.pilotColor === 'yellow',
+                          'bg-red-500 animate-ping': $store.global.estadoPedidosGreenyardTest.pilotColor === 'red'
+                        }"></span>
+                      <span class="relative inline-flex rounded-full h-2.5 w-2.5"
+                        :class="{
+                          'bg-gray-400': $store.global.estadoPedidosGreenyardTest.pilotColor === 'gray',
+                          'bg-green-500': $store.global.estadoPedidosGreenyardTest.pilotColor === 'green',
+                          'bg-yellow-400': $store.global.estadoPedidosGreenyardTest.pilotColor === 'yellow',
+                          'bg-red-500': $store.global.estadoPedidosGreenyardTest.pilotColor === 'red'
+                        }"></span>
+                    </span>
+                  </a>
+                </li>
+                <li>
+                  <a href="greenyard.html" class="hover:text-[#003a4b] flex justify-between items-center"
+                    :class="(window.location.pathname.includes('greenyard') && !window.location.pathname.includes('estado-pedidos-greenyard')) ? 'text-[#003a4b] font-medium' : ''">
+                    └─ Preview PDF
+                    <!-- Piloto de estado (gris) -->
+                    <span class="relative flex h-2.5 w-2.5">
+                      <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-gray-400"></span>
+                    </span>
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li>
               <a href="estado-pedidos-anecoop.html" class="hover:text-[#003a4b] flex justify-between items-center"
                 :class="window.location.pathname.includes('estado-pedidos-anecoop') ? 'text-[#003a4b] font-medium' : ''">
                 ANECOOP
@@ -272,37 +330,6 @@
             </li>
           </ul>
         </div>
-      </li>
-
-      <!-- Greenyard -->
-      <li x-show="$store.global.userPermisos.includes('pedidos')">
-        <a href="greenyard.html"
-          class="menu-item group flex items-center gap-3 text-sm font-medium transition-colors"
-          :class="window.location.pathname.includes('greenyard') ? 'text-[#2D5A27]' : 'text-gray-600 hover:text-[#2D5A27]'">
-          <!-- Icono Caja/Split -->
-          <svg :class="window.location.pathname.includes('greenyard') ? 'text-[#2D5A27]' : 'text-gray-400 group-hover:text-[#2D5A27]'"
-            width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M3 7.5L12 12l9-4.5M3 7.5v9l9 4.5M3 7.5l9-4.5 9 4.5M21 7.5v9M12 12v9" />
-          </svg>
-          <span :class="sidebarToggle ? 'lg:hidden' : ''">Greenyard</span>
-          <!-- Piloto del parser -->
-          <span class="relative flex h-3 w-3 ml-auto" :class="sidebarToggle ? 'lg:hidden' : ''">
-            <span class="absolute inline-flex h-full w-full rounded-full opacity-75"
-              :class="{
-                'bg-gray-400': $store.global.greenyard.pilotColor === 'gray',
-                'bg-green-500': $store.global.greenyard.pilotColor === 'green',
-                'bg-red-500 animate-ping': $store.global.greenyard.pilotColor === 'red'
-              }"></span>
-            <span class="relative inline-flex rounded-full h-3 w-3"
-              :class="{
-                'bg-gray-400': $store.global.greenyard.pilotColor === 'gray',
-                'bg-green-500': $store.global.greenyard.pilotColor === 'green',
-                'bg-red-500': $store.global.greenyard.pilotColor === 'red'
-              }"></span>
-          </span>
-        </a>
       </li>
 
     </ul>

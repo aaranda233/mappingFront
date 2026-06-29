@@ -26,6 +26,8 @@ export default {
         this.fetchEstadoPedidosEurogroupTest();
         this.fetchEstadoPedidosIberiana();
         this.fetchEstadoPedidosIberianaTest();
+        this.fetchEstadoPedidosGreenyard();
+        this.fetchEstadoPedidosGreenyardTest();
         this.fetchEstadoPedidosAnecoop();
         this.fetchEstadoPedidosAnecoopTest();
     },
@@ -59,6 +61,14 @@ export default {
     estadoPedidosIberianaTest: {
         current: null,
         pilotColor: 'green'
+    },
+    estadoPedidosGreenyard: {
+        current: null,
+        pilotColor: 'gray'
+    },
+    estadoPedidosGreenyardTest: {
+        current: null,
+        pilotColor: 'gray'
     },
     estadoPedidosAnecoop: {
         current: null,
@@ -222,6 +232,42 @@ export default {
             }
         } catch (e) {
             console.error("Error fetching estado pedidos iberiana test", e);
+        }
+    },
+    async fetchEstadoPedidosGreenyard() {
+        try {
+            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-greenyard/actual${this._centroQuery()}`);
+            const data = await res.json();
+            this.estadoPedidosGreenyard.current = data.current;
+            if (!data.current) {
+                this.estadoPedidosGreenyard.pilotColor = 'gray';
+            } else if (data.current.estado === 'procesando') {
+                this.estadoPedidosGreenyard.pilotColor = 'yellow';
+            } else if (data.current.estado === 'error') {
+                this.estadoPedidosGreenyard.pilotColor = 'red';
+            } else {
+                this.estadoPedidosGreenyard.pilotColor = 'gray';
+            }
+        } catch (e) {
+            console.error("Error fetching estado pedidos greenyard", e);
+        }
+    },
+    async fetchEstadoPedidosGreenyardTest() {
+        try {
+            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-greenyard-test/actual${this._centroQuery()}`);
+            const data = await res.json();
+            this.estadoPedidosGreenyardTest.current = data.current;
+            if (!data.current) {
+                this.estadoPedidosGreenyardTest.pilotColor = 'gray';
+            } else if (data.current.estado === 'procesando') {
+                this.estadoPedidosGreenyardTest.pilotColor = 'yellow';
+            } else if (data.current.estado === 'error') {
+                this.estadoPedidosGreenyardTest.pilotColor = 'red';
+            } else {
+                this.estadoPedidosGreenyardTest.pilotColor = 'gray';
+            }
+        } catch (e) {
+            console.error("Error fetching estado pedidos greenyard test", e);
         }
     },
     async fetchEstadoPedidosAnecoop() {
