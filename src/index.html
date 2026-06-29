@@ -120,7 +120,9 @@
                         src="/eurogroup.png" alt="Eurogroup" class="w-8 h-8 object-contain" />
                       <img x-show="(item.cliente && item.cliente.toUpperCase().includes('ANECOOP')) || (!item.cliente && item.idcliente === 1939)"
                         src="/anecoop.png" alt="Anecoop" class="w-8 h-8 object-contain" />
-                      <img x-show="!item.cliente ? ![2194, 2202, 4319, 1172, 1939].includes(item.idcliente) : (!item.cliente.toUpperCase().includes('IBERIANA') && !item.cliente.toUpperCase().includes('EUROGROUP') && !item.cliente.toUpperCase().includes('ANECOOP'))"
+                      <img x-show="(item.cliente && item.cliente.toUpperCase().includes('GREENYARD')) || (!item.cliente && item.idcliente === 3808)"
+                        src="/greenyard_2.png" alt="Greenyard" class="w-8 h-8 object-contain" />
+                      <img x-show="!item.cliente ? ![2194, 2202, 4319, 1172, 1939, 3808].includes(item.idcliente) : (!item.cliente.toUpperCase().includes('IBERIANA') && !item.cliente.toUpperCase().includes('EUROGROUP') && !item.cliente.toUpperCase().includes('ANECOOP') && !item.cliente.toUpperCase().includes('GREENYARD'))"
                         src="/edeka.png" alt="EDEKA" class="w-8 h-8 object-contain rounded" />
                     </div>
                     <div>
