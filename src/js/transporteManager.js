@@ -74,13 +74,9 @@ export default function transportesManager() {
                 const result = await res.json();
 
                 if (res.ok) {
-                    // Eliminar este transporte y todos los duplicados con misma direccion
-                    this.transportes = this.transportes.filter(t => t.direccion !== item.direccion);
-                    const dupCount = result.duplicadosProcesados || 0;
-                    const msg = dupCount > 0
-                        ? `Transporte procesado correctamente (+${dupCount} duplicados procesados)`
-                        : "Transporte procesado correctamente";
-                    this.showToast(msg);
+                    // Eliminar solo este transporte (por id)
+                    this.transportes = this.transportes.filter(t => t._id !== item._id);
+                    this.showToast("Transporte procesado correctamente");
                 } else {
                     item.error = "Error: " + (result.message || "Respuesta inesperada");
                 }
@@ -98,6 +94,13 @@ export default function transportesManager() {
                 return item.contenido.filter(c => String(c.numero).includes(filtro));
             }
             return item.contenido.filter(c => c.direccion.toLowerCase().includes(filtro.toLowerCase()));
+        },
+
+        // Nombre legible del destino seleccionado (para mostrarlo fuera del selector)
+        nombreDestino(item) {
+            if (!item.seleccion) return '';
+            const c = item.contenido.find(c => String(c.id) === String(item.seleccion));
+            return c ? `${c.direccion} - Nº ${c.numero}` : '';
         },
 
         async consultarHistorico(item) {

@@ -305,38 +305,37 @@
                           Sin resultados
                         </div>
                       </div>
-
-                      <div x-show="item.presentacionSeleccionada"
-                        class="flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-xl text-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none"
-                          viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span class="text-green-800">
-                          <span x-text="item.presentacionSeleccionada?.Presentacion" class="font-medium"></span>
-                          &mdash; <span x-text="item.presentacionSeleccionada?.Genero"></span>
-                        </span>
-                      </div>
-
-                      <!-- Campos resueltos -->
-                      <div x-show="item.presentacionSeleccionada"
-                        class="grid grid-cols-3 gap-2 text-xs text-gray-500 mt-2">
-                        <div class="bg-gray-50 rounded-lg px-2 py-1.5 text-center">
-                          <div class="font-medium text-gray-600">Id Presentaci&oacute;n</div>
-                          <div x-text="item.id_gensal" class="text-gray-800 font-semibold"></div>
-                        </div>
-                        <div class="bg-gray-50 rounded-lg px-2 py-1.5 text-center">
-                          <div class="font-medium text-gray-600">Categor&iacute;a</div>
-                          <div x-text="item.id_categoria" class="text-gray-800 font-semibold"></div>
-                        </div>
-                        <div class="bg-gray-50 rounded-lg px-2 py-1.5 text-center">
-                          <div class="font-medium text-gray-600">G&eacute;nero</div>
-                          <div x-text="item.id_genero" class="text-gray-800 font-semibold"></div>
-                        </div>
-                      </div>
-
                     </div>
+                  </div>
 
+                  <!-- Presentación seleccionada (siempre visible, fuera del buscador) -->
+                  <div x-show="item.presentacionSeleccionada"
+                    class="flex items-center gap-2 px-3 py-2 mt-3 bg-green-50 border border-green-200 rounded-xl text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none"
+                      viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span class="text-green-800">
+                      <span x-text="item.presentacionSeleccionada?.Presentacion" class="font-medium"></span>
+                      &mdash; <span x-text="item.presentacionSeleccionada?.Genero"></span>
+                    </span>
+                  </div>
+
+                  <!-- Campos resueltos (siempre visibles, fuera del buscador) -->
+                  <div x-show="item.presentacionSeleccionada"
+                    class="grid grid-cols-3 gap-2 text-xs text-gray-500 mt-2">
+                    <div class="bg-gray-50 rounded-lg px-2 py-1.5 text-center">
+                      <div class="font-medium text-gray-600">Id Presentaci&oacute;n</div>
+                      <div x-text="item.id_gensal" class="text-gray-800 font-semibold"></div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg px-2 py-1.5 text-center">
+                      <div class="font-medium text-gray-600">Categor&iacute;a</div>
+                      <div x-text="item.id_categoria" class="text-gray-800 font-semibold"></div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg px-2 py-1.5 text-center">
+                      <div class="font-medium text-gray-600">G&eacute;nero</div>
+                      <div x-text="item.id_genero" class="text-gray-800 font-semibold"></div>
+                    </div>
                   </div>
 
                   <!-- Botón Enviar -->

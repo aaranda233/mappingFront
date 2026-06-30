@@ -249,6 +249,16 @@
                     </div>
                   </div>
 
+                  <!-- Destino seleccionado (siempre visible, fuera del selector) -->
+                  <div x-show="item.seleccion"
+                    class="flex items-center gap-2 px-3 py-2 mt-3 bg-green-50 border border-green-200 rounded-xl text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none"
+                      viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span class="text-green-800" x-text="nombreDestino(item)"></span>
+                  </div>
+
                   <!-- Botón -->
                   <button
                     class="mt-5 w-full py-2.5 bg-[color:#f97316] hover:bg-[#e25d1c] text-white font-semibold rounded-xl flex items-center justify-center gap-2"
