@@ -199,6 +199,7 @@ export default function estadoPedidosGreenyardTestManager() {
                 const fechapedido = this.pedidoDetail?.PED_fechapedido ? new Date(this.pedidoDetail.PED_fechapedido).toISOString().split('T')[0] : '';
                 const iddestino = this.pedidoDetail?.PED_iddestino;
                 const referencia = this.pedidoDetail?.PED_referencia;
+                const idpedidotest = this.pedidoDetail?.PED_idpedido; // idpedido del pedido de test (para casar por líneas/lote)
                 if (cliente) {
                     const params = new URLSearchParams();
                     params.set('cliente', cliente);
@@ -208,6 +209,7 @@ export default function estadoPedidosGreenyardTestManager() {
                     if (fechapedido) params.set('fechapedido', fechapedido);
                     if (iddestino) params.set('iddestino', iddestino);
                     if (referencia) params.set('referencia', referencia);
+                    if (idpedidotest) params.set('idpedidotest', idpedidotest);
                     console.log('[PROD] Buscando en producción:', params.toString());
                     const urlProd = `http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-greenyard-test/pedido-prod?${params.toString()}`;
                     const resProd = await fetch(urlProd);
