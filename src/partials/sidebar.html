@@ -22,12 +22,19 @@
           class="menu-item group flex items-center gap-3 text-sm font-medium transition-colors"
           :class="selected === 'Pedidos' ? 'text-[#003a4b]' : 'text-gray-600 hover:text-[#003a4b]'">
           <!-- Icono Caja -->
-          <svg :class="selected === 'Pedidos' ? 'text-[#003a4b]' : 'text-gray-400 group-hover:text-[#003a4b]'"
-            width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M3 7.5L12 12l9-4.5M3 7.5v9l9 4.5M3 7.5l9-4.5 9 4.5M21 7.5v9M12 12v9" />
-          </svg>
+          <span class="relative flex-shrink-0">
+            <svg :class="selected === 'Pedidos' ? 'text-[#003a4b]' : 'text-gray-400 group-hover:text-[#003a4b]'"
+              width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M3 7.5L12 12l9-4.5M3 7.5v9l9 4.5M3 7.5l9-4.5 9 4.5M21 7.5v9M12 12v9" />
+            </svg>
+            <!-- Pilotillo rojo de aviso: hay mappings de pedidos pendientes (visible sin desplegar) -->
+            <span class="absolute -top-1 -right-1 flex h-2.5 w-2.5" x-show="$store.global.counts.pedidos > 0">
+              <span class="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-ping"></span>
+              <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500"></span>
+            </span>
+          </span>
           <span :class="sidebarToggle ? 'lg:hidden' : ''">Pedidos</span>
         </a>
         <div class="overflow-hidden transition-all duration-300 ease-in-out"
@@ -58,13 +65,20 @@
           class="menu-item group flex items-center gap-3 text-sm font-medium transition-colors"
           :class="selected === 'Transportes' ? 'text-[color:#f17533]' : 'text-gray-600 hover:text-[color:#f17533]'">
           <!-- Icono Camión -->
-          <svg
-            :class="selected === 'Transportes' ? 'text-[color:#f17533]' : 'text-gray-400 group-hover:text-[color:#f17533]'"
-            width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M9 17H7a2 2 0 01-2-2V6a1 1 0 011-1h8v5h5l3 4v3a2 2 0 01-2 2h-2m-3 0h-4m4 0a2 2 0 11-4 0m4 0a2 2 0 104 0" />
-          </svg>
+          <span class="relative flex-shrink-0">
+            <svg
+              :class="selected === 'Transportes' ? 'text-[color:#f17533]' : 'text-gray-400 group-hover:text-[color:#f17533]'"
+              width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M9 17H7a2 2 0 01-2-2V6a1 1 0 011-1h8v5h5l3 4v3a2 2 0 01-2 2h-2m-3 0h-4m4 0a2 2 0 11-4 0m4 0a2 2 0 104 0" />
+            </svg>
+            <!-- Pilotillo rojo de aviso: hay mappings de transporte pendientes (visible sin desplegar) -->
+            <span class="absolute -top-1 -right-1 flex h-2.5 w-2.5" x-show="$store.global.counts.transportes > 0">
+              <span class="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-ping"></span>
+              <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500"></span>
+            </span>
+          </span>
           <span :class="sidebarToggle ? 'lg:hidden' : ''">Transportes</span>
         </a>
         <div class="overflow-hidden transition-all duration-300 ease-in-out"

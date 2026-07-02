@@ -191,16 +191,16 @@
                         @click="aplicarHistorico(item, item.historico.pedidoActual)">
                         <div class="flex items-center justify-between">
                           <div class="flex-1 min-w-0">
-                            <div class="text-sm font-semibold text-gray-800" x-text="item.historico.pedidoActual.Presentacion"></div>
+                            <div class="text-sm font-semibold text-gray-800" x-text="item.historico?.pedidoActual?.Presentacion"></div>
                             <div class="text-xs text-gray-500">
-                              G&eacute;nero: <span class="font-medium" x-text="item.historico.pedidoActual.NomGenero"></span>
-                              &middot; Cat: <span class="font-medium" x-text="item.historico.pedidoActual.NombreCategoria"></span>
+                              G&eacute;nero: <span class="font-medium" x-text="item.historico?.pedidoActual?.NomGenero"></span>
+                              &middot; Cat: <span class="font-medium" x-text="item.historico?.pedidoActual?.NombreCategoria"></span>
                             </div>
-                            <div x-show="([2194, 2202, 4319].includes(item.idcliente) && item.historico.pedidoActual.PED_referencia) || (! [2194, 2202, 4319].includes(item.idcliente) && item.historico.pedidoActual.PED_pedido)"
+                            <div x-show="([2194, 2202, 4319].includes(item.idcliente) && item.historico?.pedidoActual?.PED_referencia) || (! [2194, 2202, 4319].includes(item.idcliente) && item.historico?.pedidoActual?.PED_pedido)"
                               class="text-[11px] text-blue-600 mt-0.5">
-                              Pedido: <span class="font-medium" x-text="[2194, 2202, 4319].includes(item.idcliente) ? item.historico.pedidoActual.PED_referencia : item.historico.pedidoActual.PED_pedido"></span>
-                              <span x-show="item.historico.pedidoActual.PED_fechasalida">
-                                &middot; Fecha: <span class="font-medium" x-text="item.historico.pedidoActual.PED_fechasalida ? new Date(item.historico.pedidoActual.PED_fechasalida).toLocaleDateString('es-ES') : ''"></span>
+                              Pedido: <span class="font-medium" x-text="[2194, 2202, 4319].includes(item.idcliente) ? item.historico?.pedidoActual?.PED_referencia : item.historico?.pedidoActual?.PED_pedido"></span>
+                              <span x-show="item.historico?.pedidoActual?.PED_fechasalida">
+                                &middot; Fecha: <span class="font-medium" x-text="item.historico?.pedidoActual?.PED_fechasalida ? new Date(item.historico.pedidoActual.PED_fechasalida).toLocaleDateString('es-ES') : ''"></span>
                               </span>
                             </div>
                           </div>
@@ -213,7 +213,7 @@
                     <div x-show="!item.buscandoHistorico && item.historico && item.historico.candidatos && item.historico.candidatos.length > 0">
                       <div class="text-[11px] font-bold text-blue-700 uppercase mb-1">Mapeados previos del cliente</div>
                       <div class="space-y-1.5">
-                        <template x-for="(cand, ci) in item.historico.candidatos" :key="ci">
+                        <template x-for="(cand, ci) in (item.historico?.candidatos || [])" :key="ci">
                           <button type="button"
                             class="w-full text-left px-3 py-2 rounded-lg bg-white border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition"
                             @click="aplicarHistorico(item, cand)">

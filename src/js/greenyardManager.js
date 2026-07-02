@@ -36,7 +36,9 @@ export default function greenyardManager() {
         init() { this.loadCastings(); },
 
         parserBase() {
-            return (window.env && window.env.IP_GREENYARD_PARSER) || '192.168.10.119:5005';
+            // Se accede al parser a través del backend (proxy /api/mapping/greenyard):
+            // el navegador solo habla con el backend, que sí alcanza la ClusterIP del parser.
+            return `${window.env?.IP_BACKEND}/api/mapping/greenyard`;
         },
 
         // ── alta de claves ───────────────────────────────────────────

@@ -82,12 +82,14 @@ export default {
         pilotColor: 'gray'  // gray = sin comprobar, green = parser activo, red = inactivo
     },
     async fetchGreenyardHealth() {
-        const base = window.env?.IP_GREENYARD_PARSER;
-        if (!base) { this.greenyard.pilotColor = 'gray'; return; }
+        // Se consulta al parser a través del backend (proxy /api/mapping/greenyard),
+        // porque el navegador no alcanza la ClusterIP interna del parser.
+        const backend = window.env?.IP_BACKEND;
+        if (!backend) { this.greenyard.pilotColor = 'gray'; return; }
         try {
             const ctrl = new AbortController();
             const t = setTimeout(() => ctrl.abort(), 4000);
-            const res = await fetch(`http://${base}/health`, { signal: ctrl.signal });
+            const res = await fetch(`http://${backend}/api/mapping/greenyard/health`, { signal: ctrl.signal });
             clearTimeout(t);
             this.greenyard.pilotColor = res.ok ? 'green' : 'red';
         } catch (e) {
