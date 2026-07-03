@@ -16,7 +16,7 @@ export default function transportesManager() {
             if (this.primeraCarga) this.loading = true;
 
             try {
-                const url = `http://${window.env.IP_BACKEND}/api/mapping/transportes`;
+                const url = `http://${window.env.IP_BACKEND}/api/mapping/transportes${this.$store.global._centroQuery()}`;
                 const res = await fetch(url);
                 const data = await res.json();
 
