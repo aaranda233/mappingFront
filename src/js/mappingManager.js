@@ -93,6 +93,7 @@ export default function mappingManager() {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
+                        id: item.id,
                         id_categoria: item.id_categoria,
                         ref_pedido: item.ref_pedido,
                         id_gensal: item.id_gensal,
