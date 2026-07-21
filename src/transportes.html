@@ -108,7 +108,9 @@
                         src="/anecoop.png" alt="Anecoop" class="w-8 h-8 object-contain" />
                       <img x-show="item.cliente && item.cliente.toUpperCase().includes('GREENYARD')"
                         src="/greenyard_2.png" alt="Greenyard" class="w-8 h-8 object-contain" />
-                      <img x-show="!item.cliente || (!item.cliente.toUpperCase().includes('IBERIANA') && !item.cliente.toUpperCase().includes('EUROGROUP') && !item.cliente.toUpperCase().includes('ANECOOP') && !item.cliente.toUpperCase().includes('GREENYARD'))"
+                      <img x-show="item.cliente && item.cliente.toUpperCase().includes('ALFRUIT')"
+                        src="/alfruit.png" alt="Alfruit" class="w-8 h-8 object-contain" />
+                      <img x-show="!item.cliente || (!item.cliente.toUpperCase().includes('IBERIANA') && !item.cliente.toUpperCase().includes('EUROGROUP') && !item.cliente.toUpperCase().includes('ANECOOP') && !item.cliente.toUpperCase().includes('GREENYARD') && !item.cliente.toUpperCase().includes('ALFRUIT'))"
                         src="/edeka.png" alt="EDEKA" class="w-8 h-8 object-contain rounded" />
                     </div>
                     <h2 class="text-lg font-bold text-gray-800">Transporte</h2>
