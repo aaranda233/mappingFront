@@ -28,6 +28,8 @@ export default {
         this.fetchEstadoPedidosIberianaTest();
         this.fetchEstadoPedidosAnecoop();
         this.fetchEstadoPedidosAnecoopTest();
+        this.fetchEstadoPedidosAlfruit();
+        this.fetchEstadoPedidosAlfruitTest();
     },
     get bioCentro() {
         if (this.mostrarTodos) return null;
@@ -67,6 +69,14 @@ export default {
     estadoPedidosAnecoopTest: {
         current: null,
         pilotColor: 'gray'
+    },
+    estadoPedidosAlfruit: {
+        current: null,
+        pilotColor: 'green'
+    },
+    estadoPedidosAlfruitTest: {
+        current: null,
+        pilotColor: 'green'
     },
     async fetchUserInfo() {
         // En modo dev, asignar permisos base sin admin y saltar OAuth/BD
@@ -242,6 +252,42 @@ export default {
             }
         } catch (e) {
             console.error("Error fetching estado pedidos anecoop test", e);
+        }
+    },
+    async fetchEstadoPedidosAlfruit() {
+        try {
+            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-alfruit/actual${this._centroQuery()}`);
+            const data = await res.json();
+            this.estadoPedidosAlfruit.current = data.current;
+            if (!data.current) {
+                this.estadoPedidosAlfruit.pilotColor = 'green';
+            } else if (data.current.estado === 'procesando') {
+                this.estadoPedidosAlfruit.pilotColor = 'yellow';
+            } else if (data.current.estado === 'error') {
+                this.estadoPedidosAlfruit.pilotColor = 'red';
+            } else {
+                this.estadoPedidosAlfruit.pilotColor = 'green';
+            }
+        } catch (e) {
+            console.error("Error fetching estado pedidos alfruit", e);
+        }
+    },
+    async fetchEstadoPedidosAlfruitTest() {
+        try {
+            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-alfruit-test/actual${this._centroQuery()}`);
+            const data = await res.json();
+            this.estadoPedidosAlfruitTest.current = data.current;
+            if (!data.current) {
+                this.estadoPedidosAlfruitTest.pilotColor = 'green';
+            } else if (data.current.estado === 'procesando') {
+                this.estadoPedidosAlfruitTest.pilotColor = 'yellow';
+            } else if (data.current.estado === 'error') {
+                this.estadoPedidosAlfruitTest.pilotColor = 'red';
+            } else {
+                this.estadoPedidosAlfruitTest.pilotColor = 'green';
+            }
+        } catch (e) {
+            console.error("Error fetching estado pedidos alfruit test", e);
         }
     }
 }

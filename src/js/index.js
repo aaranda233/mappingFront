@@ -24,6 +24,8 @@ import estadoPedidosIberianaManager from "./estadoPedidosIberianaManager.js";
 import estadoPedidosIberianaTestManager from "./estadoPedidosIberianaTestManager.js";
 import estadoPedidosAnecoopManager from "./estadoPedidosAnecoopManager.js";
 import estadoPedidosAnecoopTestManager from "./estadoPedidosAnecoopTestManager.js";
+import estadoPedidosAlfruitManager from "./estadoPedidosAlfruitManager.js";
+import estadoPedidosAlfruitTestManager from "./estadoPedidosAlfruitTestManager.js";
 import adminManager from "./adminManager.js";
 import presentacionesManager from "./presentacionesManager.js";
 import direccionesManager from "./direccionesManager.js";
@@ -40,6 +42,8 @@ window.estadoPedidosIberianaManager = estadoPedidosIberianaManager;
 window.estadoPedidosIberianaTestManager = estadoPedidosIberianaTestManager;
 window.estadoPedidosAnecoopManager = estadoPedidosAnecoopManager;
 window.estadoPedidosAnecoopTestManager = estadoPedidosAnecoopTestManager;
+window.estadoPedidosAlfruitManager = estadoPedidosAlfruitManager;
+window.estadoPedidosAlfruitTestManager = estadoPedidosAlfruitTestManager;
 window.adminManager = adminManager;
 window.tutorialGuide = tutorialGuide;
 
@@ -58,6 +62,8 @@ Alpine.store("global").fetchEstadoPedidosIberiana(); // Initial fetch estado ped
 Alpine.store("global").fetchEstadoPedidosIberianaTest(); // Initial fetch estado pedidos IBERIANA TEST
 Alpine.store("global").fetchEstadoPedidosAnecoop(); // Initial fetch estado pedidos ANECOOP
 Alpine.store("global").fetchEstadoPedidosAnecoopTest(); // Initial fetch estado pedidos ANECOOP TEST
+Alpine.store("global").fetchEstadoPedidosAlfruit(); // Initial fetch estado pedidos ALFRUIT
+Alpine.store("global").fetchEstadoPedidosAlfruitTest(); // Initial fetch estado pedidos ALFRUIT TEST
 setInterval(() => Alpine.store("global").fetchCounts(), 30000); // Refresh every 30s
 setInterval(() => Alpine.store("global").fetchEstadoPedidos(), 1000); // Refresh estado pedidos EDEKA every 1s
 setInterval(() => Alpine.store("global").fetchEstadoPedidosEurogroup(), 1000); // Refresh estado pedidos EUROGROUP every 1s
@@ -66,6 +72,8 @@ setInterval(() => Alpine.store("global").fetchEstadoPedidosIberiana(), 1000); //
 setInterval(() => Alpine.store("global").fetchEstadoPedidosIberianaTest(), 1000); // Refresh estado pedidos IBERIANA TEST every 1s
 setInterval(() => Alpine.store("global").fetchEstadoPedidosAnecoop(), 1000); // Refresh estado pedidos ANECOOP every 1s
 setInterval(() => Alpine.store("global").fetchEstadoPedidosAnecoopTest(), 1000); // Refresh estado pedidos ANECOOP TEST every 1s
+setInterval(() => Alpine.store("global").fetchEstadoPedidosAlfruit(), 1000); // Refresh estado pedidos ALFRUIT every 1s
+setInterval(() => Alpine.store("global").fetchEstadoPedidosAlfruitTest(), 1000); // Refresh estado pedidos ALFRUIT TEST every 1s
 
 Alpine.start();
 
