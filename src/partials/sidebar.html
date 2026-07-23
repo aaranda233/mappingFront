@@ -367,6 +367,28 @@
                 <li>
                   <a href="estado-pedidos-alfruit-test.html" class="hover:text-[#003a4b] flex justify-between items-center"
                     :class="window.location.pathname.includes('estado-pedidos-alfruit-test') ? 'text-[#003a4b] font-medium' : ''">
+              <a href="estado-pedidos-pelican.html" class="hover:text-[#003a4b] flex justify-between items-center"
+                :class="window.location.pathname.includes('estado-pedidos-pelican') ? 'text-[#003a4b] font-medium' : ''">
+                PELICAN
+                <span class="relative flex h-3 w-3">
+                  <span class="absolute inline-flex h-full w-full rounded-full opacity-75"
+                    :class="{
+                      'bg-gray-400': $store.global.estadoPedidosPelican.pilotColor === 'gray',
+                      'bg-yellow-400 animate-ping': $store.global.estadoPedidosPelican.pilotColor === 'yellow',
+                      'bg-red-500 animate-ping': $store.global.estadoPedidosPelican.pilotColor === 'red'
+                    }"></span>
+                  <span class="relative inline-flex rounded-full h-3 w-3"
+                    :class="{
+                      'bg-gray-400': $store.global.estadoPedidosPelican.pilotColor === 'gray',
+                      'bg-yellow-400': $store.global.estadoPedidosPelican.pilotColor === 'yellow',
+                      'bg-red-500': $store.global.estadoPedidosPelican.pilotColor === 'red'
+                    }"></span>
+                </span>
+              </a>
+              <ul class="flex flex-col gap-2 mt-2 pl-6 text-xs text-gray-500">
+                <li>
+                  <a href="estado-pedidos-pelican-test.html" class="hover:text-[#003a4b] flex justify-between items-center"
+                    :class="window.location.pathname.includes('estado-pedidos-pelican-test') ? 'text-[#003a4b] font-medium' : ''">
                     └─ TEST
                     <span class="relative flex h-2.5 w-2.5">
                       <span class="absolute inline-flex h-full w-full rounded-full opacity-75"
@@ -380,7 +402,109 @@
                           'bg-gray-400': $store.global.estadoPedidosAlfruitTest.pilotColor === 'gray',
                           'bg-yellow-400': $store.global.estadoPedidosAlfruitTest.pilotColor === 'yellow',
                           'bg-red-500': $store.global.estadoPedidosAlfruitTest.pilotColor === 'red'
+                          'bg-gray-400': $store.global.estadoPedidosPelicanTest.pilotColor === 'gray',
+                          'bg-yellow-400 animate-ping': $store.global.estadoPedidosPelicanTest.pilotColor === 'yellow',
+                          'bg-red-500 animate-ping': $store.global.estadoPedidosPelicanTest.pilotColor === 'red'
                         }"></span>
+                      <span class="relative inline-flex rounded-full h-2.5 w-2.5"
+                        :class="{
+                          'bg-gray-400': $store.global.estadoPedidosPelicanTest.pilotColor === 'gray',
+                          'bg-yellow-400': $store.global.estadoPedidosPelicanTest.pilotColor === 'yellow',
+                          'bg-red-500': $store.global.estadoPedidosPelicanTest.pilotColor === 'red'
+                        }"></span>
+                    </span>
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <a href="estado-pedidos-img.html" class="hover:text-[#003a4b] flex justify-between items-center"
+                :class="window.location.pathname.includes('estado-pedidos-img') ? 'text-[#003a4b] font-medium' : ''">
+                IMG
+                <span class="relative flex h-3 w-3">
+                  <span class="absolute inline-flex h-full w-full rounded-full opacity-75"
+                    :class="{
+                      'bg-gray-400': $store.global.estadoPedidosImg.pilotColor === 'gray',
+                      'bg-yellow-400 animate-ping': $store.global.estadoPedidosImg.pilotColor === 'yellow',
+                      'bg-red-500 animate-ping': $store.global.estadoPedidosImg.pilotColor === 'red'
+                    }"></span>
+                  <span class="relative inline-flex rounded-full h-3 w-3"
+                    :class="{
+                      'bg-gray-400': $store.global.estadoPedidosImg.pilotColor === 'gray',
+                      'bg-yellow-400': $store.global.estadoPedidosImg.pilotColor === 'yellow',
+                      'bg-red-500': $store.global.estadoPedidosImg.pilotColor === 'red'
+                    }"></span>
+                </span>
+              </a>
+              <ul class="flex flex-col gap-2 mt-2 pl-6 text-xs text-gray-500">
+                <li>
+                  <a href="estado-pedidos-img-test.html" class="hover:text-[#003a4b] flex justify-between items-center"
+                    :class="window.location.pathname.includes('estado-pedidos-img-test') ? 'text-[#003a4b] font-medium' : ''">
+                    └─ TEST
+                    <span class="relative flex h-2.5 w-2.5">
+                      <span class="absolute inline-flex h-full w-full rounded-full opacity-75"
+                        :class="{
+                          'bg-gray-400': $store.global.estadoPedidosImgTest.pilotColor === 'gray',
+                          'bg-yellow-400 animate-ping': $store.global.estadoPedidosImgTest.pilotColor === 'yellow',
+                          'bg-red-500 animate-ping': $store.global.estadoPedidosImgTest.pilotColor === 'red'
+                        }"></span>
+                      <span class="relative inline-flex rounded-full h-2.5 w-2.5"
+                        :class="{
+                          'bg-gray-400': $store.global.estadoPedidosImgTest.pilotColor === 'gray',
+                          'bg-yellow-400': $store.global.estadoPedidosImgTest.pilotColor === 'yellow',
+                          'bg-red-500': $store.global.estadoPedidosImgTest.pilotColor === 'red'
+                        }"></span>
+                    </span>
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <a href="estado-pedidos-lehman.html" class="hover:text-[#003a4b] flex justify-between items-center"
+                :class="window.location.pathname.includes('estado-pedidos-lehman') ? 'text-[#003a4b] font-medium' : ''">
+                LEHMANN
+                <span class="relative flex h-3 w-3">
+                  <span class="absolute inline-flex h-full w-full rounded-full opacity-75"
+                    :class="{
+                      'bg-gray-400': $store.global.estadoPedidosLehman.pilotColor === 'gray',
+                      'bg-yellow-400 animate-ping': $store.global.estadoPedidosLehman.pilotColor === 'yellow',
+                      'bg-red-500 animate-ping': $store.global.estadoPedidosLehman.pilotColor === 'red'
+                    }"></span>
+                  <span class="relative inline-flex rounded-full h-3 w-3"
+                    :class="{
+                      'bg-gray-400': $store.global.estadoPedidosLehman.pilotColor === 'gray',
+                      'bg-yellow-400': $store.global.estadoPedidosLehman.pilotColor === 'yellow',
+                      'bg-red-500': $store.global.estadoPedidosLehman.pilotColor === 'red'
+                    }"></span>
+                </span>
+              </a>
+              <ul class="flex flex-col gap-2 mt-2 pl-6 text-xs text-gray-500">
+                <li>
+                  <a href="estado-pedidos-lehman-test.html" class="hover:text-[#003a4b] flex justify-between items-center"
+                    :class="window.location.pathname.includes('estado-pedidos-lehman-test') ? 'text-[#003a4b] font-medium' : ''">
+                    └─ TEST
+                    <span class="relative flex h-2.5 w-2.5">
+                      <span class="absolute inline-flex h-full w-full rounded-full opacity-75"
+                        :class="{
+                          'bg-gray-400': $store.global.estadoPedidosLehmanTest.pilotColor === 'gray',
+                          'bg-yellow-400 animate-ping': $store.global.estadoPedidosLehmanTest.pilotColor === 'yellow',
+                          'bg-red-500 animate-ping': $store.global.estadoPedidosLehmanTest.pilotColor === 'red'
+                        }"></span>
+                      <span class="relative inline-flex rounded-full h-2.5 w-2.5"
+                        :class="{
+                          'bg-gray-400': $store.global.estadoPedidosLehmanTest.pilotColor === 'gray',
+                          'bg-yellow-400': $store.global.estadoPedidosLehmanTest.pilotColor === 'yellow',
+                          'bg-red-500': $store.global.estadoPedidosLehmanTest.pilotColor === 'red'
+                        }"></span>
+                    </span>
+                  </a>
+                </li>
+                <li>
+                  <a href="preview-lehman.html" class="hover:text-[#003a4b] flex justify-between items-center"
+                    :class="window.location.pathname.includes('preview-lehman') ? 'text-[#003a4b] font-medium' : ''">
+                    └─ Preview PDF
+                    <span class="relative flex h-2.5 w-2.5">
+                      <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-gray-400"></span>
                     </span>
                   </a>
                 </li>

@@ -124,7 +124,13 @@
                         src="/greenyard_2.png" alt="Greenyard" class="w-8 h-8 object-contain" />
                       <img x-show="(item.cliente && item.cliente.toUpperCase().includes('ALFRUIT')) || (!item.cliente && item.idcliente === 1850)"
                         src="/alfruit.png" alt="Alfruit" class="w-8 h-8 object-contain" />
-                      <img x-show="!item.cliente ? ![2194, 2202, 4319, 1172, 1939, 3808, 1850].includes(item.idcliente) : (!item.cliente.toUpperCase().includes('IBERIANA') && !item.cliente.toUpperCase().includes('EUROGROUP') && !item.cliente.toUpperCase().includes('ANECOOP') && !item.cliente.toUpperCase().includes('GREENYARD') && !item.cliente.toUpperCase().includes('ALFRUIT'))"
+                      <img x-show="(item.cliente && item.cliente.toUpperCase().includes('PELICAN')) || (!item.cliente && item.idcliente === 1563)"
+                        src="/pelican.png" alt="Pelican" class="w-8 h-8 object-contain" />
+                      <img x-show="(item.cliente && (item.cliente.toUpperCase().includes('MED GROWERS') || item.cliente.toUpperCase().includes('IMG'))) || (!item.cliente && item.idcliente === 1539)"
+                        src="/img.jpg" alt="IMG" class="w-8 h-8 object-contain" />
+                      <img x-show="(item.cliente && item.cliente.toUpperCase().includes('LEHMAN')) || (!item.cliente && [2227, 2434, 2262].includes(item.idcliente))"
+                        src="/lehman.png" alt="Lehmann" class="w-8 h-8 object-contain" />
+                      <img x-show="!item.cliente ? ![2194, 2202, 4319, 1172, 1939, 3808, 1850, 1563, 1539, 2227, 2434, 2262].includes(item.idcliente) : (!item.cliente.toUpperCase().includes('IBERIANA') && !item.cliente.toUpperCase().includes('EUROGROUP') && !item.cliente.toUpperCase().includes('ANECOOP') && !item.cliente.toUpperCase().includes('GREENYARD') && !item.cliente.toUpperCase().includes('ALFRUIT') && !item.cliente.toUpperCase().includes('PELICAN') && !item.cliente.toUpperCase().includes('MED GROWERS') && !item.cliente.toUpperCase().includes('IMG') && !item.cliente.toUpperCase().includes('LEHMAN'))"
                         src="/edeka.png" alt="EDEKA" class="w-8 h-8 object-contain rounded" />
                     </div>
                     <div>

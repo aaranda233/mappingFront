@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Hortichuelas - Estado Pedidos PELICAN TEST</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+  <!-- Variables de entorno (inyectadas por ConfigMap en K8s) -->
+  <script src="/env.js"></script>
+</head>
+
+<body :class="{'dark bg-gray-900': darkMode === true}"
+  x-data="{ loaded: true, darkMode: false, stickyMenu: false, sidebarToggle: false, scrollTop: false }" x-init="
+    darkMode = JSON.parse(localStorage.getItem('darkMode'));
+    $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)))
+  " x-cloak>
+
+  <div class="flex h-screen overflow-hidden">
+    <include src="./partials/sidebar.html"></include>
+
+    <div class="relative flex flex-col flex-1 overflow-hidden">
+      <include src="./partials/overlay.html" />
+      <include src="./partials/header.html" />
+
+      <main x-data="estadoPedidosPelicanTestManager()" x-init="init" x-cloak class="flex-1 flex flex-col overflow-hidden"
+        @keydown.escape.window="showPedidoModal = false">
+
+        <div class="p-6 flex flex-col gap-6 flex-1 overflow-hidden">
+
+          <!-- Card Estado Actual -->
+          <div class="bg-white/60 backdrop-blur-xl shadow-xl rounded-3xl p-6 border border-gray-200">
+            <div class="flex items-center gap-4">
+              <!-- Piloto grande -->
+              <div class="relative flex h-6 w-6 shrink-0">
+                <span class="absolute inline-flex h-full w-full rounded-full opacity-75"
+                  :class="{
+                    'bg-gray-400': pilotColor() === 'gray',
+                    'bg-yellow-400 animate-ping': pilotColor() === 'yellow',
+                    'bg-red-500 animate-ping': pilotColor() === 'red'
+                  }"></span>
+                <span class="relative inline-flex rounded-full h-6 w-6"
+                  :class="{
+                    'bg-gray-400': pilotColor() === 'gray',
+                    'bg-yellow-400': pilotColor() === 'yellow',
+                    'bg-red-500': pilotColor() === 'red'
+                  }"></span>
+              </div>
+
+              <div>
+                <h2 class="text-lg font-bold text-gray-800">Estado Pedidos PELICAN TEST</h2>
+                <template x-if="current">
+                  <p class="text-sm text-gray-600">
+                    <span class="font-semibold capitalize" x-text="current.estado"></span> &mdash;
+                    <span x-text="current.mensaje"></span>
+                    <span class="text-gray-400 ml-2" x-text="'(' + formatFecha(current.fecha_inicio) + ')'"></span>
+                  </p>
+                </template>
+                <template x-if="!loaded">
+                  <p class="text-sm text-gray-500">Cargando&hellip;</p>
+                </template>
+                <template x-if="loaded && !current">
+                  <p class="text-sm text-gray-500">Sin pedidos activos</p>
+                </template>
+              </div>
+
+              <button @click="refrescar()" title="Refrescar"
+                class="ml-auto inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-semibold text-gray-600 transition hover:bg-gray-50">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Refrescar
+              </button>
+            </div>
+
+            <!-- Detalles del pedido activo -->
+            <template x-if="current">
+              <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div>
+                  <span class="text-gray-400">Ref. Pedido</span>
+                  <p class="font-medium text-gray-800" x-text="current.ref_pedido"></p>
+                </div>
+                <div>
+                  <span class="text-gray-400">Cliente</span>
+                  <p class="font-medium text-gray-800" x-text="current.cliente || '-'"></p>
+                </div>
+                <div>
+                  <span class="text-gray-400">Pedido</span>
+                  <p class="font-medium text-gray-800" x-text="current.pedido || '-'"></p>
+                </div>
+                <div>
+                  <span class="text-gray-400">Inicio</span>
+                  <p class="font-medium text-gray-800" x-text="formatFecha(current.fecha_inicio)"></p>
+                </div>
+              </div>
+            </template>
+          </div>
+
+          <!-- Historial desplegable -->
+          <div class="bg-white/60 backdrop-blur-xl shadow-xl rounded-3xl border border-gray-200 flex flex-col overflow-hidden min-h-0"
+            :class="showHistorial && historial.length > 0 ? 'flex-1' : ''">
+            <!-- Boton toggle -->
+            <button @click="toggleHistorial()"
+              class="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50/50 rounded-3xl transition-colors">
+              <div class="flex items-center gap-3">
+                <svg class="h-5 w-5 text-gray-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h3 class="text-lg font-bold text-gray-800">Historial de Pedidos</h3>
+              </div>
+              <svg class="h-5 w-5 text-gray-400 transition-transform duration-300"
+                :class="showHistorial ? 'rotate-180' : ''"
+                fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            <!-- Tabla historial -->
+            <div class="transition-all duration-300 ease-in-out flex-1 min-h-0"
+              :class="showHistorial ? 'overflow-y-auto' : 'max-h-0 overflow-hidden'">
+
+              <!-- Loading historial -->
+              <div x-show="!historialLoaded && historial.length === 0" class="text-center p-4 text-gray-600">
+                <svg class="animate-spin h-6 w-6 mx-auto text-[#003a4b]" xmlns="http://www.w3.org/2000/svg" fill="none"
+                  viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                </svg>
+                <p class="mt-2">Cargando historial...</p>
+              </div>
+
+              <div x-show="historial.length > 0" class="px-6 pb-6 overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                  <thead class="text-xs text-gray-500 uppercase border-b border-gray-200 sticky top-0 bg-white/90 backdrop-blur-sm z-10">
+                    <tr>
+                      <th class="py-3 px-2">Estado</th>
+                      <th class="py-3 px-2">Ref. Pedido</th>
+                      <th class="py-3 px-2">Mensaje</th>
+                      <th class="py-3 px-2">Cliente</th>
+                      <th class="py-3 px-2">Pedido</th>
+                      <th class="py-3 px-2">Fecha Inicio</th>
+                      <th class="py-3 px-2">Fecha Fin</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <template x-for="(item, index) in historial" :key="item.id">
+                      <tr class="border-b border-gray-100 hover:bg-gray-50/50"
+                        :class="item.estado === 'procesado' ? 'cursor-pointer' : ''"
+                        @click="item.estado === 'procesado' && openPedidoDetail(item)">
+                        <td class="py-3 px-2">
+                          <div class="flex items-center gap-2">
+                            <span class="inline-flex h-2.5 w-2.5 rounded-full"
+                              :class="{
+                                'bg-gray-400': item.estado === 'detectado',
+                                'bg-yellow-500': item.estado === 'procesando',
+                                'bg-green-500': item.estado === 'procesado',
+                                'bg-red-500': item.estado === 'error'
+                              }"></span>
+                            <span class="capitalize" x-text="item.estado"></span>
+                          </div>
+                        </td>
+                        <td class="py-3 px-2 font-medium" x-text="item.ref_pedido"></td>
+                        <td class="py-3 px-2 text-gray-600" x-text="item.mensaje || '-'"></td>
+                        <td class="py-3 px-2" x-text="item.cliente || '-'"></td>
+                        <td class="py-3 px-2" x-text="item.pedido || '-'"></td>
+                        <td class="py-3 px-2 text-gray-500" x-text="formatFecha(item.fecha_inicio)"></td>
+                        <td class="py-3 px-2 text-gray-500" x-text="formatFecha(item.fecha_fin)"></td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+              </div>
+
+              <div x-show="historialLoaded && historial.length === 0" class="px-6 pb-6 flex justify-center">
+                <div class="inline-flex items-center gap-2 bg-gray-100 text-gray-500 text-sm font-medium px-4 py-2 rounded-lg border border-gray-200">
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                  </svg>
+                  No hay datos disponibles
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ===== MODAL TEST (izquierda) ===== -->
+        <div x-show="showPedidoModal" @click.self="showPedidoModal = false"
+          class="fixed inset-0 bg-black/60"
+          style="z-index:99999; overflow:auto; padding:2px;"
+          x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+          x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+
+          <!-- Close button -->
+          <button @click="showPedidoModal = false"
+            style="position:fixed; top:6px; left:50%; transform:translateX(-50%); z-index:10000; background:#c00; color:#fff; border:none; border-radius:50%; width:32px; height:32px; font-size:18px; font-weight:bold; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.4); line-height:32px; text-align:center;">&times;</button>
+
+          <div style="display:flex; flex-direction:column; align-items:center; gap:8px; padding-top:40px;">
+
+            <!-- ====== PANEL RESUMEN DIFERENCIAS ====== -->
+            <template x-if="pedidoDetail && pedidoDetailProd">
+              <div style="width:95vw; max-width:2750px; background:#fff; border-radius:12px; box-shadow:0 4px 24px rgba(0,0,0,0.3); overflow:hidden;">
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 20px;"
+                  :style="headerDiffs().length === 0 && lineaDiffs().length === 0
+                    ? 'background:#15803d; color:#fff;'
+                    : 'background:#dc2626; color:#fff;'">
+                  <div style="display:flex; align-items:center; gap:10px;">
+                    <svg style="width:22px; height:22px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <template x-if="headerDiffs().length === 0 && lineaDiffs().length === 0">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </template>
+                      <template x-if="headerDiffs().length > 0 || lineaDiffs().length > 0">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                      </template>
+                    </svg>
+                    <span style="font-weight:bold; font-size:13pt; font-family:Tahoma,sans-serif;">
+                      <template x-if="headerDiffs().length === 0 && lineaDiffs().length === 0">
+                        <span>SIN DIFERENCIAS - Test y Produccion coinciden</span>
+                      </template>
+                      <template x-if="headerDiffs().length > 0 || lineaDiffs().length > 0">
+                        <span>DIFERENCIAS ENCONTRADAS</span>
+                      </template>
+                    </span>
+                  </div>
+                  <div style="display:flex; gap:16px; font-size:10pt; font-family:Tahoma,sans-serif;">
+                    <span x-show="headerDiffs().length > 0" style="background:rgba(255,255,255,0.25); padding:3px 10px; border-radius:20px;">
+                      Cabecera: <strong x-text="headerDiffs().length"></strong>
+                    </span>
+                    <span x-show="lineaDiffs().length > 0" style="background:rgba(255,255,255,0.25); padding:3px 10px; border-radius:20px;">
+                      Linea sel.: <strong x-text="lineaDiffs().length"></strong>
+                    </span>
+                    <span x-show="pedidoLineas.length !== pedidoLineasProd.length" style="background:rgba(255,255,255,0.25); padding:3px 10px; border-radius:20px;">
+                      Num. lineas: <strong x-text="pedidoLineas.length"></strong> vs <strong x-text="pedidoLineasProd.length"></strong>
+                    </span>
+                  </div>
+                </div>
+                <div x-show="headerDiffs().length > 0 || lineaDiffs().length > 0"
+                  style="max-height:220px; overflow-y:auto; padding:0;">
+                  <table style="width:100%; border-collapse:collapse; font-family:Tahoma,sans-serif; font-size:9pt;">
+                    <thead style="position:sticky; top:0; background:#f9fafb; z-index:1;">
+                      <tr style="border-bottom:2px solid #e5e7eb;">
+                        <th style="text-align:left; padding:8px 16px; color:#6b7280; font-size:8pt; text-transform:uppercase;">Tipo</th>
+                        <th style="text-align:left; padding:8px 16px; color:#6b7280; font-size:8pt; text-transform:uppercase;">Campo</th>
+                        <th style="text-align:left; padding:8px 16px; color:#1e40af; font-size:8pt; text-transform:uppercase;">TEST</th>
+                        <th style="text-align:left; padding:8px 16px; color:#15803d; font-size:8pt; text-transform:uppercase;">PRODUCCION</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <template x-for="d in headerDiffs()" :key="'h-'+d.campo">
+                        <tr style="border-bottom:1px solid #f3f4f6;">
+                          <td style="padding:6px 16px; color:#9ca3af; font-size:8pt;">CAB</td>
+                          <td style="padding:6px 16px; font-weight:bold;" x-text="d.campo"></td>
+                          <td style="padding:6px 16px; color:#1e40af; background:#eff6ff;" x-text="d.test"></td>
+                          <td style="padding:6px 16px; color:#15803d; background:#f0fdf4;" x-text="d.prod"></td>
+                        </tr>
+                      </template>
+                      <template x-for="d in lineaDiffs()" :key="'l-'+d.campo">
+                        <tr style="border-bottom:1px solid #f3f4f6;">
+                          <td style="padding:6px 16px; color:#9ca3af; font-size:8pt;">LIN</td>
+                          <td style="padding:6px 16px; font-weight:bold;" x-text="d.campo"></td>
+                          <td style="padding:6px 16px; color:#1e40af; background:#eff6ff;" x-text="d.test"></td>
+                          <td style="padding:6px 16px; color:#15803d; background:#f0fdf4;" x-text="d.prod"></td>
+                        </tr>
+                      </template>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </template>
+
+            <!-- ====== PANELES ERP LADO A LADO ====== -->
+            <div style="display:flex; justify-content:center; gap:4px;">
+
+              <!-- PANEL TEST -->
+          <div @click.stop style="position:relative;"
+            :style="'zoom: ' + Math.min(1, (window.innerWidth / 2 - 8) / 1367, (window.innerHeight - 20) / 690)">
+            <div style="background:#1e40af; color:#fff; text-align:center; font-family:Tahoma,sans-serif; font-weight:bold; font-size:14pt; padding:6px 0; width:1367px; border-radius:6px 6px 0 0;">TEST</div>
+            <style>
+              .erpPanel > span, .erpPanel > template + div > span {
+                overflow:hidden; white-space:nowrap; text-overflow:ellipsis; max-width:300px; cursor:default;
+              }
+              .erpPanel > span:hover, .erpPanel > template + div > span:hover {
+                overflow:visible !important; white-space:nowrap !important; z-index:50 !important;
+                background:rgba(255,255,255,0.95); box-shadow:0 2px 8px rgba(0,0,0,0.3); border-radius:2px; padding:1px 6px;
+              }
+            .diff-hl { background:rgba(255,80,80,0.35) !important; border-radius:3px; padding:0 3px; outline:2px solid rgba(220,38,38,0.5); }
+            </style>
+            <div class="erpPanel" style="width:1367px; height:652px; background:url('/erp-form.png') no-repeat top left; background-size:1367px 652px; position:relative; font-family:Tahoma,sans-serif; font-weight:bold; font-size:9pt; color:WindowText; border:2px solid #1e40af; border-top:none;">
+              <span style="position:absolute; top:53px; left:129px;" :class="{'diff-hl': diffH('PED_pedido')}" x-text="pedidoDetail?.PED_pedido"></span>
+              <span style="position:absolute; top:53px; left:421px;" :class="{'diff-hl': diffH('PED_fechapedido')}" x-text="formatFecha(pedidoDetail?.PED_fechapedido)?.split(',')[0]"></span>
+              <span style="position:absolute; top:52px; left:666px;" :class="{'diff-hl': diffH('PED_fechasalida')}" x-text="formatFecha(pedidoDetail?.PED_fechasalida)?.split(',')[0]"></span>
+              <span style="position:absolute; top:52px; left:910px;" :class="{'diff-hl': diffH('PED_FechaLlegada')}" x-text="formatFecha(pedidoDetail?.PED_FechaLlegada)?.split(',')[0]"></span>
+              <span style="position:absolute; top:78px; left:116px;" :class="{'diff-hl': diffH('PED_idcliente')}" x-text="pedidoDetail?.PED_idcliente"></span>
+              <span style="position:absolute; top:76px; left:275px; color:#0000C0; font-family:Verdana; font-size:12pt; max-width:380px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" :class="{'diff-hl': diffH('NomCliente')}" x-text="pedidoDetail?.NomCliente"></span>
+              <span style="position:absolute; top:78px; left:777px;" :class="{'diff-hl': diffH('PED_referencia')}" x-text="pedidoDetail?.PED_referencia"></span>
+              <span style="position:absolute; top:103px; left:113px;" :class="{'diff-hl': diffH('PED_iddestino')}" x-text="pedidoDetail?.PED_iddestino"></span>
+              <span style="position:absolute; top:101px; left:275px; color:#0000C0; font-family:Verdana; font-size:12pt; max-width:380px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" :class="{'diff-hl': diffH('NomDestino')}" x-text="pedidoDetail?.NomDestino"></span>
+              <span style="position:absolute; top:101px; left:777px;" :class="{'diff-hl': diffH('PED_idporte')}" x-text="pedidoDetail?.PED_idporte"></span>
+              <span style="position:absolute; top:99px; left:860px; color:#0000C0; font-family:Verdana; font-size:12pt;" :class="{'diff-hl': diffH('NomTipoPorte')}" x-text="pedidoDetail?.NomTipoPorte"></span>
+              <span style="position:absolute; top:127px; left:137px;" :class="{'diff-hl': diffH('PED_idtransportista')}" x-text="pedidoDetail?.PED_idtransportista"></span>
+              <span style="position:absolute; top:125px; left:275px; color:#0000C0; font-family:Verdana; font-size:12pt; max-width:380px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" :class="{'diff-hl': diffH('NomTransportista')}" x-text="pedidoDetail?.NomTransportista"></span>
+              <span style="position:absolute; top:125px; left:778px;" :class="{'diff-hl': diffH('PED_iddivisa')}" x-text="pedidoDetail?.PED_iddivisa"></span>
+              <span style="position:absolute; top:123px; left:860px; color:#0000C0; font-family:Verdana; font-size:12pt;" :class="{'diff-hl': diffH('NomDivisa')}" x-text="pedidoDetail?.NomDivisa"></span>
+              <span style="position:absolute; top:154px; left:139px;" :class="{'diff-hl': diffH('PED_matriculacamion')}" x-text="pedidoDetail?.PED_matriculacamion"></span>
+              <span style="position:absolute; top:154px; left:440px;" :class="{'diff-hl': diffH('PED_matricularemolque')}" x-text="pedidoDetail?.PED_matricularemolque"></span>
+              <span style="position:absolute; top:153px; left:778px;" :class="{'diff-hl': diffH('PED_valorcambio')}" x-text="pedidoDetail?.PED_valorcambio"></span>
+              <span style="position:absolute; top:178px; left:136px;" :class="{'diff-hl': diffH('PED_MovilChofer')}" x-text="pedidoDetail?.PED_MovilChofer"></span>
+              <span style="position:absolute; top:179px; left:493px;" :class="{'diff-hl': diffH('PED_TransporteRapidoSN')}" x-text="pedidoDetail?.PED_TransporteRapidoSN"></span>
+              <span style="position:absolute; top:179px; left:656px;" :class="{'diff-hl': diffH('PED_Lote')}" x-text="pedidoDetail?.PED_Lote"></span>
+              <span style="position:absolute; top:86px; left:1155px; font-size:8pt;" :class="{'diff-hl': diffH('PED_BESTELLNR')}" x-text="pedidoDetail?.PED_BESTELLNR"></span>
+              <span style="position:absolute; top:130px; left:1040px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" :class="{'diff-hl': diffH('PED_obs1')}" x-text="pedidoDetail?.PED_obs1"></span>
+              <span style="position:absolute; top:152px; left:1040px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap;" x-show="!(pedidoDetailProd && !prodNotFound)" :class="{'diff-hl': diffH('PED_obs2')}" x-text="pedidoDetail?.PED_obs2"></span>
+              <span style="position:absolute; top:174px; left:1040px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap;" x-show="!(pedidoDetailProd && !prodNotFound)" :class="{'diff-hl': diffH('PED_obs3')}" x-text="pedidoDetail?.PED_obs3"></span>
+              <template x-if="pedidoLineas.length > 0">
+                <div>
+                  <span style="position:absolute; top:240px; left:155px;" :class="{'diff-hl': diffL('PEL_idgenero')}" x-text="pedidoLineas[selectedLinea ?? 0]?.PEL_idgenero"></span>
+                  <span style="position:absolute; top:238px; left:240px; color:#0000C0; font-family:Verdana; font-size:12pt; max-width:310px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" :class="{'diff-hl': diffL('NomGenero')}" x-text="pedidoLineas[selectedLinea ?? 0]?.NomGenero"></span>
+                  <span style="position:absolute; top:265px; left:155px;" :class="{'diff-hl': diffL('PEL_idtipoconfeccion')}" x-text="pedidoLineas[selectedLinea ?? 0]?.PEL_idtipoconfeccion"></span>
+                  <span style="position:absolute; top:263px; left:240px; color:#0000C0; font-family:Verdana; font-size:12pt; max-width:310px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" :class="{'diff-hl': diffL('NomConfeccion')}" x-text="pedidoLineas[selectedLinea ?? 0]?.NomConfeccion"></span>
+                  <span style="position:absolute; top:290px; left:155px;" :class="{'diff-hl': diffL('PEL_idgensal')}" x-text="pedidoLineas[selectedLinea ?? 0]?.PEL_idgensal"></span>
+                  <span style="position:absolute; top:288px; left:240px; color:#0000C0; font-family:Verdana; font-size:12pt; max-width:310px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" :class="{'diff-hl': diffL('Presentacion')}" x-text="pedidoLineas[selectedLinea ?? 0]?.Presentacion"></span>
+                  <span style="position:absolute; top:240px; left:659px;" :class="{'diff-hl': diffL('PEL_idcategoria')}" x-text="pedidoLineas[selectedLinea ?? 0]?.PEL_idcategoria"></span>
+                  <span style="position:absolute; top:238px; left:760px; color:#0000C0; font-family:Verdana; font-size:12pt; max-width:240px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" :class="{'diff-hl': diffL('NomCategoria')}" x-text="pedidoLineas[selectedLinea ?? 0]?.NomCategoria"></span>
+                  <span style="position:absolute; top:265px; left:659px;" :class="{'diff-hl': diffL('PEL_idtipopalet')}" x-text="pedidoLineas[selectedLinea ?? 0]?.PEL_idtipopalet"></span>
+                  <span style="position:absolute; top:263px; left:760px; color:#0000C0; font-family:Verdana; font-size:12pt; max-width:240px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" :class="{'diff-hl': diffL('TipoPalet')}" x-text="pedidoLineas[selectedLinea ?? 0]?.TipoPalet"></span>
+                  <span style="position:absolute; top:290px; left:659px;" :class="{'diff-hl': diffL('Coeficiente')}" x-text="pedidoLineas[selectedLinea ?? 0]?.Coeficiente"></span>
+                  <span style="position:absolute; top:311px; left:659px;" :class="{'diff-hl': diffL('PEL_idmarca')}" x-text="pedidoLineas[selectedLinea ?? 0]?.PEL_idmarca"></span>
+                  <span style="position:absolute; top:309px; left:760px; color:#0000C0; font-family:Verdana; font-size:12pt; max-width:170px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" :class="{'diff-hl': diffL('NomMarca')}" x-text="pedidoLineas[selectedLinea ?? 0]?.NomMarca"></span>
+                  <span style="position:absolute; top:238px; left:1114px; text-align:right;" :class="{'diff-hl': diffL('Palets')}" x-text="pedidoLineas[selectedLinea ?? 0]?.Palets"></span>
+                  <span style="position:absolute; top:239px; left:1295px; text-align:right;" :class="{'diff-hl': diffL('BxPalet')}" x-text="pedidoLineas[selectedLinea ?? 0]?.BxPalet"></span>
+                  <span style="position:absolute; top:263px; left:1113px; text-align:right;" :class="{'diff-hl': diffL('Bultos')}" x-text="pedidoLineas[selectedLinea ?? 0]?.Bultos"></span>
+                  <span style="position:absolute; top:265px; left:1293px; text-align:right;" :class="{'diff-hl': diffL('KxBulto')}" x-text="pedidoLineas[selectedLinea ?? 0]?.KxBulto"></span>
+                  <span style="position:absolute; top:288px; left:1112px; text-align:right;" :class="{'diff-hl': diffL('KNetos')}" x-text="pedidoLineas[selectedLinea ?? 0]?.KNetos"></span>
+                  <span style="position:absolute; top:288px; left:1293px; text-align:right;" :class="{'diff-hl': diffL('PzxBulto')}" x-text="pedidoLineas[selectedLinea ?? 0]?.PzxBulto"></span>
+                  <span style="position:absolute; top:313px; left:1112px; text-align:right;" :class="{'diff-hl': diffL('KBrutos')}" x-text="pedidoLineas[selectedLinea ?? 0]?.KBrutos"></span>
+                  <span style="position:absolute; top:312px; left:1277px; text-align:right;" :class="{'diff-hl': diffL('Piezas')}" x-text="pedidoLineas[selectedLinea ?? 0]?.Piezas"></span>
+                  <span style="position:absolute; top:337px; left:1113px; text-align:right;" :class="{'diff-hl': diffL('Precio')}" x-text="pedidoLineas[selectedLinea ?? 0]?.Precio"></span>
+                  <span style="position:absolute; top:336px; left:1294px;" :class="{'diff-hl': diffL('KBP')}" x-text="pedidoLineas[selectedLinea ?? 0]?.KBP"></span>
+                  <span style="position:absolute; top:415px; left:1044px; font-size:8pt;" :class="{'diff-hl': diffL('Lote')}" x-text="pedidoLineas[selectedLinea ?? 0]?.Lote"></span>
+                  <span style="position:absolute; top:469px; left:1045px; font-size:8pt;" :class="{'diff-hl': diffL('ObsConfec1')}" x-text="pedidoLineas[selectedLinea ?? 0]?.ObsConfec1"></span>
+                  <span style="position:absolute; top:497px; left:1043px; font-size:8pt;" :class="{'diff-hl': diffL('ObsConfec2')}" x-text="pedidoLineas[selectedLinea ?? 0]?.ObsConfec2"></span>
+                  <span style="position:absolute; top:529px; left:1170px;" :class="{'diff-hl': diffL('Calidad')}" x-text="pedidoLineas[selectedLinea ?? 0]?.Calidad"></span>
+                  <span style="position:absolute; top:526px; left:1298px;" :class="{'diff-hl': diffL('MaxDias')}" x-text="pedidoLineas[selectedLinea ?? 0]?.MaxDias"></span>
+                  <span style="position:absolute; top:558px; left:1170px;" :class="{'diff-hl': diffL('ReservaPalets')}" x-text="pedidoLineas[selectedLinea ?? 0]?.ReservaPalets"></span>
+                </div>
+              </template>
+              <span style="position:absolute; top:627px; left:25px; font-size:8pt; color:#000;" x-text="pedidoDetail?.PED_idpedido"></span>
+              <div style="position:absolute; top:370px; left:18px; width:960px; height:225px; overflow-y:auto; overflow-x:hidden;">
+                <template x-for="(linea, idx) in pedidoLineas" :key="idx">
+                  <div @click="selectedLinea = idx"
+                    style="display:flex; height:20px; line-height:20px; font-size:8pt; cursor:pointer; border-bottom:1px solid #c0c0c0;"
+                    :style="(selectedLinea ?? 0) === idx ? 'background:#316AC5; color:#fff;' : 'background:transparent; color:#000;'">
+                    <span style="width:310px; padding-left:6px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" x-text="linea.Presentacion"></span>
+                    <span style="width:80px; overflow:hidden;" x-text="linea.Categoria"></span>
+                    <span style="width:65px; overflow:hidden;" x-text="linea.Marca"></span>
+                    <span style="width:130px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" x-text="linea.TipoPalet"></span>
+                    <span style="width:55px; text-align:right; padding-right:8px;" x-text="linea.Palets"></span>
+                    <span style="width:60px; text-align:right; padding-right:8px;" x-text="linea.Bultos"></span>
+                    <span style="width:60px; text-align:right; padding-right:8px;" x-text="linea.Coeficiente"></span>
+                    <span style="width:65px; text-align:right; padding-right:8px;" x-text="linea.PaletsTransporte"></span>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+
+          <!-- PANEL PRODUCCION -->
+          <div @click.stop style="position:relative;"
+            :style="'zoom: ' + Math.min(1, (window.innerWidth / 2 - 8) / 1367, (window.innerHeight - 20) / 690)">
+            <div style="background:#15803d; color:#fff; text-align:center; font-family:Tahoma,sans-serif; font-weight:bold; font-size:14pt; padding:6px 0; width:1367px; border-radius:6px 6px 0 0;">PRODUCCION</div>
+
+            <!-- No encontrado -->
+            <template x-if="prodNotFound">
+              <div style="width:1367px; height:652px; display:flex; align-items:center; justify-content:center; background:#f3f4f6; border:2px solid #15803d; border-top:none; border-radius:0 0 6px 6px;">
+                <div style="text-align:center;">
+                  <svg style="width:64px; height:64px; margin:0 auto 16px; color:#9ca3af;" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                  </svg>
+                  <p style="font-family:Tahoma,sans-serif; font-size:16pt; font-weight:bold; color:#6b7280;">TODAVIA NO SE HA INSERTADO EN PRODUCCION</p>
+                </div>
+              </div>
+            </template>
+
+            <!-- Datos produccion -->
+            <template x-if="!prodNotFound && pedidoDetailProd">
+              <div class="erpPanel" style="width:1367px; height:652px; background:url('/erp-form.png') no-repeat top left; background-size:1367px 652px; position:relative; font-family:Tahoma,sans-serif; font-weight:bold; font-size:9pt; color:WindowText; border:2px solid #15803d; border-top:none;">
+                <span style="position:absolute; top:53px; left:129px;" :class="{'diff-hl': diffH('PED_pedido')}" x-text="pedidoDetailProd?.PED_pedido"></span>
+                <span style="position:absolute; top:53px; left:421px;" :class="{'diff-hl': diffH('PED_fechapedido')}" x-text="formatFecha(pedidoDetailProd?.PED_fechapedido)?.split(',')[0]"></span>
+                <span style="position:absolute; top:52px; left:666px;" :class="{'diff-hl': diffH('PED_fechasalida')}" x-text="formatFecha(pedidoDetailProd?.PED_fechasalida)?.split(',')[0]"></span>
+                <span style="position:absolute; top:52px; left:910px;" :class="{'diff-hl': diffH('PED_FechaLlegada')}" x-text="formatFecha(pedidoDetailProd?.PED_FechaLlegada)?.split(',')[0]"></span>
+                <span style="position:absolute; top:78px; left:116px;" :class="{'diff-hl': diffH('PED_idcliente')}" x-text="pedidoDetailProd?.PED_idcliente"></span>
+                <span style="position:absolute; top:76px; left:275px; color:#0000C0; font-family:Verdana; font-size:12pt; max-width:380px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" :class="{'diff-hl': diffH('NomCliente')}" x-text="pedidoDetailProd?.NomCliente"></span>
+                <span style="position:absolute; top:78px; left:777px;" :class="{'diff-hl': diffH('PED_referencia')}" x-text="pedidoDetailProd?.PED_referencia"></span>
+                <span style="position:absolute; top:103px; left:113px;" :class="{'diff-hl': diffH('PED_iddestino')}" x-text="pedidoDetailProd?.PED_iddestino"></span>
+                <span style="position:absolute; top:101px; left:275px; color:#0000C0; font-family:Verdana; font-size:12pt; max-width:380px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" :class="{'diff-hl': diffH('NomDestino')}" x-text="pedidoDetailProd?.NomDestino"></span>
+                <span style="position:absolute; top:101px; left:777px;" :class="{'diff-hl': diffH('PED_idporte')}" x-text="pedidoDetailProd?.PED_idporte"></span>
+                <span style="position:absolute; top:99px; left:860px; color:#0000C0; font-family:Verdana; font-size:12pt;" :class="{'diff-hl': diffH('NomTipoPorte')}" x-text="pedidoDetailProd?.NomTipoPorte"></span>
+                <span style="position:absolute; top:127px; left:137px;" :class="{'diff-hl': diffH('PED_idtransportista')}" x-text="pedidoDetailProd?.PED_idtransportista"></span>
+                <span style="position:absolute; top:125px; left:275px; color:#0000C0; font-family:Verdana; font-size:12pt; max-width:380px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" :class="{'diff-hl': diffH('NomTransportista')}" x-text="pedidoDetailProd?.NomTransportista"></span>
+                <span style="position:absolute; top:125px; left:778px;" :class="{'diff-hl': diffH('PED_iddivisa')}" x-text="pedidoDetailProd?.PED_iddivisa"></span>
+                <span style="position:absolute; top:123px; left:860px; color:#0000C0; font-family:Verdana; font-size:12pt;" :class="{'diff-hl': diffH('NomDivisa')}" x-text="pedidoDetailProd?.NomDivisa"></span>
+                <span style="position:absolute; top:154px; left:139px;" :class="{'diff-hl': diffH('PED_matriculacamion')}" x-text="pedidoDetailProd?.PED_matriculacamion"></span>
+                <span style="position:absolute; top:154px; left:440px;" :class="{'diff-hl': diffH('PED_matricularemolque')}" x-text="pedidoDetailProd?.PED_matricularemolque"></span>
+                <span style="position:absolute; top:153px; left:778px;" :class="{'diff-hl': diffH('PED_valorcambio')}" x-text="pedidoDetailProd?.PED_valorcambio"></span>
+                <span style="position:absolute; top:178px; left:136px;" :class="{'diff-hl': diffH('PED_MovilChofer')}" x-text="pedidoDetailProd?.PED_MovilChofer"></span>
+                <span style="position:absolute; top:179px; left:493px;" :class="{'diff-hl': diffH('PED_TransporteRapidoSN')}" x-text="pedidoDetailProd?.PED_TransporteRapidoSN"></span>
+                <span style="position:absolute; top:179px; left:656px;" :class="{'diff-hl': diffH('PED_Lote')}" x-text="pedidoDetailProd?.PED_Lote"></span>
+                <span style="position:absolute; top:86px; left:1155px; font-size:8pt;" :class="{'diff-hl': diffH('PED_BESTELLNR')}" x-text="pedidoDetailProd?.PED_BESTELLNR"></span>
+                <span style="position:absolute; top:130px; left:1040px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" :class="{'diff-hl': diffH('PED_obs1')}" x-text="pedidoDetailProd?.PED_obs1"></span>
+                <span style="position:absolute; top:152px; left:1040px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap;" x-show="!(pedidoDetail && pedidoDetailProd)" :class="{'diff-hl': diffH('PED_obs2')}" x-text="pedidoDetailProd?.PED_obs2"></span>
+                <span style="position:absolute; top:174px; left:1040px; font-size:8pt; max-width:310px; overflow:hidden; white-space:nowrap;" x-show="!(pedidoDetail && pedidoDetailProd)" :class="{'diff-hl': diffH('PED_obs3')}" x-text="pedidoDetailProd?.PED_obs3"></span>
+                <template x-if="pedidoLineasProd.length > 0">
+                  <div>
+                    <span style="position:absolute; top:240px; left:155px;" :class="{'diff-hl': diffL('PEL_idgenero')}" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.PEL_idgenero"></span>
+                    <span style="position:absolute; top:238px; left:240px; color:#0000C0; font-family:Verdana; font-size:12pt; max-width:310px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" :class="{'diff-hl': diffL('NomGenero')}" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.NomGenero"></span>
+                    <span style="position:absolute; top:265px; left:155px;" :class="{'diff-hl': diffL('PEL_idtipoconfeccion')}" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.PEL_idtipoconfeccion"></span>
+                    <span style="position:absolute; top:263px; left:240px; color:#0000C0; font-family:Verdana; font-size:12pt; max-width:310px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" :class="{'diff-hl': diffL('NomConfeccion')}" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.NomConfeccion"></span>
+                    <span style="position:absolute; top:290px; left:155px;" :class="{'diff-hl': diffL('PEL_idgensal')}" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.PEL_idgensal"></span>
+                    <span style="position:absolute; top:288px; left:240px; color:#0000C0; font-family:Verdana; font-size:12pt; max-width:310px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" :class="{'diff-hl': diffL('Presentacion')}" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.Presentacion"></span>
+                    <span style="position:absolute; top:240px; left:659px;" :class="{'diff-hl': diffL('PEL_idcategoria')}" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.PEL_idcategoria"></span>
+                    <span style="position:absolute; top:238px; left:760px; color:#0000C0; font-family:Verdana; font-size:12pt; max-width:240px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" :class="{'diff-hl': diffL('NomCategoria')}" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.NomCategoria"></span>
+                    <span style="position:absolute; top:265px; left:659px;" :class="{'diff-hl': diffL('PEL_idtipopalet')}" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.PEL_idtipopalet"></span>
+                    <span style="position:absolute; top:263px; left:760px; color:#0000C0; font-family:Verdana; font-size:12pt; max-width:240px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" :class="{'diff-hl': diffL('TipoPalet')}" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.TipoPalet"></span>
+                    <span style="position:absolute; top:290px; left:659px;" :class="{'diff-hl': diffL('Coeficiente')}" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.Coeficiente"></span>
+                    <span style="position:absolute; top:311px; left:659px;" :class="{'diff-hl': diffL('PEL_idmarca')}" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.PEL_idmarca"></span>
+                    <span style="position:absolute; top:309px; left:760px; color:#0000C0; font-family:Verdana; font-size:12pt; max-width:170px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" :class="{'diff-hl': diffL('NomMarca')}" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.NomMarca"></span>
+                    <span style="position:absolute; top:238px; left:1114px; text-align:right;" :class="{'diff-hl': diffL('Palets')}" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.Palets"></span>
+                    <span style="position:absolute; top:239px; left:1295px; text-align:right;" :class="{'diff-hl': diffL('BxPalet')}" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.BxPalet"></span>
+                    <span style="position:absolute; top:263px; left:1113px; text-align:right;" :class="{'diff-hl': diffL('Bultos')}" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.Bultos"></span>
+                    <span style="position:absolute; top:265px; left:1293px; text-align:right;" :class="{'diff-hl': diffL('KxBulto')}" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.KxBulto"></span>
+                    <span style="position:absolute; top:288px; left:1112px; text-align:right;" :class="{'diff-hl': diffL('KNetos')}" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.KNetos"></span>
+                    <span style="position:absolute; top:288px; left:1293px; text-align:right;" :class="{'diff-hl': diffL('PzxBulto')}" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.PzxBulto"></span>
+                    <span style="position:absolute; top:313px; left:1112px; text-align:right;" :class="{'diff-hl': diffL('KBrutos')}" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.KBrutos"></span>
+                    <span style="position:absolute; top:312px; left:1277px; text-align:right;" :class="{'diff-hl': diffL('Piezas')}" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.Piezas"></span>
+                    <span style="position:absolute; top:337px; left:1113px; text-align:right;" :class="{'diff-hl': diffL('Precio')}" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.Precio"></span>
+                    <span style="position:absolute; top:336px; left:1294px;" :class="{'diff-hl': diffL('KBP')}" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.KBP"></span>
+                    <span style="position:absolute; top:415px; left:1044px; font-size:8pt;" :class="{'diff-hl': diffL('Lote')}" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.Lote"></span>
+                    <span style="position:absolute; top:469px; left:1045px; font-size:8pt;" :class="{'diff-hl': diffL('ObsConfec1')}" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.ObsConfec1"></span>
+                    <span style="position:absolute; top:497px; left:1043px; font-size:8pt;" :class="{'diff-hl': diffL('ObsConfec2')}" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.ObsConfec2"></span>
+                    <span style="position:absolute; top:529px; left:1170px;" :class="{'diff-hl': diffL('Calidad')}" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.Calidad"></span>
+                    <span style="position:absolute; top:526px; left:1298px;" :class="{'diff-hl': diffL('MaxDias')}" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.MaxDias"></span>
+                    <span style="position:absolute; top:558px; left:1170px;" :class="{'diff-hl': diffL('ReservaPalets')}" x-text="pedidoLineasProd[selectedLineaProd ?? 0]?.ReservaPalets"></span>
+                  </div>
+                </template>
+                <span style="position:absolute; top:627px; left:25px; font-size:8pt; color:#000;" x-text="pedidoDetailProd?.PED_idpedido"></span>
+                <div style="position:absolute; top:370px; left:18px; width:960px; height:225px; overflow-y:auto; overflow-x:hidden;">
+                  <template x-for="(linea, idx) in pedidoLineasProd" :key="idx">
+                    <div @click="selectedLineaProd = idx"
+                      style="display:flex; height:20px; line-height:20px; font-size:8pt; cursor:pointer; border-bottom:1px solid #c0c0c0;"
+                      :style="(selectedLineaProd ?? 0) === idx ? 'background:#316AC5; color:#fff;' : 'background:transparent; color:#000;'">
+                      <span style="width:310px; padding-left:6px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" x-text="linea.Presentacion"></span>
+                      <span style="width:80px; overflow:hidden;" x-text="linea.Categoria"></span>
+                      <span style="width:65px; overflow:hidden;" x-text="linea.Marca"></span>
+                      <span style="width:130px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" x-text="linea.TipoPalet"></span>
+                      <span style="width:55px; text-align:right; padding-right:8px;" x-text="linea.Palets"></span>
+                      <span style="width:60px; text-align:right; padding-right:8px;" x-text="linea.Bultos"></span>
+                      <span style="width:60px; text-align:right; padding-right:8px;" x-text="linea.Coeficiente"></span>
+                      <span style="width:65px; text-align:right; padding-right:8px;" x-text="linea.PaletsTransporte"></span>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </template>
+
+            <!-- Loading -->
+            <template x-if="!prodNotFound && !pedidoDetailProd">
+              <div style="width:1367px; height:652px; display:flex; align-items:center; justify-content:center; background:#f9fafb; border:2px solid #15803d; border-top:none; border-radius:0 0 6px 6px;">
+                <div style="text-align:center;">
+                  <svg class="animate-spin" style="width:40px; height:40px; margin:0 auto; color:#15803d;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle style="opacity:0.25;" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path style="opacity:0.75;" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                  </svg>
+                  <p style="font-family:Tahoma,sans-serif; font-size:11pt; color:#6b7280; margin-top:12px;">Buscando en produccion...</p>
+                </div>
+              </div>
+            </template>
+          </div>
+
+                    </div><!-- fin flex paneles -->
+          </div><!-- fin columna modal -->
+
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+</body>
+
+</html>

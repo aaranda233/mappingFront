@@ -32,6 +32,12 @@ export default {
         this.fetchEstadoPedidosAnecoopTest();
         this.fetchEstadoPedidosAlfruit();
         this.fetchEstadoPedidosAlfruitTest();
+        this.fetchEstadoPedidosPelican();
+        this.fetchEstadoPedidosPelicanTest();
+        this.fetchEstadoPedidosImg();
+        this.fetchEstadoPedidosImgTest();
+        this.fetchEstadoPedidosLehman();
+        this.fetchEstadoPedidosLehmanTest();
     },
     get bioCentro() {
         if (this.mostrarTodos) return null;
@@ -87,6 +93,30 @@ export default {
     estadoPedidosAlfruitTest: {
         current: null,
         pilotColor: 'gray'
+    },
+    estadoPedidosPelican: {
+        current: null,
+        pilotColor: 'gray'
+    },
+    estadoPedidosPelicanTest: {
+        current: null,
+        pilotColor: 'gray'
+    },
+    estadoPedidosImg: {
+        current: null,
+        pilotColor: 'gray'
+    },
+    estadoPedidosImgTest: {
+        current: null,
+        pilotColor: 'gray'
+    },
+    estadoPedidosLehman: {
+        current: null,
+        pilotColor: 'green'
+    },
+    estadoPedidosLehmanTest: {
+        current: null,
+        pilotColor: 'green'
     },
     greenyard: {
         pilotColor: 'gray'  // gray = sin comprobar, green = parser activo, red = inactivo
@@ -352,6 +382,114 @@ export default {
             }
         } catch (e) {
             console.error("Error fetching estado pedidos alfruit test", e);
+        }
+    },
+    async fetchEstadoPedidosPelican() {
+        try {
+            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-pelican/actual${this._centroQuery()}`);
+            const data = await res.json();
+            this.estadoPedidosPelican.current = data.current;
+            if (!data.current) {
+                this.estadoPedidosPelican.pilotColor = 'gray';
+            } else if (data.current.estado === 'procesando') {
+                this.estadoPedidosPelican.pilotColor = 'yellow';
+            } else if (data.current.estado === 'error') {
+                this.estadoPedidosPelican.pilotColor = 'red';
+            } else {
+                this.estadoPedidosPelican.pilotColor = 'gray';
+            }
+        } catch (e) {
+            console.error("Error fetching estado pedidos pelican", e);
+        }
+    },
+    async fetchEstadoPedidosPelicanTest() {
+        try {
+            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-pelican-test/actual${this._centroQuery()}`);
+            const data = await res.json();
+            this.estadoPedidosPelicanTest.current = data.current;
+            if (!data.current) {
+                this.estadoPedidosPelicanTest.pilotColor = 'gray';
+            } else if (data.current.estado === 'procesando') {
+                this.estadoPedidosPelicanTest.pilotColor = 'yellow';
+            } else if (data.current.estado === 'error') {
+                this.estadoPedidosPelicanTest.pilotColor = 'red';
+            } else {
+                this.estadoPedidosPelicanTest.pilotColor = 'gray';
+            }
+        } catch (e) {
+            console.error("Error fetching estado pedidos pelican test", e);
+        }
+    },
+    async fetchEstadoPedidosImg() {
+        try {
+            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-img/actual${this._centroQuery()}`);
+            const data = await res.json();
+            this.estadoPedidosImg.current = data.current;
+            if (!data.current) {
+                this.estadoPedidosImg.pilotColor = 'gray';
+            } else if (data.current.estado === 'procesando') {
+                this.estadoPedidosImg.pilotColor = 'yellow';
+            } else if (data.current.estado === 'error') {
+                this.estadoPedidosImg.pilotColor = 'red';
+            } else {
+                this.estadoPedidosImg.pilotColor = 'gray';
+            }
+        } catch (e) {
+            console.error("Error fetching estado pedidos img", e);
+        }
+    },
+    async fetchEstadoPedidosImgTest() {
+        try {
+            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-img-test/actual${this._centroQuery()}`);
+            const data = await res.json();
+            this.estadoPedidosImgTest.current = data.current;
+            if (!data.current) {
+                this.estadoPedidosImgTest.pilotColor = 'gray';
+            } else if (data.current.estado === 'procesando') {
+                this.estadoPedidosImgTest.pilotColor = 'yellow';
+            } else if (data.current.estado === 'error') {
+                this.estadoPedidosImgTest.pilotColor = 'red';
+            } else {
+                this.estadoPedidosImgTest.pilotColor = 'gray';
+            }
+        } catch (e) {
+            console.error("Error fetching estado pedidos img test", e);
+        }
+    },
+    async fetchEstadoPedidosLehman() {
+        try {
+            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-lehman/actual${this._centroQuery()}`);
+            const data = await res.json();
+            this.estadoPedidosLehman.current = data.current;
+            if (!data.current) {
+                this.estadoPedidosLehman.pilotColor = 'green';
+            } else if (data.current.estado === 'procesando') {
+                this.estadoPedidosLehman.pilotColor = 'yellow';
+            } else if (data.current.estado === 'error') {
+                this.estadoPedidosLehman.pilotColor = 'red';
+            } else {
+                this.estadoPedidosLehman.pilotColor = 'green';
+            }
+        } catch (e) {
+            console.error("Error fetching estado pedidos lehman", e);
+        }
+    },
+    async fetchEstadoPedidosLehmanTest() {
+        try {
+            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-lehman-test/actual${this._centroQuery()}`);
+            const data = await res.json();
+            this.estadoPedidosLehmanTest.current = data.current;
+            if (!data.current) {
+                this.estadoPedidosLehmanTest.pilotColor = 'green';
+            } else if (data.current.estado === 'procesando') {
+                this.estadoPedidosLehmanTest.pilotColor = 'yellow';
+            } else if (data.current.estado === 'error') {
+                this.estadoPedidosLehmanTest.pilotColor = 'red';
+            } else {
+                this.estadoPedidosLehmanTest.pilotColor = 'green';
+            }
+        } catch (e) {
+            console.error("Error fetching estado pedidos lehman test", e);
         }
     }
 }
