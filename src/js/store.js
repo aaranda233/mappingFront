@@ -112,11 +112,11 @@ export default {
     },
     estadoPedidosLehman: {
         current: null,
-        pilotColor: 'green'
+        pilotColor: 'gray'
     },
     estadoPedidosLehmanTest: {
         current: null,
-        pilotColor: 'green'
+        pilotColor: 'gray'
     },
     greenyard: {
         pilotColor: 'gray'  // gray = sin comprobar, green = parser activo, red = inactivo
@@ -462,13 +462,13 @@ export default {
             const data = await res.json();
             this.estadoPedidosLehman.current = data.current;
             if (!data.current) {
-                this.estadoPedidosLehman.pilotColor = 'green';
+                this.estadoPedidosLehman.pilotColor = 'gray';
             } else if (data.current.estado === 'procesando') {
                 this.estadoPedidosLehman.pilotColor = 'yellow';
             } else if (data.current.estado === 'error') {
                 this.estadoPedidosLehman.pilotColor = 'red';
             } else {
-                this.estadoPedidosLehman.pilotColor = 'green';
+                this.estadoPedidosLehman.pilotColor = 'gray';
             }
         } catch (e) {
             console.error("Error fetching estado pedidos lehman", e);
@@ -480,13 +480,13 @@ export default {
             const data = await res.json();
             this.estadoPedidosLehmanTest.current = data.current;
             if (!data.current) {
-                this.estadoPedidosLehmanTest.pilotColor = 'green';
+                this.estadoPedidosLehmanTest.pilotColor = 'gray';
             } else if (data.current.estado === 'procesando') {
                 this.estadoPedidosLehmanTest.pilotColor = 'yellow';
             } else if (data.current.estado === 'error') {
                 this.estadoPedidosLehmanTest.pilotColor = 'red';
             } else {
-                this.estadoPedidosLehmanTest.pilotColor = 'green';
+                this.estadoPedidosLehmanTest.pilotColor = 'gray';
             }
         } catch (e) {
             console.error("Error fetching estado pedidos lehman test", e);
