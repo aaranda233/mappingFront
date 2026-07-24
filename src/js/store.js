@@ -118,6 +118,14 @@ export default {
         current: null,
         pilotColor: 'gray'
     },
+    estadoPedidosDaifressh: {
+        current: null,
+        pilotColor: 'gray'
+    },
+    estadoPedidosDaifresshTest: {
+        current: null,
+        pilotColor: 'gray'
+    },
     greenyard: {
         pilotColor: 'gray'  // gray = sin comprobar, green = parser activo, red = inactivo
     },
@@ -490,6 +498,42 @@ export default {
             }
         } catch (e) {
             console.error("Error fetching estado pedidos lehman test", e);
+        }
+    },
+    async fetchEstadoPedidosDaifressh() {
+        try {
+            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-daifressh/actual${this._centroQuery()}`);
+            const data = await res.json();
+            this.estadoPedidosDaifressh.current = data.current;
+            if (!data.current) {
+                this.estadoPedidosDaifressh.pilotColor = 'gray';
+            } else if (data.current.estado === 'procesando') {
+                this.estadoPedidosDaifressh.pilotColor = 'yellow';
+            } else if (data.current.estado === 'error') {
+                this.estadoPedidosDaifressh.pilotColor = 'red';
+            } else {
+                this.estadoPedidosDaifressh.pilotColor = 'gray';
+            }
+        } catch (e) {
+            console.error("Error fetching estado pedidos daifressh", e);
+        }
+    },
+    async fetchEstadoPedidosDaifresshTest() {
+        try {
+            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-daifressh-test/actual${this._centroQuery()}`);
+            const data = await res.json();
+            this.estadoPedidosDaifresshTest.current = data.current;
+            if (!data.current) {
+                this.estadoPedidosDaifresshTest.pilotColor = 'gray';
+            } else if (data.current.estado === 'procesando') {
+                this.estadoPedidosDaifresshTest.pilotColor = 'yellow';
+            } else if (data.current.estado === 'error') {
+                this.estadoPedidosDaifresshTest.pilotColor = 'red';
+            } else {
+                this.estadoPedidosDaifresshTest.pilotColor = 'gray';
+            }
+        } catch (e) {
+            console.error("Error fetching estado pedidos daifressh test", e);
         }
     }
 }
