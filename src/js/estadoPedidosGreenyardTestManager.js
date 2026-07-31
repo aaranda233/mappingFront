@@ -1,5 +1,8 @@
+import traspasoProduccion from './traspasoProduccion.js';
+
 export default function estadoPedidosGreenyardTestManager() {
     return {
+        ...traspasoProduccion(),
         current: null,
         historial: [],
         loaded: false,
@@ -154,6 +157,7 @@ export default function estadoPedidosGreenyardTestManager() {
 
         async openPedidoDetail(item) {
             this.showPedidoModal = true;
+            this._resetTraspaso(item);
             this.pedidoDetail = null;
             this.pedidoLineas = [];
             this.selectedLinea = null;
@@ -178,6 +182,7 @@ export default function estadoPedidosGreenyardTestManager() {
                 console.log('[TEST] Datos cabecera:', JSON.stringify(header));
                 this._log('detalle pedido=' + numPedido + ' -> cliente resuelto=' + (header && header.PED_idcliente) + ' NomCliente=' + (header && header.NomCliente) + ' centro=' + (header && header.PED_idcentro) + ' idpedido=' + (header && header.PED_idpedido));
                 this.pedidoDetail = header;
+                await this.traspasoCargarPrevio();
 
                 if (this.pedidoDetail?.PED_idpedido) {
                     const urlLineas = `http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-greenyard-test/pedido-lineas/${this.pedidoDetail.PED_idpedido}`;
@@ -233,6 +238,7 @@ export default function estadoPedidosGreenyardTestManager() {
 
         closePedidoModal() {
             this.showPedidoModal = false;
+            this._resetTraspaso();
             this.pedidoDetail = null;
             this.pedidoLineas = [];
             this.selectedLinea = null;

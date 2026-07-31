@@ -274,6 +274,8 @@
             <!-- ====== PANELES ERP LADO A LADO ====== -->
             <div style="display:flex; justify-content:center; gap:4px;">
 
+              <!-- COLUMNA TEST: panel + barra de sincronizacion -->
+              <div style="display:flex; flex-direction:column; gap:6px;">
               <!-- PANEL TEST -->
           <div @click.stop style="position:relative;"
             :style="'zoom: ' + Math.min(1, (window.innerWidth / 2 - 8) / 1367, (window.innerHeight - 20) / 690)">
@@ -367,7 +369,217 @@
             </div>
           </div>
 
-          <!-- PANEL PRODUCCION -->
+          <!-- ===== SINCRONIZAR CON PRODUCCION (debajo del panel TEST) ===== -->
+              <div class="trBarraTraspaso" @click.stop
+                style="align-self:stretch; background:#fff; border:2px solid #1d4ed8; border-radius:6px; padding:10px 12px; font-family:Tahoma,sans-serif; font-size:9pt; color:#111827;">
+                <style>
+                  .trBarraTraspaso button { padding:6px 14px; border-radius:4px; font-family:Tahoma,sans-serif; font-size:9pt; font-weight:bold; border:1px solid #1d4ed8; background:#eff6ff; color:#1d4ed8; cursor:pointer; }
+                  .trBarraTraspaso button:disabled { border-color:#d1d5db; background:#f3f4f6; color:#9ca3af; cursor:not-allowed; }
+                  .trBarraTraspaso button.trPrim { background:#1d4ed8; color:#fff; }
+                  .trBarraTraspaso button.trWarn { border-color:#b45309; background:#fef3c7; color:#92400e; }
+                  .trBarraTraspaso button.trDanger { border-color:#b91c1c; background:#fee2e2; color:#b91c1c; }
+                  .trBarraTraspaso input { border:1px solid #9ca3af; border-radius:4px; padding:4px 6px; font-family:Tahoma,sans-serif; font-size:9pt; }
+                  .trBanner { margin:8px 0; padding:10px 12px; border-radius:6px; text-align:center; font-weight:bold; letter-spacing:.5px; }
+                  .trBox { margin-top:6px; padding:6px 8px; border-radius:4px; font-size:8.5pt; line-height:1.4; }
+                  .trPre { margin-top:6px; max-height:240px; overflow:auto; background:#0b1021; color:#d1e7ff; padding:8px; border-radius:4px; font-family:Consolas,'Courier New',monospace; font-size:8pt; white-space:pre-wrap; word-break:break-word; }
+                  .trDiff { width:100%; border-collapse:collapse; font-size:8.5pt; margin-top:4px; }
+                  .trDiff th, .trDiff td { border:1px solid #d1d5db; padding:2px 6px; text-align:left; }
+                  .trDiff th { background:#f3f4f6; }
+                </style>
+
+                <!-- Cabecera de la barra -->
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                  <span style="font-weight:bold; color:#1d4ed8;">SINCRONIZAR CON PRODUCCION</span>
+                  <span style="color:#6b7280;"
+                    x-text="pedidoDetail?.PED_idpedido ? ('test nº ' + (pedidoDetail.PED_pedido || '?') + '  ·  idpedido ' + pedidoDetail.PED_idpedido + '  ·  centro ' + (pedidoDetail.PED_idcentro ?? '?') + '  ·  ' + pedidoLineas.length + ' linea(s)') : 'sin pedido de test cargado'"></span>
+                  <span style="flex:1 1 auto;"></span>
+                  <span x-show="traspasoAnalisis" style="color:#6b7280; font-size:8pt;"
+                    x-text="'destino: ' + (traspasoAnalisis?.motorDestino ?? '') + (traspasoAnalisis?.mismoMotor ? '  [MISMO MOTOR QUE TEST = entorno dev]' : '')"></span>
+                </div>
+
+                <!-- Banner grande: casa / no casa -->
+                <template x-if="traspasoAnalisis && !traspasoResultado">
+                  <div>
+                    <div x-show="traspasoAnalisis.modo === 'INSERTAR'" class="trBanner"
+                      style="background:#fef3c7; color:#92400e; border:2px solid #f59e0b; font-size:15pt;">
+                      NO CASA CON NINGUN PEDIDO DE PRODUCCION
+                      <div style="font-weight:normal; font-size:9pt; margin-top:4px;"
+                        x-text="'Claves buscadas: ' + ((traspasoAnalisis.claves || []).join(' / ') || '(el pedido no tiene referencia/BESTELLNR/nº de cliente)')"></div>
+                    </div>
+                    <div x-show="traspasoAnalisis.modo === 'MODIFICAR'" class="trBanner"
+                      style="background:#dbeafe; color:#1e40af; border:2px solid #3b82f6; font-size:13pt;">
+                      <span x-text="'CASA CON EL PEDIDO DE PRODUCCION Nº ' + traspasoAnalisis.prod?.PED_pedido + ' (PED_idpedido ' + traspasoAnalisis.prod?.PED_idpedido + ', ejercicio ' + traspasoAnalisis.prod?.ejercicio + ')'"></span>
+                      <div style="font-weight:normal; font-size:9pt; margin-top:4px;"
+                        x-text="(traspasoAnalisis.diffs ? ((traspasoAnalisis.diffs.cabecera?.length || 0) + ' campo(s) de cabecera y ' + (traspasoAnalisis.diffs.lineas || []).filter(l => l.cambios.length > 0 || l.almacenCambia).length + ' linea(s) con diferencias') : '')"></div>
+                    </div>
+                    <div x-show="traspasoAnalisis.modo === 'AMBIGUO'" class="trBanner"
+                      style="background:#fee2e2; color:#991b1b; border:2px solid #ef4444; font-size:13pt;">
+                      <span x-text="'CASA CON ' + (traspasoAnalisis.candidatos?.length || 0) + ' PEDIDOS DE PRODUCCION: hay que revisarlo a mano'"></span>
+                    </div>
+                    <div x-show="(traspasoAnalisis.bloqueos || []).length > 0" class="trBox"
+                      style="background:#fee2e2; color:#991b1b; border:1px solid #ef4444;">
+                      <div style="font-weight:bold;">El pedido de produccion no se puede modificar:</div>
+                      <template x-for="(b, i) in traspasoAnalisis.bloqueos" :key="i"><div x-text="'· ' + b"></div></template>
+                    </div>
+                  </div>
+                </template>
+
+                <!-- Botones principales -->
+                <div x-show="!traspasoPaso && !traspasoResultado" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                  <button type="button" class="trPrim" :disabled="!traspasoListo()" @click="traspasoPedirConfirmInsertar()">
+                    Insertar nuevo pedido
+                  </button>
+                  <button type="button" class="trWarn" :disabled="!traspasoListo()" @click="traspasoIniciarModificar()">
+                    Modificar pedido
+                  </button>
+                  <button type="button" :disabled="!traspasoListo()" @click="traspasoInsertar({ dryRun: true })"
+                    title="Comprueba maestros, duplicados y contadores y muestra los INSERT que se harian, sin escribir nada">
+                    Simular insercion
+                  </button>
+                  <span x-show="traspasoEnCurso" style="color:#1d4ed8; font-weight:bold;">Procesando...</span>
+                  <span style="flex:1 1 auto;"></span>
+                  <button type="button" x-show="traspasoTraza.length > 0" @click="traspasoMostrarTraza = !traspasoMostrarTraza">
+                    <span x-text="(traspasoMostrarTraza ? 'Ocultar' : 'Ver') + ' traza (' + traspasoTraza.length + ')'"></span>
+                  </button>
+                </div>
+
+                <!-- Confirmar insercion -->
+                <div x-show="traspasoPaso === 'confirmarInsertar'" class="trBox" style="background:#eff6ff; border:1px solid #60a5fa;">
+                  <div style="font-weight:bold; color:#1e40af;">Se va a CREAR un pedido nuevo en produccion con los datos de test.</div>
+                  <div style="margin-top:6px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                    <button type="button" class="trDanger" :disabled="traspasoEnCurso" @click="traspasoInsertar({ dryRun: false })">Si, insertar</button>
+                    <button type="button" :disabled="traspasoEnCurso" @click="traspasoInsertar({ dryRun: true })">Simular primero</button>
+                    <button type="button" @click="traspasoCancelar()">Cancelar</button>
+                    <span x-show="traspasoEnCurso" style="color:#1d4ed8; font-weight:bold;">Procesando...</span>
+                  </div>
+                </div>
+
+                <!-- Pedir el pedido de produccion a modificar -->
+                <div x-show="traspasoPaso === 'pedirObjetivo'" class="trBox" style="background:#fffbeb; border:1px solid #f59e0b;">
+                  <div style="font-weight:bold; color:#92400e;">¿Que pedido de produccion quieres modificar?</div>
+                  <div style="margin-top:6px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                    <label>Ejercicio <input type="text" size="4" x-model="traspasoForm.ejercicio"></label>
+                    <label>Nº pedido <input type="text" size="8" x-model="traspasoForm.numeroPedido"></label>
+                    <span style="color:#6b7280;">o bien</span>
+                    <label>PED_idpedido <input type="text" size="9" x-model="traspasoForm.idPedido"></label>
+                    <button type="button" :disabled="traspasoForm.buscando" @click="traspasoBuscarObjetivo()">Buscar</button>
+                    <button type="button" @click="traspasoCancelar()">Cancelar</button>
+                    <span x-show="traspasoForm.buscando" style="color:#1d4ed8;">Buscando...</span>
+                  </div>
+                  <div x-show="traspasoForm.error" style="margin-top:4px; color:#991b1b; font-weight:bold;" x-text="traspasoForm.error"></div>
+                </div>
+
+                <!-- Confirmar modificacion -->
+                <div x-show="traspasoPaso === 'confirmarModificar'" class="trBox" style="background:#fffbeb; border:1px solid #f59e0b;">
+                  <div style="font-weight:bold; color:#92400e;"
+                    x-text="'¿Quieres MODIFICAR el pedido de produccion nº ' + (traspasoObjetivo?.PED_pedido ?? '?') + ' (PED_idpedido ' + (traspasoObjetivo?.PED_idpedido ?? '?') + ')' + (traspasoObjetivo?.NomCliente ? ' de ' + traspasoObjetivo.NomCliente : '') + '?'"></div>
+                  <div x-show="traspasoObjetivo?.albaranes > 0" style="margin-top:4px; color:#991b1b; font-weight:bold;">
+                    ATENCION: ese pedido ya tiene albaran de salida.
+                  </div>
+
+                  <!-- Diferencias que se aplicarian (del dry-run) -->
+                  <template x-if="traspasoPlan && traspasoPlan.modo === 'MODIFICAR'">
+                    <div style="margin-top:6px;">
+                      <div x-show="traspasoPlan.sinCambios" style="color:#166534; font-weight:bold;">No hay ninguna diferencia: no habria nada que cambiar.</div>
+                      <template x-if="!traspasoPlan.sinCambios">
+                        <div>
+                          <div style="font-weight:bold;">Cambios en la cabecera (<span x-text="traspasoPlan.diffs?.cabecera?.length || 0"></span>):</div>
+                          <table class="trDiff" x-show="(traspasoPlan.diffs?.cabecera?.length || 0) > 0">
+                            <tr><th>Campo</th><th>Produccion (ahora)</th><th>Test (quedaria)</th></tr>
+                            <template x-for="(c, i) in traspasoPlan.diffs.cabecera" :key="i">
+                              <tr><td x-text="c.campo"></td><td x-text="c.prod === '' ? '(vacio)' : c.prod"></td><td x-text="c.test === '' ? '(vacio)' : c.test"></td></tr>
+                            </template>
+                          </table>
+                          <template x-for="(l, i) in (traspasoPlan.diffs?.lineas || []).filter(l => l.cambios.length > 0)" :key="i">
+                            <div style="margin-top:6px;">
+                              <div style="font-weight:bold;" x-text="'Linea ' + l.idlineaProd + ' (' + l.cambios.length + ' campo(s)):'"></div>
+                              <table class="trDiff">
+                                <tr><th>Campo</th><th>Produccion (ahora)</th><th>Test (quedaria)</th></tr>
+                                <template x-for="(c, j) in l.cambios" :key="j">
+                                  <tr><td x-text="c.campo"></td><td x-text="c.prod === '' ? '(vacio)' : c.prod"></td><td x-text="c.test === '' ? '(vacio)' : c.test"></td></tr>
+                                </template>
+                              </table>
+                            </div>
+                          </template>
+                          <div x-show="(traspasoPlan.diffs?.lineasNuevas || 0) > 0" style="margin-top:4px;"
+                            x-text="'Se añadirian ' + traspasoPlan.diffs.lineasNuevas + ' linea(s) nueva(s).'"></div>
+                          <div x-show="(traspasoPlan.diffs?.lineasSobrantes || 0) > 0" style="margin-top:4px;">
+                            <label>
+                              <input type="checkbox" x-model="traspasoAnularSobrantes">
+                              <span x-text="'Produccion tiene ' + traspasoPlan.diffs.lineasSobrantes + ' linea(s) que ya no vienen en test: marcarlas como ANULADAS (si no, se dejan igual)'"></span>
+                            </label>
+                          </div>
+                        </div>
+                      </template>
+                    </div>
+                  </template>
+
+                  <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                    <button type="button" class="trDanger" :disabled="traspasoEnCurso || (traspasoPlan && traspasoPlan.sinCambios)"
+                      @click="traspasoModificar({ dryRun: false })">Si, modificar</button>
+                    <button type="button" :disabled="traspasoEnCurso" @click="traspasoModificar({ dryRun: true })">Volver a simular</button>
+                    <button type="button" @click="traspasoCancelar()">Cancelar</button>
+                    <span x-show="traspasoEnCurso" style="color:#1d4ed8; font-weight:bold;">Procesando...</span>
+                  </div>
+                </div>
+
+                <!-- Traspaso anterior registrado -->
+                <div x-show="traspasoPrevio && !traspasoResultado" class="trBox" style="background:#fef9c3; color:#854d0e; border:1px solid #facc15;">
+                  <span x-text="'Ya hubo una sincronizacion (' + (traspasoPrevio?.modo || '?') + '): produccion nº ' + (traspasoPrevio?.ped_pedido_prod ?? '?') + ' (PED_idpedido ' + (traspasoPrevio?.id_pedido_prod ?? '?') + ') por ' + (traspasoPrevio?.email || 'usuario desconocido') + ' el ' + formatFecha(traspasoPrevio?.createdAt)"></span>
+                </div>
+
+                <!-- Resultado -->
+                <div x-show="traspasoResultado" class="trBox" style="background:#dcfce7; color:#166534; border:1px solid #22c55e; font-weight:bold;">
+                  <span x-show="traspasoResultado?.modo === 'INSERTAR'"
+                    x-text="'CREADO EN PRODUCCION: pedido nº ' + (traspasoResultado?.resultado?.PED_pedido ?? '?') + '  ·  PED_idpedido ' + (traspasoResultado?.resultado?.PED_idpedido ?? '?') + '  ·  ejercicio ' + (traspasoResultado?.resultado?.ejercicio ?? '?') + '  ·  ' + (traspasoResultado?.resultado?.lineas?.length ?? 0) + ' linea(s), ' + (traspasoResultado?.resultado?.almacenes ?? 0) + ' fila(s) de almacen'"></span>
+                  <span x-show="traspasoResultado?.modo === 'MODIFICAR'"
+                    x-text="'MODIFICADO EN PRODUCCION: pedido nº ' + (traspasoResultado?.resultado?.PED_pedido ?? '?') + '  ·  ' + (traspasoResultado?.resultado?.camposCabecera ?? 0) + ' campo(s) de cabecera, ' + (traspasoResultado?.resultado?.lineasActualizadas ?? 0) + ' linea(s) actualizada(s), ' + (traspasoResultado?.resultado?.lineasNuevas ?? 0) + ' nueva(s), ' + (traspasoResultado?.resultado?.lineasAnuladas ?? 0) + ' anulada(s)'"></span>
+                </div>
+
+                <!-- Error / rechazo -->
+                <div x-show="traspasoError" class="trBox" style="background:#fee2e2; color:#991b1b; border:1px solid #ef4444;">
+                  <span style="font-weight:bold;">No se ha aplicado: </span><span x-text="traspasoError"></span>
+                </div>
+
+                <!-- Avisos -->
+                <div x-show="traspasoAvisos.length > 0" class="trBox" style="background:#fff7ed; color:#9a3412; border:1px solid #fb923c;">
+                  <div style="font-weight:bold;">Avisos:</div>
+                  <template x-for="(a, i) in traspasoAvisos" :key="i"><div x-text="'· ' + a"></div></template>
+                </div>
+
+                <!-- Maestros que no cuadran -->
+                <div x-show="traspasoValidaciones.filter(v => v.estado === 'ERROR').length > 0" class="trBox"
+                  style="background:#fee2e2; color:#991b1b; border:1px solid #ef4444;">
+                  <div style="font-weight:bold;">Maestros que no cuadran con produccion:</div>
+                  <template x-for="(v, i) in traspasoValidaciones.filter(v => v.estado === 'ERROR')" :key="i">
+                    <div x-text="'· ' + v.etiqueta + ' (' + v.contexto + ') id=' + v.id + ': ' + v.motivo"></div>
+                  </template>
+                </div>
+
+                <!-- Dry-run de insercion: numeros previstos -->
+                <div x-show="traspasoPlan && traspasoPlan.modo === 'INSERTAR'" class="trBox" style="background:#eff6ff; color:#1e40af; border:1px solid #60a5fa;">
+                  <div style="font-weight:bold;">Simulacion de insercion (no se ha escrito nada)</div>
+                  <div x-text="'Asignaria: pedido nº ' + (traspasoPlan?.previsto?.PED_pedido ?? '?') + '  ·  PED_idpedido ' + (traspasoPlan?.previsto?.PED_idpedido ?? '?') + '  ·  ejercicio ' + (traspasoPlan?.previsto?.ejercicio ?? '?')"></div>
+                  <div x-text="'Contadores actuales: ' + JSON.stringify(traspasoPlan?.contadores ?? {})"></div>
+                </div>
+
+                <!-- SQL previsto -->
+                <div x-show="traspasoMostrarTraza && traspasoSentencias.length > 0" class="trPre">
+                  <template x-for="(s, i) in traspasoSentencias" :key="i">
+                    <div style="margin-bottom:6px;" x-text="(i + 1) + '. ' + s"></div>
+                  </template>
+                </div>
+
+                <!-- Traza del backend -->
+                <div x-show="traspasoMostrarTraza && traspasoTraza.length > 0" class="trPre">
+                  <template x-for="(t, i) in traspasoTraza" :key="i">
+                    <div x-text="'+' + t.ms + 'ms [' + t.paso + '] ' + t.detalle + (t.datos ? ('  ' + (typeof t.datos === 'string' ? t.datos : JSON.stringify(t.datos))) : '')"></div>
+                  </template>
+                </div>
+              </div>
+              </div>
+
+              <!-- PANEL PRODUCCION -->
           <div @click.stop style="position:relative;"
             :style="'zoom: ' + Math.min(1, (window.innerWidth / 2 - 8) / 1367, (window.innerHeight - 20) / 690)">
             <div style="background:#15803d; color:#fff; text-align:center; font-family:Tahoma,sans-serif; font-weight:bold; font-size:14pt; padding:6px 0; width:1367px; border-radius:6px 6px 0 0;">PRODUCCION</div>
