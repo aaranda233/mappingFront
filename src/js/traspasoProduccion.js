@@ -16,6 +16,8 @@ export default function traspasoProduccion() {
         traspasoEnCurso: false,
         traspasoMostrarForm: false,
         traspasoUltimo: null,   // { accion:'INSERTAR'|'MODIFICAR', ok:boolean }
+        traspasoMensaje: '',    // una linea de resultado bajo los botones
+        traspasoMensajeOk: true,
         traspasoForm: { ejercicio: '', numeroPedido: '', idPedido: '' },
         _traspasoItem: null,
         _traspasoAnalisis: null,
@@ -24,6 +26,8 @@ export default function traspasoProduccion() {
             this.traspasoEnCurso = false;
             this.traspasoMostrarForm = false;
             this.traspasoUltimo = null;
+            this.traspasoMensaje = '';
+            this.traspasoMensajeOk = true;
             this.traspasoForm = { ejercicio: '', numeroPedido: '', idPedido: '' };
             this._traspasoItem = item;
             this._traspasoAnalisis = null;
@@ -103,6 +107,8 @@ export default function traspasoProduccion() {
 
             this.traspasoEnCurso = true;
             this.traspasoUltimo = null;
+            this.traspasoMensaje = modo === 'INSERTAR' ? 'Insertando...' : 'Modificando...';
+            this.traspasoMensajeOk = true;
             console.log(`[traspaso] POST ${modo}`, JSON.stringify(body));
 
             try {
@@ -131,6 +137,22 @@ export default function traspasoProduccion() {
                 if (data.sinCambios) console.log('[traspaso] no habia ninguna diferencia: no se ha tocado nada');
 
                 this.traspasoUltimo = { accion: modo, ok };
+                this.traspasoMensajeOk = ok;
+                const r = data.resultado || {};
+                if (!ok) {
+                    this.traspasoMensaje = data.message || data.motivo || `Error ${res.status}`;
+                } else if (data.sinCambios) {
+                    this.traspasoMensaje = `SIN CAMBIOS: el pedido nº ${r.PED_pedido ?? '?'} de produccion ya estaba igual`;
+                } else if (modo === 'INSERTAR') {
+                    this.traspasoMensaje = `INSERTADO en produccion: pedido nº ${r.PED_pedido ?? '?'} ` +
+                        `(PED_idpedido ${r.PED_idpedido ?? '?'}, ejercicio ${r.ejercicio ?? '?'}) ` +
+                        `con ${r.lineas?.length ?? 0} linea(s) y ${r.almacenes ?? 0} fila(s) de almacen`;
+                } else {
+                    this.traspasoMensaje = `MODIFICADO en produccion: pedido nº ${r.PED_pedido ?? '?'} ` +
+                        `(PED_idpedido ${r.PED_idpedido ?? '?'}) — ${r.camposCabecera ?? 0} campo(s) de cabecera, ` +
+                        `${r.lineasActualizadas ?? 0} linea(s) actualizada(s), ${r.lineasNuevas ?? 0} nueva(s), ` +
+                        `${r.lineasAnuladas ?? 0} anulada(s)`;
+                }
 
                 if (ok) {
                     this.traspasoMostrarForm = false;

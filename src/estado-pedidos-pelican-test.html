@@ -482,7 +482,7 @@
                     </div><!-- fin flex paneles -->
             <!-- ===== SINCRONIZAR CON PRODUCCION (dos botones, todo lo demas a los logs) ===== -->
             <div class="trBarraTraspaso" @click.stop
-              style="display:flex; flex-direction:column; align-items:center; gap:14px; margin:14px 0 6px;">
+              style="display:flex; flex-direction:column; align-items:center; gap:14px; margin:14px 0 6px; background:#fff; padding:18px 24px; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,.3);">
               <style>
                 .trBarraTraspaso button { min-width:260px; padding:16px 38px; border-radius:8px; font-family:Tahoma,sans-serif; font-size:15pt; font-weight:bold; letter-spacing:1px; color:#fff; border:2px solid #1d4ed8; background:#1d4ed8; cursor:pointer; box-shadow:0 3px 8px rgba(0,0,0,.25); }
                 .trBarraTraspaso button.trMod { border-color:#b45309; background:#d97706; }
@@ -491,6 +491,9 @@
                 .trBarraTraspaso button:disabled { border-color:#d1d5db; background:#e5e7eb; color:#9ca3af; cursor:not-allowed; box-shadow:none; }
                 .trBarraTraspaso label { font-family:Tahoma,sans-serif; font-size:11pt; font-weight:bold; color:#92400e; display:flex; flex-direction:column; align-items:center; gap:4px; }
                 .trBarraTraspaso input { border:2px solid #b45309; border-radius:6px; padding:8px 10px; font-family:Tahoma,sans-serif; font-size:14pt; font-weight:bold; text-align:center; }
+                .trMsg { font-family:Tahoma,sans-serif; font-size:12pt; font-weight:bold; text-align:center; padding:10px 18px; border-radius:6px; max-width:1100px; }
+                .trMsgOk { background:#dcfce7; color:#166534; border:2px solid #22c55e; }
+                .trMsgErr { background:#fee2e2; color:#991b1b; border:2px solid #ef4444; }
               </style>
 
               <div style="display:flex; gap:24px; justify-content:center;">
@@ -506,9 +509,10 @@
 
               <div x-show="traspasoMostrarForm" style="display:flex; gap:20px; align-items:flex-end; justify-content:center;">
                 <label>Ejercicio<input type="text" size="4" x-model="traspasoForm.ejercicio" @keydown.enter="traspasoModificarClick()"></label>
-                <label>NÂº pedido<input type="text" size="8" x-model="traspasoForm.numeroPedido" @keydown.enter="traspasoModificarClick()"></label>
+                <label>NÃ‚Âº pedido<input type="text" size="8" x-model="traspasoForm.numeroPedido" @keydown.enter="traspasoModificarClick()"></label>
                 <label>PED_idpedido<input type="text" size="9" x-model="traspasoForm.idPedido" @keydown.enter="traspasoModificarClick()"></label>
               </div>
+              <div x-show="traspasoMensaje" class="trMsg" :class="traspasoMensajeOk ? 'trMsgOk' : 'trMsgErr'" x-text="traspasoMensaje"></div>
             </div>
 
           </div><!-- fin columna modal -->
