@@ -18,6 +18,8 @@ export default function traspasoProduccion() {
         traspasoUltimo: null,   // { accion:'INSERTAR'|'MODIFICAR', ok:boolean }
         traspasoMensaje: '',    // una linea de resultado bajo los botones
         traspasoMensajeOk: true,
+        // El ultimo INSERTAR se rechazo por duplicado: el siguiente clic lo fuerza.
+        traspasoForzar: false,
         traspasoForm: { ejercicio: '', numeroPedido: '', idPedido: '' },
         _traspasoItem: null,
         _traspasoAnalisis: null,
@@ -28,6 +30,7 @@ export default function traspasoProduccion() {
             this.traspasoUltimo = null;
             this.traspasoMensaje = '';
             this.traspasoMensajeOk = true;
+            this.traspasoForzar = false;
             this.traspasoForm = { ejercicio: '', numeroPedido: '', idPedido: '' };
             this._traspasoItem = item;
             this._traspasoAnalisis = null;
@@ -97,6 +100,13 @@ export default function traspasoProduccion() {
             if (!idPedidoTest) { console.error('[traspaso] no hay pedido de test cargado'); return; }
 
             const body = { idPedidoTest, email: this._traspasoEmail(), modo, dryRun: false };
+            const forzando = modo === 'INSERTAR' && this.traspasoForzar;
+            if (forzando) {
+                // Se salta las dos barreras: la de claves (forzarInsertar) y la del
+                // historico de traspasos (permitirRepetir).
+                body.forzarInsertar = true;
+                body.permitirRepetir = true;
+            }
             if (modo === 'MODIFICAR') {
                 const idProd = String(this.traspasoForm.idPedido || '').trim();
                 const num = String(this.traspasoForm.numeroPedido || '').trim();
@@ -139,12 +149,21 @@ export default function traspasoProduccion() {
                 this.traspasoUltimo = { accion: modo, ok };
                 this.traspasoMensajeOk = ok;
                 const r = data.resultado || {};
+                // Si INSERTAR se rechaza por duplicado (claves o historico), el siguiente
+                // clic pasa a forzar: el boton se convierte en "INSERTAR IGUALMENTE".
+                if (!ok && modo === 'INSERTAR' && res.status === 409 && (data.candidatos || data.traspasoPrevio)) {
+                    this.traspasoForzar = true;
+                    console.warn('[traspaso] rechazado por duplicado: el siguiente clic en INSERTAR lo forzara');
+                } else if (ok) {
+                    this.traspasoForzar = false;
+                }
                 if (!ok) {
                     this.traspasoMensaje = data.message || data.motivo || `Error ${res.status}`;
                 } else if (data.sinCambios) {
                     this.traspasoMensaje = `SIN CAMBIOS: el pedido nº ${r.PED_pedido ?? '?'} de produccion ya estaba igual`;
                 } else if (modo === 'INSERTAR') {
-                    this.traspasoMensaje = `INSERTADO en produccion: pedido nº ${r.PED_pedido ?? '?'} ` +
+                    this.traspasoMensaje = `INSERTADO en produccion${forzando ? ' (FORZADO, ya habia otro igual)' : ''}: ` +
+                        `pedido nº ${r.PED_pedido ?? '?'} ` +
                         `(PED_idpedido ${r.PED_idpedido ?? '?'}, ejercicio ${r.ejercicio ?? '?'}) ` +
                         `con ${r.lineas?.length ?? 0} linea(s) y ${r.almacenes ?? 0} fila(s) de almacen`;
                 } else {

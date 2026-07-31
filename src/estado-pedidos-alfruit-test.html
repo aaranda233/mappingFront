@@ -497,8 +497,8 @@
 
               <div class="trBotones">
                 <button type="button" :disabled="!traspasoListo()" @click="traspasoInsertar()"
-                  :class="traspasoUltimo && traspasoUltimo.accion === 'INSERTAR' ? (traspasoUltimo.ok ? 'trOk' : 'trErr') : ''">
-                  INSERTAR
+                  :class="traspasoForzar ? 'trErr' : (traspasoUltimo && traspasoUltimo.accion === 'INSERTAR' ? (traspasoUltimo.ok ? 'trOk' : 'trErr') : '')"
+                  x-text="traspasoForzar ? 'INSERTAR IGUALMENTE' : 'INSERTAR'">
                 </button>
                 <button type="button" :disabled="!traspasoListo()" @click="traspasoModificarClick()"
                   :class="traspasoUltimo && traspasoUltimo.accion === 'MODIFICAR' ? (traspasoUltimo.ok ? 'trOk' : 'trErr') : 'trMod'">

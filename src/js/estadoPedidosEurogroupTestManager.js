@@ -271,6 +271,8 @@ export default function estadoPedidosEurogroupTestManager() {
 
         diffH(field) {
             if (!this.pedidoDetail || !this.pedidoDetailProd) return false;
+            // Identidad del pedido: difiere siempre por diseño, no es una diferencia real
+            if (field === 'PED_pedido' || field === 'PED_fechapedido') return false;
             return this._normalize(this.pedidoDetail[field]) !== this._normalize(this.pedidoDetailProd[field]);
         },
 
