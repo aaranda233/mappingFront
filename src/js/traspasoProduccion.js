@@ -85,6 +85,9 @@ export default function traspasoProduccion() {
                 }
                 this.traspasoAnalisis = data;
                 this.traspasoForm.ejercicio = String(data.ejercicioDestino ?? '');
+                // La traza del analisis se deja disponible ya, sin pulsar nada: es la que
+                // explica POR QUE dice que casa o que no casa.
+                this.traspasoTraza = Array.isArray(data.traza) ? data.traza : [];
                 console.log(`[traspaso] analisis: modo=${data.modo} candidatos=${data.candidatos?.length} destino=${data.motorDestino}`);
 
                 // Si casa con uno y el panel de PRODUCCION no lo encontro (la busqueda del
