@@ -21,6 +21,10 @@ export default function traspasoProduccion() {
         // El ultimo INSERTAR se rechazo por duplicado: el siguiente clic lo fuerza.
         traspasoForzar: false,
         traspasoForm: { ejercicio: '', numeroPedido: '', idPedido: '' },
+        // PDF firmado que el traspaso acaba de archivar, para ofrecer imprimirlo.
+        // { idnuxeo, codigo } o null si no se archivo nada.
+        traspasoDoc: null,
+        traspasoImprimiendo: false,
         _traspasoItem: null,
         _traspasoAnalisis: null,
 
@@ -32,6 +36,8 @@ export default function traspasoProduccion() {
             this.traspasoMensajeOk = true;
             this.traspasoForzar = false;
             this.traspasoForm = { ejercicio: '', numeroPedido: '', idPedido: '' };
+            this.traspasoDoc = null;
+            this.traspasoImprimiendo = false;
             this._traspasoItem = item;
             this._traspasoAnalisis = null;
         },
@@ -195,6 +201,10 @@ export default function traspasoProduccion() {
                             }
                         } catch (e) { console.warn('[traspaso] no se pudo recargar el panel de produccion', e); }
                     }
+                    // Si se ha archivado el pedido firmado, ofrecer imprimirlo. Vale
+                    // igual para INSERTAR y para MODIFICAR: en los dos casos el
+                    // documento se re-sella con el numero de produccion.
+                    this._traspasoPrepararImpresion(r.documental);
                 }
             } catch (err) {
                 console.error(`[traspaso] ${modo} ERROR de red`, err);
@@ -202,6 +212,87 @@ export default function traspasoProduccion() {
             } finally {
                 this.traspasoEnCurso = false;
             }
+        },
+
+        /**
+         * Deja preparado el aviso de "imprimir el pedido firmado" si el traspaso ha
+         * archivado el documento. Solo se ofrece cuando el barcode se ha re-sellado
+         * con el numero de produccion: imprimir un pedido cuyo codigo apunta al de
+         * test es peor que no imprimirlo, porque en almacen se escanea y abre otro.
+         */
+        _traspasoPrepararImpresion(documental) {
+            this.traspasoDoc = null;
+            if (!documental) return;
+            if (!documental.ok) {
+                console.warn(`[traspaso] no hay pedido firmado que imprimir: ${documental.motivo || 'documental no archivado'}`);
+                return;
+            }
+            if (!documental.resellado?.ok) {
+                console.warn('[traspaso] no se ofrece imprimir: el barcode del PDF no se pudo re-sellar ' +
+                             `(${documental.resellado?.motivo}), seguiria con el numero de test`);
+                return;
+            }
+            this.traspasoDoc = { idnuxeo: documental.idnuxeo, codigo: documental.resellado.codigo };
+            console.log(`[traspaso] pedido firmado listo para imprimir: ${documental.idnuxeo}.pdf (barcode ${documental.resellado.codigo})`);
+        },
+
+        /**
+         * Imprime el PDF archivado. Se descarga como blob y se imprime desde un
+         * iframe: el visor del navegador no deja llamar a print() sobre un iframe de
+         * otro origen, y el backend esta en otro host. Con el blob pasa a ser del
+         * mismo origen y print() si funciona.
+         */
+        async traspasoImprimirDoc() {
+            if (!this.traspasoDoc || this.traspasoImprimiendo) return;
+            const { idnuxeo } = this.traspasoDoc;
+            this.traspasoImprimiendo = true;
+            let url = null;
+            try {
+                const res = await fetch(this._traspasoUrl(`documento/${encodeURIComponent(idnuxeo)}`));
+                if (!res.ok) {
+                    const d = await res.json().catch(() => ({}));
+                    throw new Error(d.message || `HTTP ${res.status}`);
+                }
+                url = URL.createObjectURL(await res.blob());
+
+                const iframe = document.createElement('iframe');
+                iframe.style.cssText = 'position:fixed;width:0;height:0;border:0;visibility:hidden';
+                iframe.src = url;
+                await new Promise((resolve, reject) => {
+                    iframe.onload = resolve;
+                    iframe.onerror = () => reject(new Error('el visor no pudo cargar el PDF'));
+                    document.body.appendChild(iframe);
+                });
+                try {
+                    iframe.contentWindow.focus();
+                    iframe.contentWindow.print();
+                } catch (e) {
+                    // Algun navegador no deja imprimir desde el iframe: se abre en
+                    // una pestaña para que se pueda imprimir a mano.
+                    console.warn('[traspaso] print() desde el iframe fallo, abro el PDF en una pestaña', e);
+                    window.open(url, '_blank');
+                }
+                console.log(`[traspaso] enviado a imprimir ${idnuxeo}.pdf`);
+                // El blob y el iframe tienen que sobrevivir al dialogo de impresion:
+                // liberarlos antes deja la vista previa en blanco.
+                setTimeout(() => {
+                    iframe.remove();
+                    URL.revokeObjectURL(url);
+                }, 60000);
+                this.traspasoDoc = null;
+            } catch (err) {
+                if (url) URL.revokeObjectURL(url);
+                console.error(`[traspaso] no se pudo imprimir ${idnuxeo}.pdf: ${err.message}`, err);
+                this.traspasoMensaje = `No se pudo abrir el pedido firmado para imprimir: ${err.message}`;
+                this.traspasoMensajeOk = false;
+            } finally {
+                this.traspasoImprimiendo = false;
+            }
+        },
+
+        traspasoNoImprimir() {
+            if (this.traspasoDoc) console.log(`[traspaso] no se imprime ${this.traspasoDoc.idnuxeo}.pdf`);
+            this.traspasoDoc = null;
         }
     };
 }
