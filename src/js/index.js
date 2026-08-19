@@ -36,6 +36,8 @@ import estadoPedidosLehmanManager from "./estadoPedidosLehmanManager.js";
 import estadoPedidosLehmanTestManager from "./estadoPedidosLehmanTestManager.js";
 import estadoPedidosDaifresshManager from "./estadoPedidosDaifresshManager.js";
 import estadoPedidosDaifresshTestManager from "./estadoPedidosDaifresshTestManager.js";
+import estadoPedidosGarcialaxManager from "./estadoPedidosGarcialaxManager.js";
+import estadoPedidosGarcialaxTestManager from "./estadoPedidosGarcialaxTestManager.js";
 import previewLehmanManager from "./previewLehmanManager.js";
 import adminManager from "./adminManager.js";
 import presentacionesManager from "./presentacionesManager.js";
@@ -43,6 +45,7 @@ import direccionesManager from "./direccionesManager.js";
 import tutorialGuide from "./tutorialGuide.js";
 import previewIberianaManager from "./previewIberianaManager.js";
 import greenyardManager from "./greenyardManager.js";
+import previewGarcialaxManager from "./previewGarcialaxManager.js";
 import chatbotManager from "./chatbotManager.js";
 
 // Salvaguarda: si /env.js no se cargó (404, ConfigMap ausente en dev…),
@@ -74,7 +77,10 @@ window.estadoPedidosLehmanManager = estadoPedidosLehmanManager;
 window.estadoPedidosLehmanTestManager = estadoPedidosLehmanTestManager;
 window.estadoPedidosDaifresshManager = estadoPedidosDaifresshManager;
 window.estadoPedidosDaifresshTestManager = estadoPedidosDaifresshTestManager;
+window.estadoPedidosGarcialaxManager = estadoPedidosGarcialaxManager;
+window.estadoPedidosGarcialaxTestManager = estadoPedidosGarcialaxTestManager;
 window.previewLehmanManager = previewLehmanManager;
+window.previewGarcialaxManager = previewGarcialaxManager;
 window.adminManager = adminManager;
 window.tutorialGuide = tutorialGuide;
 window.chatbotManager = chatbotManager;
@@ -106,6 +112,8 @@ Alpine.store("global").fetchEstadoPedidosLehman(); // Initial fetch estado pedid
 Alpine.store("global").fetchEstadoPedidosLehmanTest(); // Initial fetch estado pedidos LEHMANN TEST
 Alpine.store("global").fetchEstadoPedidosDaifressh(); // Initial fetch estado pedidos DAIFRESSH
 Alpine.store("global").fetchEstadoPedidosDaifresshTest(); // Initial fetch estado pedidos DAIFRESSH TEST
+Alpine.store("global").fetchEstadoPedidosGarcialax(); // Initial fetch estado pedidos GARCIA-LAX
+Alpine.store("global").fetchEstadoPedidosGarcialaxTest(); // Initial fetch estado pedidos GARCIA-LAX TEST
 Alpine.store("global").fetchGreenyardHealth(); // Initial ping al parser Greenyard (piloto)
 setInterval(() => Alpine.store("global").fetchCounts(), 30000); // Refresh every 30s
 setInterval(() => Alpine.store("global").fetchEstadoPedidos(), 1000); // Refresh estado pedidos EDEKA every 1s
@@ -136,6 +144,8 @@ setInterval(() => Alpine.store("global").fetchEstadoPedidosLehman(), 1000); // R
 setInterval(() => Alpine.store("global").fetchEstadoPedidosLehmanTest(), 1000); // Refresh estado pedidos LEHMANN TEST every 1s
 setInterval(() => Alpine.store("global").fetchEstadoPedidosDaifressh(), 1000); // Refresh estado pedidos DAIFRESSH every 1s
 setInterval(() => Alpine.store("global").fetchEstadoPedidosDaifresshTest(), 1000); // Refresh estado pedidos DAIFRESSH TEST every 1s
+setInterval(() => Alpine.store("global").fetchEstadoPedidosGarcialax(), 1000); // Refresh estado pedidos GARCIA-LAX every 1s
+setInterval(() => Alpine.store("global").fetchEstadoPedidosGarcialaxTest(), 1000); // Refresh estado pedidos GARCIA-LAX TEST every 1s
 setInterval(() => Alpine.store("global").fetchGreenyardHealth(), 5000); // Ping parser Greenyard cada 5s (piloto)
 
 Alpine.start();

@@ -38,6 +38,10 @@ export default {
         this.fetchEstadoPedidosImgTest();
         this.fetchEstadoPedidosLehman();
         this.fetchEstadoPedidosLehmanTest();
+        this.fetchEstadoPedidosDaifressh();
+        this.fetchEstadoPedidosDaifresshTest();
+        this.fetchEstadoPedidosGarcialax();
+        this.fetchEstadoPedidosGarcialaxTest();
     },
     get bioCentro() {
         if (this.mostrarTodos) return null;
@@ -123,6 +127,14 @@ export default {
         pilotColor: 'gray'
     },
     estadoPedidosDaifresshTest: {
+        current: null,
+        pilotColor: 'gray'
+    },
+    estadoPedidosGarcialax: {
+        current: null,
+        pilotColor: 'gray'
+    },
+    estadoPedidosGarcialaxTest: {
         current: null,
         pilotColor: 'gray'
     },
@@ -534,6 +546,42 @@ export default {
             }
         } catch (e) {
             console.error("Error fetching estado pedidos daifressh test", e);
+        }
+    },
+    async fetchEstadoPedidosGarcialax() {
+        try {
+            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-garcialax/actual${this._centroQuery()}`);
+            const data = await res.json();
+            this.estadoPedidosGarcialax.current = data.current;
+            if (!data.current) {
+                this.estadoPedidosGarcialax.pilotColor = 'gray';
+            } else if (data.current.estado === 'procesando') {
+                this.estadoPedidosGarcialax.pilotColor = 'yellow';
+            } else if (data.current.estado === 'error') {
+                this.estadoPedidosGarcialax.pilotColor = 'red';
+            } else {
+                this.estadoPedidosGarcialax.pilotColor = 'gray';
+            }
+        } catch (e) {
+            console.error("Error fetching estado pedidos garcialax", e);
+        }
+    },
+    async fetchEstadoPedidosGarcialaxTest() {
+        try {
+            const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/estado-pedidos-garcialax-test/actual${this._centroQuery()}`);
+            const data = await res.json();
+            this.estadoPedidosGarcialaxTest.current = data.current;
+            if (!data.current) {
+                this.estadoPedidosGarcialaxTest.pilotColor = 'gray';
+            } else if (data.current.estado === 'procesando') {
+                this.estadoPedidosGarcialaxTest.pilotColor = 'yellow';
+            } else if (data.current.estado === 'error') {
+                this.estadoPedidosGarcialaxTest.pilotColor = 'red';
+            } else {
+                this.estadoPedidosGarcialaxTest.pilotColor = 'gray';
+            }
+        } catch (e) {
+            console.error("Error fetching estado pedidos garcialax test", e);
         }
     }
 }
