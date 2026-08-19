@@ -116,8 +116,13 @@
           </svg>
           <span :class="sidebarToggle ? 'lg:hidden' : ''">Estado Pedidos</span>
         </a>
+        <!-- Abierto va SIN tope de altura: el aside ya es h-screen overflow-y-auto, asi
+             que de lo que no cabe se encarga su barra de scroll. Antes habia un
+             tope fijo de 40rem y, al pasar la lista de 640px con GARCIA-LAX (11 clientes),
+             el overflow-hidden se comia sus dos sub-lineas sin avisar. No volver a poner
+             un numero aqui: crece con cada cliente nuevo y vuelve a recortar. -->
         <div class="overflow-hidden transition-all duration-300 ease-in-out"
-          :class="selected === 'EstadoPedidos' ? 'max-h-[40rem]' : 'max-h-0'">
+          :class="selected === 'EstadoPedidos' ? 'max-h-none' : 'max-h-0'">
           <ul class="flex flex-col gap-3 mt-2 pl-8 text-sm text-gray-500">
             <li>
               <a href="estado-pedidos.html" class="hover:text-[#003a4b] flex justify-between items-center"
