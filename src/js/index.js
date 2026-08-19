@@ -115,6 +115,7 @@ Alpine.store("global").fetchEstadoPedidosDaifresshTest(); // Initial fetch estad
 Alpine.store("global").fetchEstadoPedidosGarcialax(); // Initial fetch estado pedidos GARCIA-LAX
 Alpine.store("global").fetchEstadoPedidosGarcialaxTest(); // Initial fetch estado pedidos GARCIA-LAX TEST
 Alpine.store("global").fetchGreenyardHealth(); // Initial ping al parser Greenyard (piloto)
+Alpine.store("global").fetchLaxHealth(); // Initial ping al parser Garcia Lax (piloto)
 setInterval(() => Alpine.store("global").fetchCounts(), 30000); // Refresh every 30s
 setInterval(() => Alpine.store("global").fetchEstadoPedidos(), 1000); // Refresh estado pedidos EDEKA every 1s
 setInterval(() => Alpine.store("global").fetchEstadoPedidosEurogroup(), 1000); // Refresh estado pedidos EUROGROUP every 1s
@@ -147,6 +148,7 @@ setInterval(() => Alpine.store("global").fetchEstadoPedidosDaifresshTest(), 1000
 setInterval(() => Alpine.store("global").fetchEstadoPedidosGarcialax(), 1000); // Refresh estado pedidos GARCIA-LAX every 1s
 setInterval(() => Alpine.store("global").fetchEstadoPedidosGarcialaxTest(), 1000); // Refresh estado pedidos GARCIA-LAX TEST every 1s
 setInterval(() => Alpine.store("global").fetchGreenyardHealth(), 5000); // Ping parser Greenyard cada 5s (piloto)
+setInterval(() => Alpine.store("global").fetchLaxHealth(), 5000); // Ping parser Garcia Lax cada 5s (piloto)
 
 Alpine.start();
 

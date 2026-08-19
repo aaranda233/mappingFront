@@ -141,6 +141,9 @@ export default {
     greenyard: {
         pilotColor: 'gray'  // gray = sin comprobar, green = parser activo, red = inactivo
     },
+    lax: {
+        pilotColor: 'gray'  // gray = sin comprobar, green = parser activo, red = inactivo
+    },
     async fetchGreenyardHealth() {
         // Se consulta al parser a través del backend (proxy /api/mapping/greenyard),
         // porque el navegador no alcanza la ClusterIP interna del parser.
@@ -154,6 +157,21 @@ export default {
             this.greenyard.pilotColor = res.ok ? 'green' : 'red';
         } catch (e) {
             this.greenyard.pilotColor = 'red';
+        }
+    },
+    async fetchLaxHealth() {
+        // Idem greenyard: el parser Garcia Lax es ClusterIP y se consulta por el proxy
+        // del backend (/api/mapping/lax).
+        const backend = window.env?.IP_BACKEND;
+        if (!backend) { this.lax.pilotColor = 'gray'; return; }
+        try {
+            const ctrl = new AbortController();
+            const t = setTimeout(() => ctrl.abort(), 4000);
+            const res = await fetch(`http://${backend}/api/mapping/lax/health`, { signal: ctrl.signal });
+            clearTimeout(t);
+            this.lax.pilotColor = res.ok ? 'green' : 'red';
+        } catch (e) {
+            this.lax.pilotColor = 'red';
         }
     },
     async fetchUserInfo() {

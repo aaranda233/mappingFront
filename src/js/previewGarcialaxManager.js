@@ -1,93 +1,120 @@
 /**
- * Preview PDF de GARCIA-LAX.
+ * Preview PDF de GARCIA-LAX: ver cómo queda repartido el documento, sin enviar nada.
  *
- * Dos cosas lo diferencian del preview de Lehman:
+ * Calcado del de greenyard (`greenyardManager`), con dos diferencias:
  *
- * 1. Un PDF de Garcia Lax NO es un pedido, son varios: la tabla trae una columna
- *    "Position" y cada Position es un pedido independiente en el ERP, con su
- *    referencia, su destino y su fecha de salida. Por eso /preview devuelve
- *    { pedidos: [...] } y aquí se itera, con un bloque por pedido.
+ * 1. No hay alta de claves. Greenyard reparte por "casting" y necesita mantener la tabla
+ *    Casting -> Grupo; en Garcia Lax el reparto sale del propio documento (una "Position"
+ *    por pedido, con su destino), así que no hay nada que dar de alta.
  *
- * 2. El parser es un Service ClusterIP: el navegador no lo alcanza. Se habla con él
- *    a través del proxy del backend (/api/mapping/lax/*), igual que con greenyard.
+ * 2. En greenyard `/split` ES el endpoint de producción. Aquí el de producción sigue siendo
+ *    `/parse-temporal` (lo llama outlook-garcialax) y `/split` solo mira. Eso sí: el PDF que
+ *    devuelve se calcula con la MISMA regla que `/parse-temporal` (recorte si el documento
+ *    se parte, original si sale un único pedido), así que lo que se ve aquí es lo que de
+ *    verdad se enviaría.
+ *
+ * Al parser se llega por el proxy del backend (/api/mapping/lax), no directo: lax-parser es
+ * un Service ClusterIP y el navegador no lo alcanza.
  */
 export default function previewGarcialaxManager() {
     return {
-        // estado UI
+        // ── estado UI ────────────────────────────────────────────────
         dragging: false,
         loading: false,
         fileName: null,
         fileObj: null,
         error: null,
 
-        // resultado del parser: { ok, n_pedidos, pedidos: [...], resultado: {...} }
+        // PDF original (mitad izquierda)
+        originalUrl: null,
+
+        // resultado del /split
         resultado: null,
 
-        // Pedido de PRODUCCION que casa con cada Position, indexado por posición del
-        // array de pedidos: { 0: {header, lineas}, 1: null, ... }
-        pedidosERP: {},
-        loadingERP: false,
+        // modal del PDF (partido u original)
+        modalOpen: false,
+        modalPedido: null,
+        modalUrl: null,
+        modalTitle: '',
+        modalSub: '',
+
+        // blobs creados (para revocar y no fugar memoria)
+        _blobUrls: [],
 
         init() {},
 
         parserBase() {
-            // El parser vive en la ClusterIP; el backend hace de proxy de paso.
+            // Se accede al parser a través del backend (proxy /api/mapping/lax):
+            // el navegador solo habla con el backend, que sí alcanza la ClusterIP del parser.
             return `${window.env?.IP_BACKEND}/api/mapping/lax`;
         },
 
-        // ── Drag & Drop ──────────────────────────────────────────────
-        onDragOver(e) {
-            e.preventDefault();
-            this.dragging = true;
-        },
-        onDragLeave() {
-            this.dragging = false;
-        },
+        // ── Drag & Drop / selección ──────────────────────────────────
+        onDragOver(e) { e.preventDefault(); this.dragging = true; },
+        onDragLeave() { this.dragging = false; },
         onDrop(e) {
             e.preventDefault();
             this.dragging = false;
             this._setFile(e.dataTransfer.files[0]);
         },
-        onFileSelect(e) {
-            this._setFile(e.target.files[0]);
-        },
+        onFileSelect(e) { this._setFile(e.target.files[0]); },
 
         _setFile(file) {
             if (file && file.type === 'application/pdf') {
                 this.fileObj = file;
                 this.fileName = file.name;
                 this.error = null;
+                this._clearResultado();
+                if (this.originalUrl) URL.revokeObjectURL(this.originalUrl);
+                this.originalUrl = URL.createObjectURL(file);
             } else if (file) {
                 this.error = 'Solo se aceptan ficheros PDF.';
             }
         },
 
-        // ── Analizar ─────────────────────────────────────────────────
-        async analizar() {
-            if (!this.fileObj) {
-                this.error = 'Selecciona un PDF primero.';
-                return;
-            }
+        // ── base64 -> blob URL (visor robusto en iframe) ─────────────
+        _b64ToBlobUrl(b64) {
+            const bin = atob(b64);
+            const bytes = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+            const url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+            this._blobUrls.push(url);
+            return url;
+        },
+
+        _clearResultado() {
+            this.resultado = null;
+            this._blobUrls.forEach(u => URL.revokeObjectURL(u));
+            this._blobUrls = [];
+            this.closeModal();
+        },
+
+        // ── Partir pedido (POST /split) ──────────────────────────────
+        async partir() {
+            if (!this.fileObj) { this.error = 'Selecciona un PDF primero.'; return; }
             this.loading = true;
             this.error = null;
-            this.resultado = null;
-            this.pedidosERP = {};
+            this._clearResultado();
 
             try {
                 const formData = new FormData();
                 formData.append('file', this.fileObj);
 
-                const res = await fetch(`http://${this.parserBase()}/preview`, {
+                const res = await fetch(`http://${this.parserBase()}/split`, {
                     method: 'POST',
                     body: formData
                 });
-
                 const data = await res.json();
+
                 if (!res.ok || !data.ok) {
                     this.error = data.error || `Error ${res.status}`;
                 } else {
+                    // convertir cada PDF base64 a blob URL y soltar el base64
+                    data.pedidos.forEach(p => {
+                        p.url = p.file ? this._b64ToBlobUrl(p.file) : null;
+                        p.file = null;
+                    });
                     this.resultado = data;
-                    this.buscarPedidosERP();
                 }
             } catch (e) {
                 this.error = 'No se pudo conectar con el parser: ' + e.message;
@@ -96,99 +123,66 @@ export default function previewGarcialaxManager() {
             }
         },
 
-        /**
-         * Busca en PRODUCCION el pedido de cada Position. Garcia Lax empareja por
-         * PED_referencia (BESTELLNR va vacío), que es justo lo que devuelve el parser
-         * en cabecera.ref. Un 404 significa "todavía no está en producción".
-         */
-        async buscarPedidosERP() {
-            const pedidos = this.resultado?.pedidos || [];
-            const clienteId = pedidos[0]?.cabecera?.cliente?.id;
-            if (!clienteId) return;
-
-            this.loadingERP = true;
-            const base = window.env?.IP_BACKEND || 'localhost';
-            try {
-                await Promise.all(pedidos.map(async (p, idx) => {
-                    const ref = p?.cabecera?.ref;
-                    if (!ref) return;
-                    const params = new URLSearchParams({ cliente: clienteId, referencia: ref });
-                    const destino = p?.cabecera?.direccion?.id;
-                    if (destino) params.set('iddestino', destino);
-                    try {
-                        const res = await fetch(`http://${base}/api/mapping/estado-pedidos-garcialax-test/pedido-prod?${params}`);
-                        if (res.ok) this.pedidosERP[idx] = await res.json();
-                    } catch (e) {
-                        console.error('Error buscando pedido ERP (Position ' + (p?.cabecera?.position || idx) + '):', e);
-                    }
-                }));
-            } finally {
-                this.loadingERP = false;
-            }
+        // ── Modal ────────────────────────────────────────────────────
+        openModal(pedido) {
+            if (!pedido.url) return;   // sin recorte no hay nada que ver
+            this.modalPedido = pedido;
+            this.modalUrl = pedido.url;
+            this.modalTitle = pedido.nombre || pedido.ref_pedido || 'Pedido';
+            this.modalSub = [
+                'Position ' + (pedido.position || '—'),
+                pedido.n_lineas + (pedido.n_lineas === 1 ? ' línea' : ' líneas'),
+                pedido.total_bultos + ' bultos',
+                pedido.recorte ? 'recorte' : 'PDF original'
+            ].join(' · ');
+            this.modalOpen = true;
         },
-
-        erpDe(idx) {
-            return this.pedidosERP[idx] ?? null;
+        openOriginal() {
+            if (!this.originalUrl) return;
+            this.modalPedido = null;
+            this.modalUrl = this.originalUrl;
+            this.modalTitle = 'PDF original';
+            this.modalSub = this.fileName || '';
+            this.modalOpen = true;
         },
-
-        erpLinea(idx, resolucion) {
-            const erp = this.erpDe(idx);
-            if (!erp?.lineas || !resolucion?.id_presentacion) return null;
-            // Se casa por GenSal, no por índice: el ERP puede tener las líneas en otro orden.
-            return erp.lineas.find(l => l.PEL_idgensal === resolucion.id_presentacion) ?? null;
-        },
-
-        erpDiffs(l, erpL) {
-            if (!erpL || !l?.resolucion) return null;
-            const r = l.resolucion;
-            const diffs = [];
-            if (erpL.PEL_idgensal !== r.id_presentacion)
-                diffs.push({ campo: 'Presentación', erp: erpL.PEL_idgensal + (erpL.Presentacion ? ' — ' + erpL.Presentacion : ''), nuevo: r.id_presentacion + (r.nombre_gensal ? ' — ' + r.nombre_gensal : '') });
-            if (erpL.PEL_idgenero !== r.id_genero)
-                diffs.push({ campo: 'Género', erp: erpL.PEL_idgenero + (erpL.NomGenero ? ' — ' + erpL.NomGenero : ''), nuevo: r.id_genero + (r.nom_genero ? ' — ' + r.nom_genero : '') });
-            if (erpL.PEL_idtipoconfeccion !== r.id_tipo_confeccion)
-                diffs.push({ campo: 'Confección', erp: erpL.PEL_idtipoconfeccion + (erpL.NomConfeccion ? ' — ' + erpL.NomConfeccion : ''), nuevo: r.id_tipo_confeccion });
-            if (erpL.PEL_idcategoria !== r.id_categoria)
-                diffs.push({ campo: 'Categoría', erp: erpL.PEL_idcategoria + (erpL.NomCategoria ? ' — ' + erpL.NomCategoria : ''), nuevo: r.id_categoria + (r.nom_cate ? ' — ' + r.nom_cate : '') });
-            return diffs;
+        closeModal() {
+            this.modalOpen = false;
+            this.modalPedido = null;
+            this.modalUrl = null;
+            this.modalTitle = '';
+            this.modalSub = '';
         },
 
         reset() {
             this.fileObj = null;
             this.fileName = null;
-            this.resultado = null;
-            this.pedidosERP = {};
             this.error = null;
+            if (this.originalUrl) { URL.revokeObjectURL(this.originalUrl); this.originalUrl = null; }
+            this._clearResultado();
         },
 
         // ── Helpers de UI ────────────────────────────────────────────
-        lineasOk(pedido) {
-            return (pedido?.lineas || []).filter(l => l.ok);
+
+        /**
+         * El subtítulo del documento decide qué hace el PHP con él, así que se avisa:
+         * un 'cambio' es la revisión de un pedido ya enviado y NO debería dar de alta uno
+         * nuevo; un 'matricula' solo asigna el camión.
+         */
+        tipoDoc() {
+            return this.resultado?.tipo_documento || 'pedido';
         },
-        totalKgNetos(pedido) {
-            return (pedido?.lineas || [])
-                .reduce((s, l) => s + (l.resolucion?.kg_netos || 0), 0)
-                .toFixed(2);
+        tipoDocEsAviso() {
+            return this.tipoDoc() !== 'pedido';
         },
-        totalKgBrutos(pedido) {
-            return (pedido?.lineas || [])
-                .reduce((s, l) => s + (l.resolucion?.kg_brutos || 0), 0)
-                .toFixed(2);
+        tipoDocTexto() {
+            switch (this.tipoDoc()) {
+                case 'cambio':    return 'CAMBIO — revisión de un pedido ya enviado, no da de alta uno nuevo';
+                case 'matricula': return 'MATRÍCULA — solo asigna el camión al pedido ya existente';
+                default:          return 'PEDIDO nuevo';
+            }
         },
-        totalBultos(pedido) {
-            return (pedido?.lineas || []).reduce((s, l) => s + (l.raw?.bultos || 0), 0);
-        },
-        // Totales del documento completo (todas las Positions)
-        docKgNetos() {
-            return (this.resultado?.pedidos || [])
-                .reduce((s, p) => s + parseFloat(this.totalKgNetos(p)), 0)
-                .toFixed(2);
-        },
-        docLineas() {
-            return (this.resultado?.pedidos || []).reduce((s, p) => s + (p.lineas?.length || 0), 0);
-        },
-        docLineasOk() {
-            return (this.resultado?.pedidos || []).reduce((s, p) => s + this.lineasOk(p).length, 0);
+        sinRecorte() {
+            return (this.resultado?.pedidos || []).filter(p => !p.url).length;
         }
     };
 }
