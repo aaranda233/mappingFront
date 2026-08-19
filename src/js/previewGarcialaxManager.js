@@ -8,10 +8,10 @@
  *    por pedido, con su destino), así que no hay nada que dar de alta.
  *
  * 2. En greenyard `/split` ES el endpoint de producción. Aquí el de producción sigue siendo
- *    `/parse-temporal` (lo llama outlook-garcialax) y `/split` solo mira. Eso sí: el PDF que
- *    devuelve se calcula con la MISMA regla que `/parse-temporal` (recorte si el documento
- *    se parte, original si sale un único pedido), así que lo que se ve aquí es lo que de
- *    verdad se enviaría.
+ *    `/parse-temporal` (lo llama outlook-garcialax) y `/split` solo mira. La maqueta se genera
+ *    SIEMPRE, también con un destino único: es un visor, y si devolviera lo que
+ *    `/parse-temporal` manda (el PDF original cuando no parte) no habría nada que revisar.
+ *    Cada pedido trae `en_produccion` con lo que se enviaría de verdad.
  *
  * Al parser se llega por el proxy del backend (/api/mapping/lax), no directo: lax-parser es
  * un Service ClusterIP y el navegador no lo alcanza.

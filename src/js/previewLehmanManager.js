@@ -1,74 +1,120 @@
+/**
+ * Preview PDF de GARCIA-LAX: ver cómo queda repartido el documento, sin enviar nada.
+ *
+ * Calcado del de greenyard (`greenyardManager`), con dos diferencias:
+ *
+ * 1. No hay alta de claves. Greenyard reparte por "casting" y necesita mantener la tabla
+ *    Casting -> Grupo; en Lehmann el reparto sale del propio documento (el destino viene explícito
+ *    en cada línea), así que no hay nada que dar de alta.
+ *
+ * 2. En greenyard `/split` ES el endpoint de producción. Aquí el de producción sigue siendo
+ *    `/parse-temporal` (lo llama outlook-lehman) y `/split` solo mira. La maqueta se genera
+ *    SIEMPRE, también con un destino único: es un visor, y si devolviera lo que
+ *    `/parse-temporal` manda (el PDF original cuando no parte) no habría nada que revisar.
+ *    Cada pedido trae `en_produccion` con lo que se enviaría de verdad.
+ *
+ * Al parser se llega por el proxy del backend (/api/mapping/lehman), no directo: lehman-parser es
+ * un Service ClusterIP y el navegador no lo alcanza.
+ */
 export default function previewLehmanManager() {
     return {
-        // estado UI
+        // ── estado UI ────────────────────────────────────────────────
         dragging: false,
         loading: false,
         fileName: null,
         fileObj: null,
         error: null,
 
-        // resultado
+        // PDF original (mitad izquierda)
+        originalUrl: null,
+
+        // resultado del /split
         resultado: null,
-        pedidoERP: null,
-        loadingERP: false,
+
+        // modal del PDF (partido u original)
+        modalOpen: false,
+        modalPedido: null,
+        modalUrl: null,
+        modalTitle: '',
+        modalSub: '',
+
+        // blobs creados (para revocar y no fugar memoria)
+        _blobUrls: [],
 
         init() {},
 
-        // ── Drag & Drop ──────────────────────────────────────────────
-        onDragOver(e) {
-            e.preventDefault();
-            this.dragging = true;
+        parserBase() {
+            // Se accede al parser a través del backend (proxy /api/mapping/lehman):
+            // el navegador solo habla con el backend, que sí alcanza la ClusterIP del parser.
+            return `${window.env?.IP_BACKEND}/api/mapping/lehman`;
         },
-        onDragLeave() {
-            this.dragging = false;
-        },
+
+        // ── Drag & Drop / selección ──────────────────────────────────
+        onDragOver(e) { e.preventDefault(); this.dragging = true; },
+        onDragLeave() { this.dragging = false; },
         onDrop(e) {
             e.preventDefault();
             this.dragging = false;
-            const file = e.dataTransfer.files[0];
+            this._setFile(e.dataTransfer.files[0]);
+        },
+        onFileSelect(e) { this._setFile(e.target.files[0]); },
+
+        _setFile(file) {
             if (file && file.type === 'application/pdf') {
                 this.fileObj = file;
                 this.fileName = file.name;
                 this.error = null;
-            } else {
+                this._clearResultado();
+                if (this.originalUrl) URL.revokeObjectURL(this.originalUrl);
+                this.originalUrl = URL.createObjectURL(file);
+            } else if (file) {
                 this.error = 'Solo se aceptan ficheros PDF.';
             }
         },
-        onFileSelect(e) {
-            const file = e.target.files[0];
-            if (file) {
-                this.fileObj = file;
-                this.fileName = file.name;
-                this.error = null;
-            }
+
+        // ── base64 -> blob URL (visor robusto en iframe) ─────────────
+        _b64ToBlobUrl(b64) {
+            const bin = atob(b64);
+            const bytes = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+            const url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+            this._blobUrls.push(url);
+            return url;
         },
 
-        // ── Analizar ─────────────────────────────────────────────────
-        async analizar() {
-            if (!this.fileObj) {
-                this.error = 'Selecciona un PDF primero.';
-                return;
-            }
+        _clearResultado() {
+            this.resultado = null;
+            this._blobUrls.forEach(u => URL.revokeObjectURL(u));
+            this._blobUrls = [];
+            this.closeModal();
+        },
+
+        // ── Partir pedido (POST /split) ──────────────────────────────
+        async partir() {
+            if (!this.fileObj) { this.error = 'Selecciona un PDF primero.'; return; }
             this.loading = true;
             this.error = null;
-            this.resultado = null;
+            this._clearResultado();
 
             try {
                 const formData = new FormData();
                 formData.append('file', this.fileObj);
 
-                const base = window.env?.IP_LEHMAN_PARSER || 'localhost:5000';
-                const res = await fetch(`http://${base}/preview`, {
+                const res = await fetch(`http://${this.parserBase()}/split`, {
                     method: 'POST',
                     body: formData
                 });
-
                 const data = await res.json();
+
                 if (!res.ok || !data.ok) {
                     this.error = data.error || `Error ${res.status}`;
                 } else {
+                    // convertir cada PDF base64 a blob URL y soltar el base64
+                    data.pedidos.forEach(p => {
+                        p.url = p.file ? this._b64ToBlobUrl(p.file) : null;
+                        p.file = null;
+                    });
                     this.resultado = data;
-                    this.buscarPedidoERP();
                 }
             } catch (e) {
                 this.error = 'No se pudo conectar con el parser: ' + e.message;
@@ -77,74 +123,66 @@ export default function previewLehmanManager() {
             }
         },
 
-        async buscarPedidoERP() {
-            const bestellNr = this.resultado?.cabecera?.bestellNr;
-            const clienteId = this.resultado?.cabecera?.cliente?.id;
-            if (!bestellNr || !clienteId) return;
-            this.loadingERP = true;
-            this.pedidoERP = null;
-            try {
-                const params = new URLSearchParams({ bestellnr: bestellNr, cliente: clienteId, centro: 10 });
-                const base = window.env?.IP_BACKEND || 'localhost';
-                const res = await fetch(`http://${base}/api/mapping/estado-pedidos-lehman-test/pedido-prod?${params}`);
-                if (res.ok) this.pedidoERP = await res.json();
-                // 404 = todavía no insertado en producción, ignorar
-            } catch (e) {
-                console.error('Error buscando pedido ERP:', e);
-            } finally {
-                this.loadingERP = false;
-            }
+        // ── Modal ────────────────────────────────────────────────────
+        openModal(pedido) {
+            if (!pedido.url) return;   // sin recorte no hay nada que ver
+            this.modalPedido = pedido;
+            this.modalUrl = pedido.url;
+            this.modalTitle = pedido.nombre || pedido.ref_pedido || 'Pedido';
+            this.modalSub = [
+                'destino ' + (pedido.position || '—'),
+                pedido.n_lineas + (pedido.n_lineas === 1 ? ' línea' : ' líneas'),
+                pedido.total_bultos + ' bultos',
+                pedido.recorte ? 'recorte' : 'PDF original'
+            ].join(' · ');
+            this.modalOpen = true;
         },
-
-        erpLinea(resolucion) {
-            if (!this.pedidoERP?.lineas || !resolucion?.id_presentacion) return null;
-            // Match by GenSal instead of by index — ERP may store lines in different order than PDF
-            return this.pedidoERP.lineas.find(l => l.PEL_idgensal === resolucion.id_presentacion) ?? null;
+        openOriginal() {
+            if (!this.originalUrl) return;
+            this.modalPedido = null;
+            this.modalUrl = this.originalUrl;
+            this.modalTitle = 'PDF original';
+            this.modalSub = this.fileName || '';
+            this.modalOpen = true;
         },
-
-        erpDiffs(l, erpL) {
-            if (!erpL || !l?.resolucion) return null;
-            const r = l.resolucion;
-            const diffs = [];
-            if (erpL.PEL_idgensal !== r.id_presentacion)
-                diffs.push({ campo: 'Presentación', erp: erpL.PEL_idgensal + (erpL.Presentacion ? ' — ' + erpL.Presentacion : ''), nuevo: r.id_presentacion + (r.nombre_gensal ? ' — ' + r.nombre_gensal : '') });
-            if (erpL.PEL_idgenero !== r.id_genero)
-                diffs.push({ campo: 'Género', erp: erpL.PEL_idgenero + (erpL.NomGenero ? ' — ' + erpL.NomGenero : ''), nuevo: r.id_genero + (r.nom_genero ? ' — ' + r.nom_genero : '') });
-            if (erpL.PEL_idtipoconfeccion !== r.id_tipo_confeccion)
-                diffs.push({ campo: 'Confección', erp: erpL.PEL_idtipoconfeccion + (erpL.NomConfeccion ? ' — ' + erpL.NomConfeccion : ''), nuevo: r.id_tipo_confeccion });
-            if (erpL.PEL_idcategoria !== r.id_categoria)
-                diffs.push({ campo: 'Categoría', erp: erpL.PEL_idcategoria + (erpL.NomCategoria ? ' — ' + erpL.NomCategoria : ''), nuevo: r.id_categoria + (r.nom_cate ? ' — ' + r.nom_cate : '') });
-            return diffs;
+        closeModal() {
+            this.modalOpen = false;
+            this.modalPedido = null;
+            this.modalUrl = null;
+            this.modalTitle = '';
+            this.modalSub = '';
         },
 
         reset() {
             this.fileObj = null;
             this.fileName = null;
-            this.resultado = null;
-            this.pedidoERP = null;
             this.error = null;
+            if (this.originalUrl) { URL.revokeObjectURL(this.originalUrl); this.originalUrl = null; }
+            this._clearResultado();
         },
 
         // ── Helpers de UI ────────────────────────────────────────────
-        badgeOk: 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800',
-        badgeErr: 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800',
-        badgeWarn: 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800',
 
-        lineasOk() {
-            return this.resultado?.lineas?.filter(l => l.ok) || [];
+        /**
+         * El subtítulo del documento decide qué hace el PHP con él, así que se avisa:
+         * un 'cambio' es la revisión de un pedido ya enviado y NO debería dar de alta uno
+         * nuevo; un 'matricula' solo asigna el camión.
+         */
+        tipoDoc() {
+            return this.resultado?.tipo_documento || 'pedido';
         },
-        lineasErr() {
-            return this.resultado?.lineas?.filter(l => !l.ok) || [];
+        tipoDocEsAviso() {
+            return this.tipoDoc() !== 'pedido';
         },
-        totalKgNetos() {
-            return (this.resultado?.lineas || [])
-                .reduce((s, l) => s + (l.resolucion?.kg_netos || 0), 0)
-                .toFixed(2);
+        tipoDocTexto() {
+            switch (this.tipoDoc()) {
+                case 'cambio':    return 'CAMBIO — revisión de un pedido ya enviado, no da de alta uno nuevo';
+                case 'matricula': return 'MATRÍCULA — solo asigna el camión al pedido ya existente';
+                default:          return 'PEDIDO nuevo';
+            }
         },
-        totalKgBrutos() {
-            return (this.resultado?.lineas || [])
-                .reduce((s, l) => s + (l.resolucion?.kg_brutos || 0), 0)
-                .toFixed(2);
+        sinRecorte() {
+            return (this.resultado?.pedidos || []).filter(p => !p.url).length;
         }
     };
 }
