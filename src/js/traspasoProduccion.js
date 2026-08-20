@@ -6,6 +6,10 @@
  * (ejercicio prerellenado; si el pedido casa con uno, tambien el nº) y el mismo boton
  * ejecuta la modificacion.
  *
+ * La UNICA cosa del analisis que se pinta en pantalla es el aviso de candidato debil
+ * (ver traspasoCargarPrevio): es lo que evita duplicar un pedido, y en la consola no
+ * lo mira nadie antes de pulsar INSERTAR.
+ *
  * TODO lo demas (analisis, motor destino, maestros, contadores, SQL, diffs, avisos)
  * va a los logs, no a la pantalla:
  *   - consola del navegador: prefijo [traspaso]
@@ -50,8 +54,10 @@ export default function traspasoProduccion() {
         traspasoListo() { return !!this.pedidoDetail?.PED_idpedido && !this.traspasoEnCurso; },
 
         /**
-         * Se llama al abrir el pedido. Analiza contra produccion solo para dejarlo en
-         * los logs y para prerellenar el formulario; no pinta nada en pantalla.
+         * Se llama al abrir el pedido. Analiza contra produccion para dejarlo en los
+         * logs y para prerellenar el formulario. Lo unico que pinta es el aviso de
+         * candidato debil, cuando no ha casado ninguna referencia pero en produccion
+         * ya hay un pedido al mismo destino y con la misma fecha de salida.
          */
         async traspasoCargarPrevio() {
             const id = this.pedidoDetail?.PED_idpedido;
@@ -71,6 +77,22 @@ export default function traspasoProduccion() {
                 if (Array.isArray(data.traza)) data.traza.forEach(t => console.log(`[traspaso]   +${t.ms}ms [${t.paso}] ${t.detalle}`));
                 if ((data.bloqueos || []).length) console.warn('[traspaso] bloqueos para modificar:', data.bloqueos);
                 if (data.diffs) console.log('[traspaso] diferencias con produccion:', JSON.stringify(data.diffs));
+
+                // Aviso de candidato debil: no ha casado ninguna referencia, pero en
+                // produccion ya hay pedidos de este cliente al mismo destino y con la
+                // misma fecha de salida. No impide INSERTAR: puede ser un pedido nuevo
+                // perfectamente legitimo. Solo obliga a mirarlo antes de pulsar.
+                const debiles = data.candidatosDebiles || [];
+                if (debiles.length > 0) {
+                    console.warn('[traspaso] candidatos debiles (mismo destino y fecha de salida):', JSON.stringify(debiles));
+                    const lista = debiles
+                        .map(c => `nº ${c.PED_pedido} (ref "${(c.PED_referencia || '').trim() || 'vacia'}", ${c.lineas} linea/s)`)
+                        .join(', ');
+                    this.traspasoMensaje = `OJO: ninguna referencia casa, pero en produccion ya hay ${debiles.length} pedido(s) ` +
+                        `de este cliente al mismo destino y con la misma fecha de salida: ${lista}. ` +
+                        `Comprueba que no sea el mismo pedido con la referencia mal escrita antes de INSERTAR.`;
+                    this.traspasoMensajeOk = false;
+                }
 
                 // Si casa con uno y el panel de PRODUCCION no lo encontro (busca por
                 // PED_NumeroPedido, vacio en muchos pedidos), se pinta aqui.
