@@ -202,7 +202,14 @@ export default function estadoPedidosEurogroupTestManager() {
                 const fechapedido = this.pedidoDetail?.PED_fechapedido ? new Date(this.pedidoDetail.PED_fechapedido).toISOString().split('T')[0] : '';
                 const iddestino = this.pedidoDetail?.PED_iddestino;
                 const referencia = this.pedidoDetail?.PED_referencia;
-                if (cliente) {
+                // El analisis del traspaso ya ha resuelto el pedido de produccion: casa por
+                // referencia/BESTELLNR/NumeroPedido admitiendo las variantes que se escriben a
+                // mano. Esta cascada busca por igualdad exacta, asi que devolveria 404 y pondria
+                // prodNotFound=true, borrando de la pantalla el pedido que el traspaso acaba de
+                // pintar: se veia aparecer y desaparecer un segundo despues.
+                if (this.pedidoDetailProd) {
+                    console.log('[PROD] ya resuelto por el analisis del traspaso, no se repite la busqueda');
+                } else if (cliente) {
                     const params = new URLSearchParams();
                     params.set('cliente', cliente);
                     if (bestellnr) params.set('bestellnr', bestellnr);
