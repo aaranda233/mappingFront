@@ -22,8 +22,11 @@ export default function traspasoProduccion() {
         traspasoUltimo: null,   // { accion:'INSERTAR'|'MODIFICAR', ok:boolean }
         traspasoMensaje: '',    // una linea de resultado bajo los botones
         traspasoMensajeOk: true,
-        // El ultimo INSERTAR se rechazo por duplicado: el siguiente clic lo fuerza.
+        // El ultimo INSERTAR se rechazo por duplicado: sale el boton pequeno de forzar.
         traspasoForzar: false,
+        // Los pedidos de produccion que provocaron ese rechazo, para nombrarlos en la
+        // confirmacion antes de duplicar.
+        traspasoCandidatos: [],
         traspasoForm: { ejercicio: '', numeroPedido: '', idPedido: '' },
         // PDF firmado que el traspaso acaba de archivar, para ofrecer imprimirlo.
         // { idnuxeo, codigo } o null si no se archivo nada.
@@ -39,6 +42,7 @@ export default function traspasoProduccion() {
             this.traspasoMensaje = '';
             this.traspasoMensajeOk = true;
             this.traspasoForzar = false;
+            this.traspasoCandidatos = [];
             this.traspasoForm = { ejercicio: '', numeroPedido: '', idPedido: '' };
             this.traspasoDoc = null;
             this.traspasoImprimiendo = false;
@@ -108,9 +112,41 @@ export default function traspasoProduccion() {
             } catch (e) { console.warn('[traspaso] error analizando', e); }
         },
 
-        /** Boton INSERTAR */
+        /**
+         * Boton INSERTAR. Nunca fuerza: si el pedido ya esta en produccion, el backend
+         * responde 409 y aparece el boton pequeno de forzar. Antes este mismo boton se
+         * convertia en el forzado, y un segundo clic en el mismo sitio creaba el
+         * duplicado sin mas: asi salieron el 31610 (anecoop) y el 31731 (daifressh).
+         */
         async traspasoInsertar() {
             await this._traspasoEjecutar('INSERTAR');
+        },
+
+        /**
+         * Boton pequeno "Insertar igualmente", que solo sale despues de un 409. Pide
+         * confirmacion nombrando el pedido que se va a duplicar: es una salida legitima
+         * (dos pedidos iguales el mismo dia al mismo destino existen), pero tiene que ser
+         * deliberada.
+         */
+        async traspasoInsertarForzado() {
+            const yaHay = (this.traspasoCandidatos || [])
+                .map(c => `nº ${c.PED_pedido} (ref "${(c.PED_referencia || '').trim() || 'vacia'}")`)
+                .join('\n  ');
+            const texto = [
+                'Vas a crear un pedido NUEVO en produccion.',
+                '',
+                yaHay ? `Ya existe en produccion:\n  ${yaHay}` : 'El backend ya avisó de que este pedido se habia traspasado antes.',
+                '',
+                'Si continuas se quedaran LOS DOS, y para deshacerlo habra que anular uno a mano desde el ERP.',
+                '',
+                '¿Seguro que es un pedido distinto?'
+            ].join('\n');
+            if (!window.confirm(texto)) {
+                console.log('[traspaso] insercion forzada CANCELADA por el usuario');
+                return;
+            }
+            console.warn('[traspaso] insercion FORZADA confirmada por el usuario');
+            await this._traspasoEjecutar('INSERTAR', { forzar: true });
         },
 
         /** Boton MODIFICAR: primer clic abre los campos, segundo clic ejecuta. */
@@ -123,12 +159,12 @@ export default function traspasoProduccion() {
             await this._traspasoEjecutar('MODIFICAR');
         },
 
-        async _traspasoEjecutar(modo) {
+        async _traspasoEjecutar(modo, { forzar = false } = {}) {
             const idPedidoTest = this.pedidoDetail?.PED_idpedido;
             if (!idPedidoTest) { console.error('[traspaso] no hay pedido de test cargado'); return; }
 
             const body = { idPedidoTest, email: this._traspasoEmail(), modo, dryRun: false };
-            const forzando = modo === 'INSERTAR' && this.traspasoForzar;
+            const forzando = modo === 'INSERTAR' && forzar;
             if (forzando) {
                 // Se salta las dos barreras: la de claves (forzarInsertar) y la del
                 // historico de traspasos (permitirRepetir).
@@ -177,13 +213,16 @@ export default function traspasoProduccion() {
                 this.traspasoUltimo = { accion: modo, ok };
                 this.traspasoMensajeOk = ok;
                 const r = data.resultado || {};
-                // Si INSERTAR se rechaza por duplicado (claves o historico), el siguiente
-                // clic pasa a forzar: el boton se convierte en "INSERTAR IGUALMENTE".
+                // Si INSERTAR se rechaza por duplicado (claves o historico), aparece el boton
+                // pequeno de forzar. Los candidatos se guardan para poder nombrarlos en la
+                // confirmacion: "ya existe el nº 31730", no un "¿seguro?" a ciegas.
                 if (!ok && modo === 'INSERTAR' && res.status === 409 && (data.candidatos || data.traspasoPrevio)) {
                     this.traspasoForzar = true;
-                    console.warn('[traspaso] rechazado por duplicado: el siguiente clic en INSERTAR lo forzara');
+                    this.traspasoCandidatos = data.candidatos || [];
+                    console.warn('[traspaso] rechazado por duplicado: aparece el boton de insertar igualmente');
                 } else if (ok) {
                     this.traspasoForzar = false;
+                    this.traspasoCandidatos = [];
                 }
                 if (!ok) {
                     this.traspasoMensaje = data.message || data.motivo || `Error ${res.status}`;

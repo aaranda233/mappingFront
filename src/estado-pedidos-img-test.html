@@ -486,6 +486,8 @@
                 .trBarraTraspaso button.trErr { border-color:#991b1b; background:#dc2626; }
                 .trBarraTraspaso button:disabled { border-color:#d1d5db; background:#e5e7eb; color:#9ca3af; cursor:not-allowed; box-shadow:none; }
                 .trBotones { display:flex; gap:24px; justify-content:center; }
+                .trForzarCaja { display:flex; justify-content:center; margin-top:-6px; }
+                .trBarraTraspaso .trForzarCaja button.trForzar { min-width:0; padding:6px 14px; border-radius:6px; font-size:9.5pt; font-weight:normal; letter-spacing:0; color:#b91c1c; border:1px solid #fca5a5; background:#fff5f5; box-shadow:none; }
                 .trForm { display:flex; gap:16px; align-items:flex-end; justify-content:center; flex-wrap:wrap; }
                 .trForm label { font-family:Tahoma,sans-serif; font-size:11pt; font-weight:bold; color:#92400e; display:flex; flex-direction:column; align-items:center; gap:4px; }
                 .trForm input { border:2px solid #b45309; border-radius:6px; padding:8px 10px; font-family:Tahoma,sans-serif; font-size:14pt; font-weight:bold; text-align:center; }
@@ -503,12 +505,24 @@
 
               <div class="trBotones">
                 <button type="button" :disabled="!traspasoListo()" @click="traspasoInsertar()"
-                  :class="traspasoForzar ? 'trErr' : (traspasoUltimo && traspasoUltimo.accion === 'INSERTAR' ? (traspasoUltimo.ok ? 'trOk' : 'trErr') : '')"
-                  x-text="traspasoForzar ? 'INSERTAR IGUALMENTE' : 'INSERTAR'">
+                  :class="traspasoUltimo && traspasoUltimo.accion === 'INSERTAR' ? (traspasoUltimo.ok ? 'trOk' : 'trErr') : ''">
+                  INSERTAR
                 </button>
                 <button type="button" :disabled="!traspasoListo()" @click="traspasoModificarClick()"
                   :class="traspasoUltimo && traspasoUltimo.accion === 'MODIFICAR' ? (traspasoUltimo.ok ? 'trOk' : 'trErr') : 'trMod'">
                   MODIFICAR
+                </button>
+              </div>
+
+              <!-- Salida de emergencia: crear el pedido aunque ya exista uno igual. Va APARTE y
+                   pequeno a proposito. Antes era el propio boton grande, que se convertia en
+                   "INSERTAR IGUALMENTE": volver a pulsar en el mismo sitio duplicaba el pedido sin
+                   enterarse, y asi salieron el 31610 (anecoop) y el 31731 (daifressh). Ahora pide
+                   confirmacion nombrando el pedido que se va a duplicar. -->
+              <div class="trForzarCaja" x-show="traspasoForzar">
+                <button type="button" class="trForzar" :disabled="!traspasoListo()"
+                  @click="traspasoInsertarForzado()">
+                  Insertar igualmente (crea un pedido nuevo)
                 </button>
               </div>
 

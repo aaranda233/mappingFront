@@ -175,38 +175,46 @@ export default {
         }
     },
     async fetchUserInfo() {
-        // En modo dev, asignar permisos base sin admin y saltar OAuth/BD
+        // El email se pide SIEMPRE, tambien en modo dev: es lo que identifica a quien
+        // pulsa INSERTAR/MODIFICAR en la auditoria del traspaso (EstadoPedidosTraspasos).
+        // Antes el 'return' de modo dev estaba antes de esto y, como el chart de
+        // PRODUCCION tambien lleva VERSION: "DEV", los 26 primeros traspasos se guardaron
+        // sin saber quien los habia hecho. Si /oauth2/userinfo no responde (front servido
+        // sin el proxy delante) se queda vacio y no pasa nada mas.
+        try {
+            const res = await fetch('/oauth2/userinfo');
+            if (res.ok) {
+                const data = await res.json();
+                this.userEmail = data.email || '';
+            }
+        } catch (e) {
+            console.warn('No se pudo obtener el email de /oauth2/userinfo', e);
+        }
+
+        // En modo dev, asignar permisos base sin admin y saltar la resolucion contra BD
         if (window.env.VERSION && window.env.VERSION.toLowerCase() === 'dev') {
             this.userPermisos = ['pedidos', 'transportes', 'estado-pedidos'];
             return;
         }
 
+        // Obtener permisos desde la BD
         try {
-            const res = await fetch('/oauth2/userinfo');
-            const data = await res.json();
-            this.userEmail = data.email || '';
-
-            // Obtener permisos desde la BD
-            try {
-                const rolesRes = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/user-roles`);
-                const rolesData = await rolesRes.json();
-                const users = rolesData.users || [];
-                const me = users.find(u => u.email === this.userEmail);
-                this.userPermisos = me ? [...me.permisos] : [];
-            } catch (e) {
-                console.warn("No se pudieron obtener permisos de BD, usando env.js", e);
-            }
-
-            // Fallback: DEVELOPER_USERS de env.js obtiene todos los permisos
-            if (this.userPermisos.length === 0) {
-                const devs = window.env.DEVELOPER_USERS || [];
-                if (devs.includes(this.userEmail)) {
-                    this.userPermisos = ['pedidos', 'transportes', 'estado-pedidos', 'admin'];
-                }
-            }
+            const rolesRes = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/user-roles`);
+            const rolesData = await rolesRes.json();
+            const users = rolesData.users || [];
+            const me = users.find(u => u.email === this.userEmail);
+            this.userPermisos = me ? [...me.permisos] : [];
         } catch (e) {
-            console.error("Error fetching user info", e);
+            console.warn("No se pudieron obtener permisos de BD, usando env.js", e);
             this.userPermisos = [];
+        }
+
+        // Fallback: DEVELOPER_USERS de env.js obtiene todos los permisos
+        if (this.userPermisos.length === 0) {
+            const devs = window.env.DEVELOPER_USERS || [];
+            if (devs.includes(this.userEmail)) {
+                this.userPermisos = ['pedidos', 'transportes', 'estado-pedidos', 'admin'];
+            }
         }
     },
     async fetchCounts() {
