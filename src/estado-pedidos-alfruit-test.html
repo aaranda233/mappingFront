@@ -487,6 +487,22 @@
                 .trBarraTraspaso button:disabled { border-color:#d1d5db; background:#e5e7eb; color:#9ca3af; cursor:not-allowed; box-shadow:none; }
                 .trBotones { display:flex; gap:24px; justify-content:center; }
                 .trForzarCaja { display:flex; justify-content:center; margin-top:-6px; }
+                /* "NUEVO" y "YA EXISTENTE" recalcados: son la diferencia entre crear un pedido y tocar uno que ya esta. */
+                .trBarraTraspaso .trResalte { text-decoration:underline; text-underline-offset:4px; font-size:1.3em; letter-spacing:2px; }
+                /* Modal de resultado. z-index por encima del 99999 del modal de pedido. */
+                .trResFondo { position:fixed; top:0; left:0; right:0; bottom:0; z-index:100000; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; padding:20px; }
+                .trResCaja { background:#fff; border-radius:12px; padding:28px 40px; max-width:860px; width:100%; box-shadow:0 10px 40px rgba(0,0,0,.5); display:flex; flex-direction:column; align-items:center; gap:18px; }
+                .trResTit { font-family:Tahoma,sans-serif; font-size:22pt; font-weight:bold; color:#166534; text-align:center; letter-spacing:1px; line-height:1.25; }
+                .trResDet { font-family:Tahoma,sans-serif; font-size:10.5pt; color:#4b5563; text-align:center; max-width:760px; }
+                .trResImp { display:flex; flex-direction:column; align-items:center; gap:12px; background:#eff6ff; border:2px solid #3b82f6; border-radius:8px; padding:16px 24px; width:100%; }
+                .trResImp.trResSinDoc { background:#f3f4f6; border-color:#9ca3af; }
+                .trResImp .trImpTxt { font-family:Tahoma,sans-serif; font-size:12pt; font-weight:bold; color:#1e3a8a; text-align:center; }
+                .trResImp.trResSinDoc .trImpTxt { color:#4b5563; }
+                .trResImp .trImpTxt small { display:block; font-weight:normal; font-size:9.5pt; color:#6b7280; margin-top:6px; }
+                .trResImp .trImpBotones { display:flex; gap:16px; }
+                .trResCaja button { min-width:190px; padding:12px 26px; border-radius:8px; font-family:Tahoma,sans-serif; font-size:13pt; font-weight:bold; letter-spacing:1px; color:#fff; border:2px solid #1d4ed8; background:#1d4ed8; cursor:pointer; box-shadow:0 3px 8px rgba(0,0,0,.25); }
+                .trResCaja button.trImpNo { border-color:#9ca3af; background:#6b7280; }
+                .trResCaja button:disabled { border-color:#d1d5db; background:#e5e7eb; color:#9ca3af; cursor:not-allowed; box-shadow:none; }
                 .trBarraTraspaso .trForzarCaja button.trForzar { min-width:0; padding:6px 14px; border-radius:6px; font-size:9.5pt; font-weight:normal; letter-spacing:0; color:#b91c1c; border:1px solid #fca5a5; background:#fff5f5; box-shadow:none; }
                 .trForm { display:flex; gap:16px; align-items:flex-end; justify-content:center; flex-wrap:wrap; }
                 .trForm label { font-family:Tahoma,sans-serif; font-size:11pt; font-weight:bold; color:#92400e; display:flex; flex-direction:column; align-items:center; gap:4px; }
@@ -506,11 +522,11 @@
               <div class="trBotones">
                 <button type="button" :disabled="!traspasoListo()" @click="traspasoInsertar()"
                   :class="traspasoUltimo && traspasoUltimo.accion === 'INSERTAR' ? (traspasoUltimo.ok ? 'trOk' : 'trErr') : ''">
-                  INSERTAR
+                  CREAR <span class="trResalte">NUEVO</span> PEDIDO
                 </button>
                 <button type="button" :disabled="!traspasoListo()" @click="traspasoModificarClick()"
                   :class="traspasoUltimo && traspasoUltimo.accion === 'MODIFICAR' ? (traspasoUltimo.ok ? 'trOk' : 'trErr') : 'trMod'">
-                  MODIFICAR
+                  MODIFICAR PEDIDO <span class="trResalte">YA EXISTENTE</span>
                 </button>
               </div>
 
@@ -535,17 +551,40 @@
 
               <div class="trMsg" x-show="traspasoMensaje" :class="traspasoMensajeOk ? 'trMsgOk' : 'trMsgErr'" x-text="traspasoMensaje"></div>
 
-              <!-- Pedido firmado archivado en el documental: ofrecer imprimirlo.
-                   Solo sale si el barcode se ha re-sellado con el nº de produccion. -->
-              <div class="trImp" x-show="traspasoDoc" x-cloak>
-                <div class="trImpTxt">
-                  &iquest;Imprimir el pedido firmado?
-                  <small x-text="traspasoDoc ? traspasoDoc.idnuxeo + '.pdf  (c&oacute;digo de barras ' + traspasoDoc.codigo + ')' : ''"></small>
-                </div>
-                <div class="trImpBotones">
-                  <button type="button" :disabled="traspasoImprimiendo" @click="traspasoImprimirDoc()"
-                    x-text="traspasoImprimiendo ? 'ABRIENDO...' : 'IMPRIMIR'"></button>
-                  <button type="button" class="trImpNo" :disabled="traspasoImprimiendo" @click="traspasoNoImprimir()">NO IMPRIMIR</button>
+              <!-- Resultado del traspaso. Antes la confirmacion se perdia (openPedidoDetail
+                   recargaba y borraba el mensaje) y el "&iquest;imprimir?" salia al final de un
+                   modal muy largo, donde pasaba desapercibido. Ahora las dos cosas van juntas
+                   en un modal grande, y vale igual para CREAR que para MODIFICAR. -->
+              <div class="trResFondo" x-show="traspasoResultado" x-cloak>
+                <div class="trResCaja">
+                  <div class="trResTit" x-text="traspasoResultado ? 'PEDIDO ' + traspasoResultado.pedido + (traspasoResultado.accion === 'INSERTAR' ? ' CREADO CON EXITO' : ' MODIFICADO CON EXITO') : ''"></div>
+                  <div class="trResDet" x-text="traspasoResultado ? traspasoResultado.detalle : ''"></div>
+
+                  <template x-if="traspasoDoc">
+                    <div class="trResImp">
+                      <div class="trImpTxt">
+                        &iquest;Imprimir el pedido firmado?
+                        <small x-text="traspasoDoc ? traspasoDoc.idnuxeo + '.pdf  (c&oacute;digo de barras ' + traspasoDoc.codigo + ')' : ''"></small>
+                      </div>
+                      <div class="trImpBotones">
+                        <button type="button" :disabled="traspasoImprimiendo" @click="traspasoImprimirDoc()"
+                          x-text="traspasoImprimiendo ? 'ABRIENDO...' : 'IMPRIMIR'"></button>
+                        <button type="button" class="trImpNo" :disabled="traspasoImprimiendo" @click="traspasoNoImprimir()">NO IMPRIMIR</button>
+                      </div>
+                    </div>
+                  </template>
+
+                  <template x-if="!traspasoDoc">
+                    <div class="trResImp trResSinDoc">
+                      <div class="trImpTxt">
+                        No hay pedido firmado que imprimir
+                        <small x-text="traspasoDocMotivo"></small>
+                      </div>
+                      <div class="trImpBotones">
+                        <button type="button" class="trImpNo" @click="traspasoCerrarResultado()">CERRAR</button>
+                      </div>
+                    </div>
+                  </template>
                 </div>
               </div>
             </div>

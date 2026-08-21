@@ -31,7 +31,12 @@ export default function traspasoProduccion() {
         // PDF firmado que el traspaso acaba de archivar, para ofrecer imprimirlo.
         // { idnuxeo, codigo } o null si no se archivo nada.
         traspasoDoc: null,
+        // Por que no hay nada que imprimir, para poder decirlo en vez de callar.
+        traspasoDocMotivo: '',
         traspasoImprimiendo: false,
+        // Modal grande de "pedido creado/modificado con exito". Lleva dentro la pregunta
+        // de imprimir. { accion, pedido, detalle } o null.
+        traspasoResultado: null,
         _traspasoItem: null,
         _traspasoAnalisis: null,
 
@@ -45,7 +50,9 @@ export default function traspasoProduccion() {
             this.traspasoCandidatos = [];
             this.traspasoForm = { ejercicio: '', numeroPedido: '', idPedido: '' };
             this.traspasoDoc = null;
+            this.traspasoDocMotivo = '';
             this.traspasoImprimiendo = false;
+            this.traspasoResultado = null;
             this._traspasoItem = item;
             this._traspasoAnalisis = null;
         },
@@ -242,6 +249,10 @@ export default function traspasoProduccion() {
 
                 if (ok) {
                     this.traspasoMostrarForm = false;
+                    // openPedidoDetail vuelve a llamar a _resetTraspaso, que borra el mensaje
+                    // y el resto del estado. Por eso se guarda aqui lo que hay que conservar
+                    // y se repone despues de recargar la comparacion.
+                    const textoResultado = this.traspasoMensaje;
                     // Recargar la comparacion con el pedido de produccion resultante
                     const idProd = data.resultado?.PED_idpedido;
                     if (this._traspasoItem && typeof this.openPedidoDetail === 'function') {
@@ -250,6 +261,8 @@ export default function traspasoProduccion() {
                         await this.openPedidoDetail(item);
                         this._traspasoItem = item;
                         this.traspasoUltimo = ultimo;
+                        this.traspasoMensaje = textoResultado;
+                        this.traspasoMensajeOk = true;
                     }
                     if (idProd) {
                         try {
@@ -266,6 +279,17 @@ export default function traspasoProduccion() {
                     // igual para INSERTAR y para MODIFICAR: en los dos casos el
                     // documento se re-sella con el numero de produccion.
                     this._traspasoPrepararImpresion(r.documental);
+
+                    // Modal grande de resultado. Antes el texto se perdia: lo escribia el
+                    // codigo de arriba y acto seguido openPedidoDetail lo borraba, asi que
+                    // el comercial no veia confirmacion de nada.
+                    this.traspasoResultado = {
+                        accion: modo,
+                        pedido: r.PED_pedido ?? '?',
+                        detalle: data.sinCambios
+                            ? 'El pedido de produccion ya estaba igual: no se ha tocado nada.'
+                            : textoResultado
+                    };
                 }
             } catch (err) {
                 console.error(`[traspaso] ${modo} ERROR de red`, err);
@@ -283,12 +307,21 @@ export default function traspasoProduccion() {
          */
         _traspasoPrepararImpresion(documental) {
             this.traspasoDoc = null;
-            if (!documental) return;
+            this.traspasoDocMotivo = '';
+            if (!documental) {
+                // Pasa siempre en dev: TRASPASO_DOCUMENTAL solo esta puesto en el chart de
+                // produccion, asi que el PDF ni se archiva.
+                this.traspasoDocMotivo = 'El archivado documental no esta activo en este entorno.';
+                return;
+            }
             if (!documental.ok) {
+                this.traspasoDocMotivo = `No se archivo el pedido firmado: ${documental.motivo || 'motivo no indicado'}`;
                 console.warn(`[traspaso] no hay pedido firmado que imprimir: ${documental.motivo || 'documental no archivado'}`);
                 return;
             }
             if (!documental.resellado?.ok) {
+                this.traspasoDocMotivo = 'El codigo de barras del PDF no se pudo re-sellar, asi que seguiria ' +
+                    `apuntando al pedido de test (${documental.resellado?.motivo || 'motivo no indicado'}).`;
                 console.warn('[traspaso] no se ofrece imprimir: el barcode del PDF no se pudo re-sellar ' +
                              `(${documental.resellado?.motivo}), seguiria con el numero de test`);
                 return;
@@ -334,6 +367,7 @@ export default function traspasoProduccion() {
                     window.open(url, '_blank');
                 }
                 console.log(`[traspaso] enviado a imprimir ${idnuxeo}.pdf`);
+                this.traspasoCerrarResultado();
                 // El blob y el iframe tienen que sobrevivir al dialogo de impresion:
                 // liberarlos antes deja la vista previa en blanco.
                 setTimeout(() => {
@@ -354,6 +388,12 @@ export default function traspasoProduccion() {
         traspasoNoImprimir() {
             if (this.traspasoDoc) console.log(`[traspaso] no se imprime ${this.traspasoDoc.idnuxeo}.pdf`);
             this.traspasoDoc = null;
+            this.traspasoCerrarResultado();
+        },
+
+        /** Cierra el modal de resultado. El pedido ya esta hecho; esto es solo el aviso. */
+        traspasoCerrarResultado() {
+            this.traspasoResultado = null;
         }
     };
 }
