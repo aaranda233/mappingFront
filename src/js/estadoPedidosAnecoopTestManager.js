@@ -196,7 +196,7 @@ export default function estadoPedidosAnecoopTestManager() {
                     console.warn('[TEST] No se encontró PED_idpedido en la cabecera, no se buscan líneas');
                 }
 
-                // ── Cargar datos de PRODUCCION (cascada: bestellnr+cliente, cliente+fecha+destino, cliente+fecha+referencia) ──
+                // ── Cargar datos de PRODUCCION (una sola busqueda, por la clave del apartado) ──
                 const bestellnr = this.pedidoDetail?.PED_BESTELLNR;
                 const cliente = this.pedidoDetail?.PED_idcliente;
                 const fechapedido = this.pedidoDetail?.PED_fechapedido ? new Date(this.pedidoDetail.PED_fechapedido).toISOString().split('T')[0] : '';
@@ -212,6 +212,10 @@ export default function estadoPedidosAnecoopTestManager() {
                 } else if (cliente) {
                     const params = new URLSearchParams();
                     params.set('cliente', cliente);
+                    // El backend construye la clave de emparejamiento desde la cabecera
+                    // REAL del pedido de test, no desde estos parametros: asi el panel y el
+                    // traspaso parten del mismo dato y no pueden elegir pedidos distintos.
+                    if (this.pedidoDetail?.PED_idpedido) params.set('idpedidotest', this.pedidoDetail.PED_idpedido);
                     if (bestellnr) params.set('bestellnr', bestellnr);
                     if (fechapedido) params.set('fechapedido', fechapedido);
                     if (iddestino) params.set('iddestino', iddestino);

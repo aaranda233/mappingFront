@@ -212,6 +212,10 @@ export default function estadoPedidosEurogroupTestManager() {
                 } else if (cliente) {
                     const params = new URLSearchParams();
                     params.set('cliente', cliente);
+                    // El backend construye la clave de emparejamiento desde la cabecera
+                    // REAL del pedido de test, no desde estos parametros: asi el panel y el
+                    // traspaso parten del mismo dato y no pueden elegir pedidos distintos.
+                    if (this.pedidoDetail?.PED_idpedido) params.set('idpedidotest', this.pedidoDetail.PED_idpedido);
                     if (bestellnr) params.set('bestellnr', bestellnr);
                     if (fechapedido) params.set('fechapedido', fechapedido);
                     if (iddestino) params.set('iddestino', iddestino);

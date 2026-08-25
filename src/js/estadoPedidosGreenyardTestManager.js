@@ -196,7 +196,7 @@ export default function estadoPedidosGreenyardTestManager() {
                     console.warn('[TEST] No se encontró PED_idpedido en la cabecera, no se buscan líneas');
                 }
 
-                // ── Cargar datos de PRODUCCION (cascada: bestellnr+cliente, cliente+fecha+destino, cliente+fecha+referencia) ──
+                // ── Cargar datos de PRODUCCION (una sola busqueda, por la clave del apartado) ──
                 const bestellnr = this.pedidoDetail?.PED_BESTELLNR;
                 const numeropedido = this.pedidoDetail?.PED_NumeroPedido;
                 const centro = this.pedidoDetail?.PED_idcentro;
