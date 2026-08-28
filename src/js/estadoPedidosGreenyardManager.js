@@ -14,21 +14,23 @@ export default function estadoPedidosGreenyardManager() {
             this.loadEstadoActual();
             setInterval(() => this.loadEstadoActual(true), 5000);
             setInterval(() => { if (this.showHistorial) this.loadHistorial(true); }, 5000);
-            if (window.Alpine) {
-                let primero = true;
-                let centroPrev = this._centroKey();
-                window.Alpine.effect(() => {
-                    const centroNew = window.Alpine.store('global').bioCentro;
-                    void centroNew;
-                    if (primero) { primero = false; return; }
-                    this._log('CAMBIO DE FILTRO ' + centroPrev + ' -> ' + this._centroKey());
-                    centroPrev = this._centroKey();
-                    this._hydrateFromCache();
-                    this.historialLoaded = false; this.historial = [];
-                    this.loadEstadoActual();
-                    this.loadHistorial();
-                });
-            }
+            // $watch y no Alpine.effect: el callback de $watch corre en un queueMicrotask,
+            // fuera del ambito de seguimiento. Con effect() el cuerpo entero quedaba dentro y
+            // rastreaba lo que leia (this.historial en el _log de _hydrateFromCache, los flags
+            // de "en vuelo"); lo que escribia cada respuesta 30 ms despues lo volvia a
+            // disparar, y se realimentaba solo: el log repetia "CAMBIO DE FILTRO 10 -> 10"
+            // decenas de veces por segundo. El guard de abajo es el segundo cinturon.
+            let centroPrev = this._centroKey();
+            this.$watch('$store.global.bioCentro', () => {
+                const centroNuevo = this._centroKey();
+                if (centroNuevo === centroPrev) return;   // mismo filtro: nada que recargar
+                this._log('CAMBIO DE FILTRO ' + centroPrev + ' -> ' + centroNuevo);
+                centroPrev = centroNuevo;
+                this._hydrateFromCache();
+                this.historialLoaded = false; this.historial = [];
+                this.loadEstadoActual();
+                this.loadHistorial();
+            });
         },
 
         _seqActual: 0,

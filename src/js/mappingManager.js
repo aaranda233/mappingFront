@@ -17,14 +17,10 @@ export default function mappingManager() {
             this.loadMappings();
             setInterval(() => this.loadMappings(), 10000); // refresco continuo
             // Recargar al cambiar el filtro BIO/Convencional o Mostrar Todos sin vaciar la lista
-            if (window.Alpine) {
-                let primero = true;
-                window.Alpine.effect(() => {
-                    void window.Alpine.store('global').bioCentro;
-                    if (primero) { primero = false; return; }
-                    this.loadMappings();
-                });
-            }
+            // $watch y no Alpine.effect: el callback corre fuera del ambito de seguimiento,
+            // asi que lo que escriba loadMappings() (primeraCarga, loading, mappings) no
+            // vuelve a disparar el watcher. Con effect() se recargaba de mas.
+            this.$watch('$store.global.bioCentro', () => this.loadMappings());
         },
 
         async loadMappings() {
