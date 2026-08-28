@@ -32,7 +32,7 @@
       <include src="./partials/overlay.html" />
       <include src="./partials/header.html" />
 
-      <main x-data="mappingManager()" x-init="init" x-cloak>
+      <main x-data="mappingManager()" x-cloak>
         <!-- Toast -->
         <div x-show="toast" x-transition
           class="fixed top-5 right-5 bg-green-600 text-white px-4 py-2 rounded-xl shadow-lg z-50">
@@ -434,7 +434,7 @@
   </div>
 
   <!-- Asistente IA (chatbot del mapping) -->
-  <div x-data="chatbotManager()" x-init="init" x-cloak class="fixed bottom-6 right-6 z-[60] flex flex-col items-end">
+  <div x-data="chatbotManager()" x-cloak class="fixed bottom-6 right-6 z-[60] flex flex-col items-end">
     <!-- Panel del chat -->
     <div x-show="open" x-transition.opacity.duration.200ms
       :class="expanded ? 'w-[95vw] max-w-3xl h-[85vh]' : 'w-[92vw] max-w-md h-[38rem]'"

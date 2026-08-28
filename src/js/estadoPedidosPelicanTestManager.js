@@ -24,8 +24,8 @@ export default function estadoPedidosPelicanTestManager() {
             this._log('init() montado, filtro=' + this._centroKey());
             this._hydrateFromCache();
             this.loadEstadoActual();
-            setInterval(() => this.loadEstadoActual(), 5000);
-            setInterval(() => { if (this.showHistorial) this.loadHistorial(); }, 5000);
+            setInterval(() => this.loadEstadoActual(true), 5000);
+            setInterval(() => { if (this.showHistorial) this.loadHistorial(true); }, 5000);
             if (window.Alpine) {
                 let primero = true;
                 let centroPrev = this._centroKey();
@@ -45,6 +45,8 @@ export default function estadoPedidosPelicanTestManager() {
 
         _seqActual: 0,
         _seqHist: 0,
+        _actualEnVuelo: false,
+        _histEnVuelo: false,
         _log(...a) { try { console.log('[' + this._endpoint + ' ' + new Date().toISOString().slice(11, 23) + ']', ...a); } catch (e) {} },
 
         _centroQuery() {
@@ -86,13 +88,18 @@ export default function estadoPedidosPelicanTestManager() {
             }
         },
 
-        async loadEstadoActual() {
+        // sondeo=true solo desde el setInterval: si la anterior sigue en vuelo se salta.
+        // Las llamadas explicitas (filtro, refrescar) entran siempre.
+        async loadEstadoActual(sondeo = false) {
+            if (sondeo && this._actualEnVuelo) return;
+            this._actualEnVuelo = true;
             const seq = ++this._seqActual;
             const filtro = this._centroKey();
             const url = `http://${window.env.IP_BACKEND}/api/mapping/${this._endpoint}/actual${this._centroQuery()}`;
             this._log('loadEstadoActual #' + seq + ' GET ' + url);
             try {
                 const res = await fetch(url);
+                if (!res.ok) { this._log('loadEstadoActual #' + seq + ' ERROR HTTP ' + res.status); return; }
                 const data = await res.json();
                 if (filtro !== this._centroKey()) {
                     this._log('loadEstadoActual #' + seq + ' DESCARTADA stale (filtroEnvio=' + filtro + ' filtroActual=' + this._centroKey() + ' seqActual=' + this._seqActual + ')');
@@ -101,22 +108,26 @@ export default function estadoPedidosPelicanTestManager() {
                 const changed = JSON.stringify(this.current) !== JSON.stringify(data.current);
                 if (changed) this.current = data.current;
                 try { sessionStorage.setItem(this._cacheKeyCurrent(), JSON.stringify(data.current ?? null)); } catch (e) {}
-                this._log('loadEstadoActual #' + seq + ' OK status=' + res.status + ' changed=' + changed + ' current=' + (data.current ? ('ref=' + data.current.ref_pedido + ' estado=' + data.current.estado + ' centro=' + data.current.centro) : 'null'));
+                this._log('loadEstadoActual #' + seq + ' OK status=' + res.status + ' changed=' + changed + ' current=' + (data.current ? ('ref=' + data.current.ref_pedido + ' estado=' + data.current.estado + ' centro=' + data.current.idCentro) : 'null'));
             } catch (err) {
                 this._log('loadEstadoActual #' + seq + ' ERROR ' + (err && err.message));
                 console.error('Error cargando estado actual ' + this._endpoint + ':', err);
             } finally {
+                this._actualEnVuelo = false;
                 this.loaded = true;
             }
         },
 
-        async loadHistorial() {
+        async loadHistorial(sondeo = false) {
+            if (sondeo && this._histEnVuelo) return;
+            this._histEnVuelo = true;
             const seq = ++this._seqHist;
             const filtro = this._centroKey();
             const url = `http://${window.env.IP_BACKEND}/api/mapping/${this._endpoint}/historial${this._centroQuery()}`;
             this._log('loadHistorial #' + seq + ' GET ' + url);
             try {
                 const res = await fetch(url);
+                if (!res.ok) { this._log('loadHistorial #' + seq + ' ERROR HTTP ' + res.status + ' (se conserva lo que ya hay)'); return; }
                 const incoming = await res.json();
                 if (filtro !== this._centroKey()) {
                     this._log('loadHistorial #' + seq + ' DESCARTADA stale (filtroEnvio=' + filtro + ' filtroActual=' + this._centroKey() + ')');
@@ -138,6 +149,8 @@ export default function estadoPedidosPelicanTestManager() {
             } catch (err) {
                 this._log('loadHistorial #' + seq + ' ERROR ' + (err && err.message));
                 console.error('Error cargando historial ' + this._endpoint + ':', err);
+            } finally {
+                this._histEnVuelo = false;
             }
         },
 
