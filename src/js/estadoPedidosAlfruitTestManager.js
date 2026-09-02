@@ -1,7 +1,9 @@
 import traspasoProduccion from './traspasoProduccion.js';
+import ocultarErrores from './ocultarErrores.js';
 
 export default function estadoPedidosAlfruitTestManager() {
     return {
+        ...ocultarErrores(),
         ...traspasoProduccion(),
         current: null,
         historial: [],

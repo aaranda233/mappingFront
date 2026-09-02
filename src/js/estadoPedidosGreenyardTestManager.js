@@ -1,7 +1,9 @@
 import traspasoProduccion from './traspasoProduccion.js';
+import ocultarErrores from './ocultarErrores.js';
 
 export default function estadoPedidosGreenyardTestManager() {
     return {
+        ...ocultarErrores(),
         ...traspasoProduccion(),
         current: null,
         historial: [],

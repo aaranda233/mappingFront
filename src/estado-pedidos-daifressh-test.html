@@ -66,8 +66,18 @@
                 </template>
               </div>
 
+              <!-- Filtro de VISTA: no cambia las peticiones, solo esconde las filas de error
+                   del historial. Se recuerda por pagina en localStorage. Ojo: el backend manda
+                   las 100 mas recientes y esto filtra despues, asi que se ven las procesadas
+                   que haya entre esas 100, no las 100 procesadas mas recientes. -->
+              <label class="ml-auto mr-3 inline-flex cursor-pointer select-none items-center gap-2 text-sm font-semibold text-gray-600"
+                :title="ocultarErrores ? ('Ocultando ' + erroresOcultos() + ' fila(s) con error') : 'Ver solo los pedidos procesados'">
+                <input type="checkbox" x-model="ocultarErrores" @change="recordarOcultarErrores()"
+                  class="h-4 w-4 cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                Ocultar errores
+              </label>
               <button @click="refrescar()" title="Refrescar"
-                class="ml-auto inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-semibold text-gray-600 transition hover:bg-gray-50">
+                class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-semibold text-gray-600 transition hover:bg-gray-50">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
@@ -150,7 +160,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <template x-for="(item, index) in historial" :key="item.id">
+                    <template x-for="(item, index) in historialVisible()" :key="item.id">
                       <tr class="border-b border-gray-100 hover:bg-gray-50/50"
                         :class="item.estado === 'procesado' ? 'cursor-pointer' : ''"
                         @click="item.estado === 'procesado' && openPedidoDetail(item)">

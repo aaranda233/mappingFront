@@ -1,5 +1,8 @@
+import ocultarErrores from './ocultarErrores.js';
+
 export default function estadoPedidosEurogroupManager() {
     return {
+        ...ocultarErrores(),
         current: null,
         historial: [],
         loaded: false,

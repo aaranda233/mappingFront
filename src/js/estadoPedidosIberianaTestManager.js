@@ -1,7 +1,9 @@
 import traspasoProduccion from './traspasoProduccion.js';
+import ocultarErrores from './ocultarErrores.js';
 
 export default function estadoPedidosIberianaTestManager() {
     return {
+        ...ocultarErrores(),
         ...traspasoProduccion(),
         current: null,
         historial: [],
