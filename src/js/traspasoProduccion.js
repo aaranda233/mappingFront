@@ -40,6 +40,15 @@ export default function traspasoProduccion() {
         _traspasoItem: null,
         _traspasoAnalisis: null,
 
+        // Una operacion de traspaso esta en vuelo. NO es lo mismo que traspasoEnCurso:
+        // _resetTraspaso() se llama en medio de la propia operacion (desde
+        // openPedidoDetail, para recargar la comparacion) y borra todo el estado de la UI,
+        // asi que traspasoEnCurso volvia a false y los botones se reactivaban un segundo
+        // antes de que apareciese el modal de resultado. En ese hueco un segundo clic
+        // lanzaba otro POST y se creaba el pedido dos veces. Esta bandera la baja SOLO
+        // _traspasoEjecutar, en su finally, y por eso sobrevive al reset.
+        _traspasoOperando: false,
+
         _resetTraspaso(item = null) {
             this.traspasoEnCurso = false;
             this.traspasoMostrarForm = false;
@@ -57,12 +66,71 @@ export default function traspasoProduccion() {
             this._traspasoAnalisis = null;
         },
 
+        // PDF archivados del apartado, por pedido de test: { <id_pedido_net>: { idnuxeo, ... } }.
+        // Es lo que decide si una fila del historial lleva boton de impresora.
+        traspasoDocsPorPedido: {},
+        // El id_pedido_net que se esta imprimiendo desde la tabla, para poner ese boton en
+        // "..." sin bloquear los demas.
+        traspasoImprimiendoFila: null,
+
         _traspasoUrl(ruta) { return `http://${window.env.IP_BACKEND}/api/mapping/${this._endpoint}/${ruta}`; },
+
+        /**
+         * Carga de una vez que pedidos del apartado tienen PDF archivado. Una sola peticion
+         * por apartado, no una por fila: el panel pinta hasta 100 y ya sondea de sobra.
+         *
+         * Nunca rompe la tabla: si falla, el mapa se queda como esta y simplemente no sale
+         * ningun boton nuevo (en dev no hay documental y el mapa viene vacio siempre).
+         */
+        async traspasoCargarDocumentos() {
+            try {
+                const res = await fetch(this._traspasoUrl('documentos'));
+                if (!res.ok) { console.warn(`[traspaso] documentos HTTP ${res.status}`); return; }
+                const data = await res.json();
+                this.traspasoDocsPorPedido = data.documentos || {};
+                const n = Object.keys(this.traspasoDocsPorPedido).length;
+                console.log(`[traspaso] ${n} pedido(s) con PDF archivado${data.ok ? '' : ` (sin documental: ${data.motivo})`}`);
+            } catch (err) {
+                console.warn('[traspaso] no se pudo cargar la lista de PDF archivados', err);
+            }
+        },
+
+        /** El PDF archivado de una fila del historial, o null si ese pedido no tiene. */
+        traspasoDocDeFila(item) {
+            const id = item?.id_pedido_net;
+            if (!id) return null;
+            return this.traspasoDocsPorPedido[id] || this.traspasoDocsPorPedido[String(id)] || null;
+        },
+
+        /**
+         * Imprime el PDF archivado de una fila, sin abrir el pedido. Mismo mecanismo que
+         * traspasoImprimirDoc (blob + iframe, porque el backend esta en otro origen), pero
+         * partiendo del idnuxeo que ya venia en el mapa.
+         */
+        async traspasoImprimirFila(item) {
+            const doc = this.traspasoDocDeFila(item);
+            if (!doc || this.traspasoImprimiendoFila) return;
+            this.traspasoImprimiendoFila = item.id_pedido_net;
+            try {
+                await this._traspasoImprimirIdnuxeo(doc.idnuxeo);
+                console.log(`[traspaso] enviado a imprimir ${doc.idnuxeo}.pdf (pedido de produccion ${doc.pedidoProd})`);
+            } catch (err) {
+                console.error(`[traspaso] no se pudo imprimir ${doc.idnuxeo}: ${err.message}`);
+                window.alert(`No se pudo imprimir el pedido ${doc.pedidoProd}: ${err.message}`);
+            } finally {
+                this.traspasoImprimiendoFila = null;
+            }
+        },
         _traspasoEmail() {
             try { return (window.Alpine && window.Alpine.store('global')?.userEmail) || ''; } catch (e) { return ''; }
         },
 
-        traspasoListo() { return !!this.pedidoDetail?.PED_idpedido && !this.traspasoEnCurso; },
+        // Los botones estan activos solo si hay pedido cargado y NO hay nada en vuelo. Se
+        // mira tambien _traspasoOperando, que es la unica de las dos que no puede borrar
+        // _resetTraspaso a media operacion.
+        traspasoListo() {
+            return !!this.pedidoDetail?.PED_idpedido && !this.traspasoEnCurso && !this._traspasoOperando;
+        },
 
         /**
          * Se llama al abrir el pedido. Analiza contra produccion para dejarlo en los
@@ -167,8 +235,16 @@ export default function traspasoProduccion() {
         },
 
         async _traspasoEjecutar(modo, { forzar = false } = {}) {
+            // Guard de reentrada. El :disabled del boton no basta: dos clics en el mismo
+            // tick de Alpine entran los dos antes de que se repinte, y con el hueco que
+            // habia (ver _traspasoOperando) eso creaba el pedido dos veces.
+            if (this._traspasoOperando) {
+                console.warn(`[traspaso] ${modo} ignorado: ya hay una operacion en curso`);
+                return;
+            }
             const idPedidoTest = this.pedidoDetail?.PED_idpedido;
             if (!idPedidoTest) { console.error('[traspaso] no hay pedido de test cargado'); return; }
+            this._traspasoOperando = true;
 
             const body = { idPedidoTest, email: this._traspasoEmail(), modo, dryRun: false };
             const forzando = modo === 'INSERTAR' && forzar;
@@ -279,6 +355,10 @@ export default function traspasoProduccion() {
                     // igual para INSERTAR y para MODIFICAR: en los dos casos el
                     // documento se re-sella con el numero de produccion.
                     this._traspasoPrepararImpresion(r.documental);
+                    // El pedido acaba de estrenar PDF: refrescar el mapa para que su fila
+                    // de la tabla saque el boton de impresora sin recargar la pagina. Sin
+                    // await, que esto no retrase el modal de resultado.
+                    if (r.documental?.ok) this.traspasoCargarDocumentos();
 
                     // Modal grande de resultado. Antes el texto se perdia: lo escribia el
                     // codigo de arriba y acto seguido openPedidoDetail lo borraba, asi que
@@ -294,8 +374,14 @@ export default function traspasoProduccion() {
             } catch (err) {
                 console.error(`[traspaso] ${modo} ERROR de red`, err);
                 this.traspasoUltimo = { accion: modo, ok: false };
+                this.traspasoMensaje = `Error de red: ${err.message || err}`;
+                this.traspasoMensajeOk = false;
             } finally {
+                // Lo ultimo de todo, y despues de que el modal de resultado ya este puesto:
+                // hasta aqui los botones siguen deshabilitados. Si falla, se rehabilitan
+                // para poder reintentar.
                 this.traspasoEnCurso = false;
+                this._traspasoOperando = false;
             }
         },
 
@@ -331,15 +417,15 @@ export default function traspasoProduccion() {
         },
 
         /**
-         * Imprime el PDF archivado. Se descarga como blob y se imprime desde un
-         * iframe: el visor del navegador no deja llamar a print() sobre un iframe de
-         * otro origen, y el backend esta en otro host. Con el blob pasa a ser del
+         * Descarga un PDF archivado y lo manda a la impresora. Se baja como blob y se
+         * imprime desde un iframe: el visor del navegador no deja llamar a print() sobre un
+         * iframe de otro origen, y el backend esta en otro host. Con el blob pasa a ser del
          * mismo origen y print() si funciona.
+         *
+         * Lanza si no se puede; lo usan los dos sitios que imprimen (el modal de resultado
+         * del traspaso y el boton de cada fila de la tabla).
          */
-        async traspasoImprimirDoc() {
-            if (!this.traspasoDoc || this.traspasoImprimiendo) return;
-            const { idnuxeo } = this.traspasoDoc;
-            this.traspasoImprimiendo = true;
+        async _traspasoImprimirIdnuxeo(idnuxeo) {
             let url = null;
             try {
                 const res = await fetch(this._traspasoUrl(`documento/${encodeURIComponent(idnuxeo)}`));
@@ -366,17 +452,32 @@ export default function traspasoProduccion() {
                     console.warn('[traspaso] print() desde el iframe fallo, abro el PDF en una pestaña', e);
                     window.open(url, '_blank');
                 }
-                console.log(`[traspaso] enviado a imprimir ${idnuxeo}.pdf`);
-                this.traspasoCerrarResultado();
                 // El blob y el iframe tienen que sobrevivir al dialogo de impresion:
                 // liberarlos antes deja la vista previa en blanco.
                 setTimeout(() => {
                     iframe.remove();
                     URL.revokeObjectURL(url);
                 }, 60000);
-                this.traspasoDoc = null;
             } catch (err) {
                 if (url) URL.revokeObjectURL(url);
+                throw err;
+            }
+        },
+
+        /** Imprime el PDF que el traspaso acaba de archivar, desde el modal de resultado. */
+        async traspasoImprimirDoc() {
+            if (!this.traspasoDoc || this.traspasoImprimiendo) return;
+            const { idnuxeo } = this.traspasoDoc;
+            this.traspasoImprimiendo = true;
+            try {
+                await this._traspasoImprimirIdnuxeo(idnuxeo);
+                console.log(`[traspaso] enviado a imprimir ${idnuxeo}.pdf`);
+                this.traspasoCerrarResultado();
+                this.traspasoDoc = null;
+                // El pedido que se acaba de traspasar ya tiene PDF: que su fila de la tabla
+                // estrene el boton de impresora sin esperar a recargar la pagina.
+                this.traspasoCargarDocumentos();
+            } catch (err) {
                 console.error(`[traspaso] no se pudo imprimir ${idnuxeo}.pdf: ${err.message}`, err);
                 this.traspasoMensaje = `No se pudo abrir el pedido firmado para imprimir: ${err.message}`;
                 this.traspasoMensajeOk = false;

@@ -147,6 +147,8 @@ export default function estadoPedidosEurogroupTestManager() {
                 this.historial.sort((a, b) => orden.get(a.id) - orden.get(b.id));
                 try { sessionStorage.setItem(this._cacheKeyHistorial(), JSON.stringify(lista)); } catch (e) {}
                 this.historialLoaded = true;
+                // Una sola vez: que filas tienen PDF archivado, para el boton de impresora.
+                if (!this._docsPedidos) { this._docsPedidos = true; this.traspasoCargarDocumentos(); }
                 this._log('loadHistorial #' + seq + ' OK status=' + res.status + ' recibidos=' + lista.length + ' total=' + this.historial.length + ' filtro=' + filtro);
             } catch (err) {
                 this._log('loadHistorial #' + seq + ' ERROR ' + (err && err.message));

@@ -143,6 +143,10 @@
                       <th class="py-3 px-2">Pedido</th>
                       <th class="py-3 px-2">Fecha Inicio</th>
                       <th class="py-3 px-2">Fecha Fin</th>
+                      <!-- Imprimir el pedido firmado ya archivado en produccion. Solo sale en las
+                           filas traspasadas: el PDF que se sirve es el de NetagroDocs, con el
+                           barcode re-sellado al numero de produccion. -->
+                      <th class="py-3 px-2 text-center">Imprimir</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -168,6 +172,18 @@
                         <td class="py-3 px-2" x-text="item.pedido || '-'"></td>
                         <td class="py-3 px-2 text-gray-500" x-text="formatFecha(item.fecha_inicio)"></td>
                         <td class="py-3 px-2 text-gray-500" x-text="formatFecha(item.fecha_fin)"></td>
+                        <td class="py-3 px-2 text-center">
+                          <button type="button" x-show="traspasoDocDeFila(item)"
+                            @click.stop="traspasoImprimirFila(item)"
+                            :disabled="traspasoImprimiendoFila === item.id_pedido_net"
+                            :title="traspasoDocDeFila(item) ? ('Imprimir el pedido ' + traspasoDocDeFila(item).pedidoProd + ' de produccion (' + traspasoDocDeFila(item).idnuxeo + '.pdf)') : ''"
+                            class="inline-flex items-center justify-center rounded-md border border-blue-300 bg-blue-50 p-1.5 text-blue-700 hover:bg-blue-100 disabled:opacity-40 disabled:cursor-wait">
+                            <svg viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4" aria-hidden="true">
+                              <path d="M6 3h12v4H6V3zm13 5H5a3 3 0 00-3 3v5h4v5h12v-5h4v-5a3 3 0 00-3-3zM8 19v-4h8v4H8zm10-7.5a1 1 0 110-2 1 1 0 010 2z"/>
+                            </svg>
+                            <span class="sr-only">Imprimir</span>
+                          </button>
+                        </td>
                       </tr>
                     </template>
                   </tbody>
