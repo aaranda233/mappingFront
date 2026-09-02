@@ -436,21 +436,36 @@ export default function traspasoProduccion() {
                 url = URL.createObjectURL(await res.blob());
 
                 const iframe = document.createElement('iframe');
-                iframe.style.cssText = 'position:fixed;width:0;height:0;border:0;visibility:hidden';
+                // El iframe TIENE que estar renderizado, con tamaño real. Con
+                // 'width:0;height:0;visibility:hidden' Chrome no monta su visor de PDF y
+                // contentWindow.print() no hace NADA, y encima sin lanzar ningun error: en
+                // la consola salia "enviado a imprimir" y el dialogo no aparecia nunca. Se
+                // saca de la vista con un left negativo, que si deja que se renderice.
+                iframe.style.cssText = 'position:fixed;left:-10000px;top:0;width:794px;height:1123px;border:0';
                 iframe.src = url;
                 await new Promise((resolve, reject) => {
                     iframe.onload = resolve;
                     iframe.onerror = () => reject(new Error('el visor no pudo cargar el PDF'));
                     document.body.appendChild(iframe);
                 });
+                // El visor de PDF se monta DESPUES del onload del iframe: sin esta espera,
+                // print() puede llegar cuando todavia no hay documento que imprimir.
+                await new Promise(r => setTimeout(r, 400));
+
+                let impreso = false;
                 try {
                     iframe.contentWindow.focus();
                     iframe.contentWindow.print();
+                    impreso = true;
                 } catch (e) {
-                    // Algun navegador no deja imprimir desde el iframe: se abre en
-                    // una pestaña para que se pueda imprimir a mano.
-                    console.warn('[traspaso] print() desde el iframe fallo, abro el PDF en una pestaña', e);
-                    window.open(url, '_blank');
+                    console.warn('[traspaso] print() desde el iframe fallo', e);
+                }
+                if (!impreso) {
+                    // Ultimo recurso. Ojo: window.open despues de un await suele perder la
+                    // activacion del usuario y Chrome lo bloquea en silencio, asi que si
+                    // devuelve null hay que decirlo en vez de dejar al comercial esperando.
+                    const w = window.open(url, '_blank');
+                    if (!w) throw new Error('el navegador ha bloqueado la ventana del PDF: permite las ventanas emergentes de esta pagina');
                 }
                 // El blob y el iframe tienen que sobrevivir al dialogo de impresion:
                 // liberarlos antes deja la vista previa en blanco.
