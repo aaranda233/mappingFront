@@ -12,6 +12,7 @@ export default function mappingManager() {
         pedidoRefItem: null,
         pedidoRefPedidos: [],
         pedidoRefIndice: 0,
+        pedidoRefBuscada: '',
 
         get filteredMappings() {
             // El backend ya filtra por PED_idCentro cuando hay centro en la URL.
@@ -284,15 +285,19 @@ export default function mappingManager() {
                 if (!res.ok) throw new Error('Respuesta no OK');
                 const data = await res.json();
                 const pedidos = data.pedidos || [];
+                // El backend reintenta sin el sufijo de parte (_2) si con la referencia
+                // entera no sale nada, y dice con cual acabo buscando.
+                const buscada = data.ref_buscada || ref;
 
                 if (pedidos.length === 0) {
-                    this.showToast(`Sin pedidos en NetAgro con la referencia ${ref}`, "#f59e0b");
+                    this.showToast(`Sin pedidos en NetAgro con la referencia ${buscada}`, "#f59e0b");
                     return;
                 }
 
                 this.pedidoRefItem = item;
                 this.pedidoRefPedidos = pedidos;
                 this.pedidoRefIndice = 0;
+                this.pedidoRefBuscada = buscada;
                 this.pedidoRefOpen = true;
             } catch (err) {
                 console.error('Error buscando el pedido por referencia:', err);
@@ -307,6 +312,7 @@ export default function mappingManager() {
             this.pedidoRefItem = null;
             this.pedidoRefPedidos = [];
             this.pedidoRefIndice = 0;
+            this.pedidoRefBuscada = '';
         },
 
         // Del pedido solo se coge el IdPresentacion: se escribe en el buscador de

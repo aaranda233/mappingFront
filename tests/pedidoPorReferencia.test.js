@@ -42,14 +42,18 @@ const PEDIDO = {
 const PEDIDO_VIEJO = { ...PEDIDO, PED_idpedido: 675000, PED_pedido: 1199, PED_fechasalida: '2026-08-01T00:00:00.000Z' };
 
 const toasts = [];
-function entorno(pedidos) {
+function entorno(pedidos, refBuscada) {
     const urls = [];
     globalThis.window = { env: { IP_BACKEND: '127.0.0.1:0' } };
     globalThis.Toastify = (opts) => ({ showToast: () => toasts.push(opts.text) });
     globalThis.fetch = async (url) => {
         urls.push(url);
         if (url.includes('/pedidos-por-referencia')) {
-            return { ok: true, status: 200, json: async () => ({ idcliente: 2267, pedidos }) };
+            const ref = decodeURIComponent(new URL(`http://x/?${url.split('?')[1]}`).searchParams.get('ref_pedido'));
+            return {
+                ok: true, status: 200,
+                json: async () => ({ idcliente: 2267, ref, ref_buscada: refBuscada || ref, pedidos })
+            };
         }
         // buscador de presentaciones
         return { ok: true, status: 200, json: async () => ([]) };
@@ -116,6 +120,45 @@ const tarjetaTransporte = (contenido) => ({
     const busqueda = urls.find(u => u.includes('/presentaciones/buscar'));
     ok(!!busqueda && busqueda.includes('busqueda=523'), 'lanza la busqueda por ese numero');
     ok(busqueda.includes('idcliente=2267'), 'la busqueda mantiene el cliente de la tarjeta');
+}
+
+{
+    console.log('\n--- confecciones: referencia con sufijo de parte (_2) ---');
+    toasts.length = 0;
+    // El backend reintenta sin el sufijo y avisa de con que referencia acabo buscando.
+    entorno([PEDIDO], '901021164394');
+    const m = mappingManager();
+    const item = { ...tarjetaConfeccion(), ref_pedido: '901021164394_2' };
+    await m.abrirPedidoRef(item);
+    ok(m.pedidoRefOpen === true, 'abre con lo que encontro sin el sufijo');
+    ok(m.pedidoRefBuscada === '901021164394', 'guarda la referencia que se acabo buscando');
+    ok(m.pedidoRefBuscada !== item.ref_pedido, 'difiere de la de la tarjeta: el modal lo avisa');
+    m.cerrarPedidoRef();
+    ok(m.pedidoRefBuscada === '', 'al cerrar se limpia');
+}
+
+{
+    console.log('\n--- confecciones: sin resultados, el aviso nombra la referencia buscada ---');
+    toasts.length = 0;
+    entorno([], '901021164394');
+    const m = mappingManager();
+    const item = { ...tarjetaConfeccion(), ref_pedido: '901021164394_2' };
+    await m.abrirPedidoRef(item);
+    ok(m.pedidoRefOpen === false, 'no abre el modal');
+    ok(toasts.some(t => t.includes('901021164394') && !t.includes('_2')),
+        'el aviso dice la referencia con la que se busco de verdad');
+}
+
+{
+    console.log('\n--- transportes: referencia con sufijo de parte (_2) ---');
+    toasts.length = 0;
+    entorno([PEDIDO], '901021164394');
+    const t = transportesManager();
+    const item = tarjetaTransporte([{ id: 2527, direccion: 'VA-PRIMAFRIO BELFORT', numero: 78, cliente: 2267 }]);
+    item.ref_pedido = '901021164394_2';
+    await t.abrirPedidoRef(item);
+    ok(t.pedidoRefOpen === true, 'abre con lo que encontro sin el sufijo');
+    ok(t.pedidoRefBuscada === '901021164394', 'guarda la referencia que se acabo buscando');
 }
 
 {

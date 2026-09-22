@@ -342,6 +342,13 @@
               </div>
 
               <div class="px-5 py-4 overflow-y-auto">
+                <!-- Aviso: la referencia entera no daba nada y se busc&oacute; sin el sufijo de parte -->
+                <div x-show="pedidoRefItem && pedidoRefBuscada && pedidoRefBuscada !== pedidoRefItem.ref_pedido"
+                  class="mb-3 px-3 py-2 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800">
+                  Sin resultados con <span class="font-semibold" x-text="pedidoRefItem?.ref_pedido"></span>:
+                  se ha buscado sin el sufijo, por <span class="font-semibold" x-text="pedidoRefBuscada"></span>.
+                </div>
+
                 <!-- Selector de pedido (solo si hay varios) -->
                 <div x-show="pedidoRefPedidos.length > 1" class="mb-4">
                   <label class="block text-[11px] font-bold text-gray-600 uppercase mb-1">
