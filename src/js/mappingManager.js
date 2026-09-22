@@ -7,6 +7,12 @@ export default function mappingManager() {
         pdfModalOpen: false,
         pdfBlobUrl: null,
 
+        // Modal "lineas del pedido de NetAgro" (se abre desde la Ref. Pedido de la tarjeta)
+        pedidoRefOpen: false,
+        pedidoRefItem: null,
+        pedidoRefPedidos: [],
+        pedidoRefIndice: 0,
+
         get filteredMappings() {
             // El backend ya filtra por PED_idCentro cuando hay centro en la URL.
             // Devolvemos tal cual lo recibido.
@@ -55,7 +61,8 @@ export default function mappingManager() {
                             _debounceTimer: null,
                             historico: null,
                             buscandoHistorico: false,
-                            mostrarHistorico: false
+                            mostrarHistorico: false,
+                            buscandoPedidoRef: false
                         });
                     }
                 }
@@ -129,13 +136,13 @@ export default function mappingManager() {
             }
         },
 
-        showToast(msg) {
+        showToast(msg, backgroundColor = "#16a34a") {
             Toastify({
                 text: msg,
                 duration: 3000,
                 gravity: "top", // "top" or "bottom"
                 position: "right", // "left", "center" or "right"
-                backgroundColor: "#16a34a", // verde tailwind
+                backgroundColor, // verde tailwind por defecto
                 stopOnFocus: true
             }).showToast();
         },
@@ -242,6 +249,82 @@ export default function mappingManager() {
             item.mostrarResultados = false;
             item.mostrarHistorico = false;
             item.especificando = false;
+        },
+
+        // Pedido de NetAgro cuya BESTELLNR/referencia CONTIENE la ref_pedido de la tarjeta.
+        get pedidoRefActual() {
+            return this.pedidoRefPedidos[this.pedidoRefIndice] || null;
+        },
+
+        etiquetaPedidoRef(pedido) {
+            if (!pedido) return '';
+            const partes = [this.formatFecha(pedido.PED_fechasalida)];
+            if (pedido.PED_pedido) partes.push(`Pedido ${pedido.PED_pedido}`);
+            const ref = pedido.PED_referencia || pedido.PED_BESTELLNR;
+            if (ref) partes.push(String(ref).trim());
+            partes.push(`${(pedido.lineas || []).length} lineas`);
+            return partes.join(' - ');
+        },
+
+        async abrirPedidoRef(item) {
+            const ref = (item.ref_pedido || '').toString().trim();
+            if (!ref) {
+                this.showToast("Esta linea no tiene referencia de pedido", "#dc2626");
+                return;
+            }
+            if (item.buscandoPedidoRef) return;
+
+            item.buscandoPedidoRef = true;
+            try {
+                const params = new URLSearchParams({
+                    ref_pedido: ref,
+                    idcliente: item.idcliente || 0
+                });
+                const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/pedidos-por-referencia?${params.toString()}`);
+                if (!res.ok) throw new Error('Respuesta no OK');
+                const data = await res.json();
+                const pedidos = data.pedidos || [];
+
+                if (pedidos.length === 0) {
+                    this.showToast(`Sin pedidos en NetAgro con la referencia ${ref}`, "#f59e0b");
+                    return;
+                }
+
+                this.pedidoRefItem = item;
+                this.pedidoRefPedidos = pedidos;
+                this.pedidoRefIndice = 0;
+                this.pedidoRefOpen = true;
+            } catch (err) {
+                console.error('Error buscando el pedido por referencia:', err);
+                this.showToast("No se pudo consultar el pedido en NetAgro", "#dc2626");
+            } finally {
+                item.buscandoPedidoRef = false;
+            }
+        },
+
+        cerrarPedidoRef() {
+            this.pedidoRefOpen = false;
+            this.pedidoRefItem = null;
+            this.pedidoRefPedidos = [];
+            this.pedidoRefIndice = 0;
+        },
+
+        // Del pedido solo se coge el IdPresentacion: se escribe en el buscador de
+        // "Especificar Presentacion" y se lanza la busqueda (el backend resuelve un
+        // texto numerico como IdGenSal exacto), para que el usuario confirme el resultado.
+        aplicarLineaPedido(linea) {
+            const item = this.pedidoRefItem;
+            if (!item || !linea || linea.IdPresentacion == null) {
+                this.showToast("Esta linea del pedido no tiene presentacion asignada", "#dc2626");
+                return;
+            }
+
+            item.especificando = true;
+            item.busquedaPresentacion = String(linea.IdPresentacion);
+            this.cerrarPedidoRef();
+            // Diferido: el click que cierra el modal dispara el @click.away del buscador,
+            // que apagaria mostrarResultados justo despues de encenderlo.
+            setTimeout(() => this.buscarPresentaciones(item), 0);
         },
 
         abrirPdf(item) {
