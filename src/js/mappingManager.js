@@ -15,6 +15,13 @@ export default function mappingManager() {
         pedidoRefPedidos: [],
         pedidoRefIndice: 0,
         pedidoRefBuscada: '',
+        // "Productos de <cliente>": las lineas predefinidas del ERP (Pedidos_Clientes)
+        prodCliOpen: false,
+        prodCliItem: null,
+        prodCliDestinos: [],
+        prodCliDestino: '',        // '' = todos los destinos
+        prodCliDestinoPedido: null, // destino del pedido de NetAgro con esta referencia, si existe
+        prodCliFiltro: '',
 
         get filteredMappings() {
             // El backend ya filtra por PED_idCentro cuando hay centro en la URL.
@@ -66,7 +73,8 @@ export default function mappingManager() {
                             historico: null,
                             buscandoHistorico: false,
                             mostrarHistorico: false,
-                            buscandoPedidoRef: false
+                            buscandoPedidoRef: false,
+                            buscandoProductosCliente: false
                         });
                     }
                 }
@@ -350,6 +358,121 @@ export default function mappingManager() {
             // Diferido: el click que cierra el modal dispara el @click.away del buscador,
             // que apagaria mostrarResultados justo despues de encenderlo.
             setTimeout(() => this.buscarPresentaciones(item), 0);
+        },
+
+        // ---- Productos de <cliente> (Pedidos_Clientes del ERP, por destino) ----
+        async abrirProductosCliente(item) {
+            if (!item.idcliente) {
+                this.showToast("Esta linea no tiene cliente", "#dc2626");
+                return;
+            }
+            if (item.buscandoProductosCliente) return;
+
+            item.buscandoProductosCliente = true;
+            try {
+                const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/productos-cliente?idcliente=${encodeURIComponent(item.idcliente)}`);
+                if (!res.ok) throw new Error('Respuesta no OK');
+                const data = await res.json();
+                const destinos = data.destinos || [];
+                if (destinos.length === 0) {
+                    this.showToast(`${item.cliente || 'Este cliente'} no tiene productos predefinidos en NetAgro`, "#f59e0b");
+                    return;
+                }
+
+                this.prodCliItem = item;
+                this.prodCliDestinos = destinos;
+                this.prodCliDestino = '';
+                this.prodCliDestinoPedido = null;
+                this.prodCliFiltro = '';
+                this.prodCliOpen = true;
+                this.preseleccionarDestinoPedido(item);
+            } catch (err) {
+                console.error('Error cargando productos del cliente:', err);
+                this.showToast("No se pudieron cargar los productos del cliente", "#dc2626");
+            } finally {
+                item.buscandoProductosCliente = false;
+            }
+        },
+
+        // Si el pedido ya existe en NetAgro, su destino es el bueno: se preselecciona.
+        // Es una pista, no bloquea: si no hay pedido (o su destino no tiene predefinidos)
+        // se quedan todos los destinos.
+        async preseleccionarDestinoPedido(item) {
+            const ref = (item.ref_pedido || '').toString().trim();
+            if (!ref) return;
+            try {
+                const params = new URLSearchParams({ ref_pedido: ref, idcliente: item.idcliente || 0 });
+                const res = await fetch(`http://${window.env.IP_BACKEND}/api/mapping/pedidos-por-referencia?${params.toString()}`);
+                if (!res.ok) return;
+                const data = await res.json();
+                const id = (data.pedidos || [])[0]?.destino?.id;
+                if (id == null || this.prodCliItem !== item) return;
+                if (!this.prodCliDestinos.some(d => String(d.IdDestino) === String(id))) return;
+                this.prodCliDestinoPedido = String(id);
+                // Solo si el usuario no ha elegido ya otro
+                if (this.prodCliDestino === '') this.prodCliDestino = String(id);
+            } catch (err) {
+                console.error('Error buscando el destino del pedido:', err);
+            }
+        },
+
+        get prodCliGrupos() {
+            const palabras = this.prodCliFiltro.toLowerCase().split(/\s+/).filter(Boolean);
+            return this.prodCliDestinos
+                .filter(d => this.prodCliDestino === '' || String(d.IdDestino) === this.prodCliDestino)
+                .map(d => ({
+                    ...d,
+                    productos: d.productos.filter(p => {
+                        if (palabras.length === 0) return true;
+                        const texto = [p.Presentacion, p.Genero, p.NombreCategoria, p.Marca, p.IdPresentacion, p.IdCategoria]
+                            .join(' ').toLowerCase();
+                        return palabras.every(w => texto.includes(w));
+                    })
+                }))
+                .filter(d => d.productos.length > 0);
+        },
+
+        etiquetaDestino(d) {
+            const partes = [];
+            if (d.NumeroDestino != null) partes.push(d.NumeroDestino);
+            partes.push(d.Destino);
+            return `${partes.join(' - ')} (${d.productos.length})`;
+        },
+
+        cerrarProductosCliente() {
+            this.prodCliOpen = false;
+            this.prodCliItem = null;
+            this.prodCliDestinos = [];
+            this.prodCliDestino = '';
+            this.prodCliDestinoPedido = null;
+            this.prodCliFiltro = '';
+        },
+
+        // La linea predefinida trae presentacion, genero y categoria ya validados por el
+        // ERP, asi que se rellenan directamente, como con el historico.
+        aplicarProductoCliente(prod) {
+            const item = this.prodCliItem;
+            if (!item || !prod || prod.IdGenero == null || prod.IdPresentacion == null || prod.IdCategoria == null) {
+                this.showToast("Este producto no tiene datos validos", "#dc2626");
+                return;
+            }
+            item.id_genero = String(prod.IdGenero);
+            item.id_gensal = String(prod.IdPresentacion);
+            item.id_categoria = String(prod.IdCategoria);
+            item.presentacionSeleccionada = {
+                Presentacion: prod.Presentacion,
+                Genero: prod.Genero,
+                IdGenero: prod.IdGenero,
+                IdPresentacion: prod.IdPresentacion,
+                IdCategoria: prod.IdCategoria,
+                NombreCategoria: prod.NombreCategoria
+            };
+            item.busquedaPresentacion = prod.Presentacion || '';
+            item.mostrarResultados = false;
+            item.mostrarHistorico = false;
+            item.especificando = false;
+            this.cerrarProductosCliente();
+            this.cargarCategorias(item);
         },
 
         abrirPdf(item) {
