@@ -76,11 +76,11 @@ export default {
     },
     estadoPedidosGreenyard: {
         current: null,
-        pilotColor: 'gray'
+        pilotColor: 'green'
     },
     estadoPedidosGreenyardTest: {
         current: null,
-        pilotColor: 'gray'
+        pilotColor: 'green'
     },
     estadoPedidosAnecoop: {
         current: null,
@@ -328,13 +328,13 @@ export default {
             const data = await res.json();
             this.estadoPedidosGreenyard.current = data.current;
             if (!data.current) {
-                this.estadoPedidosGreenyard.pilotColor = 'gray';
+                this.estadoPedidosGreenyard.pilotColor = 'green';
             } else if (data.current.estado === 'procesando') {
                 this.estadoPedidosGreenyard.pilotColor = 'yellow';
             } else if (data.current.estado === 'error') {
                 this.estadoPedidosGreenyard.pilotColor = 'red';
             } else {
-                this.estadoPedidosGreenyard.pilotColor = 'gray';
+                this.estadoPedidosGreenyard.pilotColor = 'green';
             }
         } catch (e) {
             console.error("Error fetching estado pedidos greenyard", e);
@@ -346,13 +346,13 @@ export default {
             const data = await res.json();
             this.estadoPedidosGreenyardTest.current = data.current;
             if (!data.current) {
-                this.estadoPedidosGreenyardTest.pilotColor = 'gray';
+                this.estadoPedidosGreenyardTest.pilotColor = 'green';
             } else if (data.current.estado === 'procesando') {
                 this.estadoPedidosGreenyardTest.pilotColor = 'yellow';
             } else if (data.current.estado === 'error') {
                 this.estadoPedidosGreenyardTest.pilotColor = 'red';
             } else {
-                this.estadoPedidosGreenyardTest.pilotColor = 'gray';
+                this.estadoPedidosGreenyardTest.pilotColor = 'green';
             }
         } catch (e) {
             console.error("Error fetching estado pedidos greenyard test", e);
