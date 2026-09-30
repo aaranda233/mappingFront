@@ -1,3 +1,5 @@
+import { cargarCategoriasPresentacion } from './categoriasPresentacion.js';
+
 export default function presentacionesManager() {
     return {
         presentaciones: [],
@@ -21,6 +23,7 @@ export default function presentacionesManager() {
         editIdGensal: '',
         editIdCategoria: '',
         editIdGenero: '',
+        editCategorias: [],
         editError: '',
         _editDebounce: null,
 
@@ -134,13 +137,27 @@ export default function presentacionesManager() {
                 this.editIdGensal = String(item.IdPresentacion);
                 this.editIdCategoria = String(item.Categoria || '');
                 this.editIdGenero = String(item.IdGenero || '');
+                this.cargarEditCategorias();
             } else {
                 this.editSeleccionada = null;
                 this.editBusqueda = '';
                 this.editIdGensal = '';
                 this.editIdCategoria = '';
                 this.editIdGenero = '';
+                this.editCategorias = [];
             }
+        },
+
+        async cargarEditCategorias() {
+            const idGensal = this.editIdGensal;
+            this.editCategorias = [];
+            if (!idGensal) return;
+            const lista = await cargarCategoriasPresentacion(idGensal, this.editando?.IdCliente, {
+                IdCategoria: this.editIdCategoria,
+                NombreCategoria: this.editSeleccionada?.NombreCategoria
+            });
+            // Si entretanto se eligio otra presentacion, esta respuesta ya no vale
+            if (this.editIdGensal === idGensal) this.editCategorias = lista;
         },
 
         cerrarEdicion() {
@@ -154,6 +171,7 @@ export default function presentacionesManager() {
             this.editIdGenero = '';
             this.editIdGensal = '';
             this.editIdCategoria = '';
+            this.editCategorias = [];
 
             if (this.editBusqueda.length < 1) {
                 this.editResultados = [];
@@ -186,6 +204,7 @@ export default function presentacionesManager() {
             this.editSeleccionada = pres;
             this.editMostrarResultados = false;
             this.editBusqueda = pres.Presentacion;
+            this.cargarEditCategorias();
         },
 
         limpiarEditPresentacion() {
@@ -196,6 +215,7 @@ export default function presentacionesManager() {
             this.editIdGenero = '';
             this.editIdGensal = '';
             this.editIdCategoria = '';
+            this.editCategorias = [];
         },
 
         async guardarEdicion() {

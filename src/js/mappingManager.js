@@ -1,3 +1,5 @@
+import { cargarCategoriasPresentacion } from './categoriasPresentacion.js';
+
 export default function mappingManager() {
     return {
         mappings: [],
@@ -51,6 +53,7 @@ export default function mappingManager() {
                         nuevos.push({
                             ...nuevo,
                             id_categoria: "",
+                            categorias: [],
                             id_gensal: "",
                             error: "",
                             especificando: false,
@@ -153,6 +156,7 @@ export default function mappingManager() {
             item.id_genero = "";
             item.id_gensal = "";
             item.id_categoria = "";
+            item.categorias = [];
 
             if (item.busquedaPresentacion.length < 1) {
                 item.resultadosPresentacion = [];
@@ -187,6 +191,19 @@ export default function mappingManager() {
             item.mostrarResultados = false;
             item.busquedaPresentacion = presentacion.Presentacion;
             item.especificando = false;
+            this.cargarCategorias(item);
+        },
+
+        async cargarCategorias(item) {
+            const idGensal = item.id_gensal;
+            item.categorias = [];
+            if (!idGensal) return;
+            const lista = await cargarCategoriasPresentacion(idGensal, item.idcliente, {
+                IdCategoria: item.id_categoria,
+                NombreCategoria: item.presentacionSeleccionada?.NombreCategoria
+            });
+            // Si entretanto se eligio otra presentacion, esta respuesta ya no vale
+            if (item.id_gensal === idGensal) item.categorias = lista;
         },
 
         limpiarPresentacion(item) {
@@ -197,6 +214,7 @@ export default function mappingManager() {
             item.id_genero = "";
             item.id_gensal = "";
             item.id_categoria = "";
+            item.categorias = [];
         },
 
         async consultarHistorico(item) {
@@ -250,6 +268,7 @@ export default function mappingManager() {
             item.mostrarResultados = false;
             item.mostrarHistorico = false;
             item.especificando = false;
+            this.cargarCategorias(item);
         },
 
         // Pedido de NetAgro cuya BESTELLNR/referencia CONTIENE la ref_pedido de la tarjeta.
