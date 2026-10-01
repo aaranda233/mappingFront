@@ -1,4 +1,5 @@
 import { cargarCategoriasPresentacion } from './categoriasPresentacion.js';
+import { ofrecerReprocesar } from './reprocesarCorreo.js';
 
 export default function mappingManager() {
     return {
@@ -135,6 +136,8 @@ export default function mappingManager() {
                         // Eliminar solo este mapping (por id)
                         this.mappings = this.mappings.filter(m => m.id !== item.id);
                         this.showToast("Enviado correctamente");
+                        // Si era la ultima card del correo, ofrece reprocesarlo
+                        ofrecerReprocesar(result.reprocesar, (msg, color) => this.showToast(msg, color));
                     } else {
                         item.error = "❌ " + (result.message || result.Message || "Error desconocido desde el servidor externo.");
                     }

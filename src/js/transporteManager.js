@@ -1,3 +1,5 @@
+import { ofrecerReprocesar } from './reprocesarCorreo.js';
+
 export default function transportesManager() {
     return {
         transportes: [],
@@ -85,6 +87,8 @@ export default function transportesManager() {
                     // Eliminar solo este transporte (por id)
                     this.transportes = this.transportes.filter(t => t._id !== item._id);
                     this.showToast("Transporte procesado correctamente");
+                    // Si era la ultima card del correo, ofrece reprocesarlo
+                    ofrecerReprocesar(result.reprocesar, (msg, color) => this.showToast(msg, color));
                 } else {
                     item.error = "Error: " + (result.message || "Respuesta inesperada");
                 }
