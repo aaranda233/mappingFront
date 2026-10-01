@@ -466,6 +466,11 @@
               </div>
 
               <div class="px-5 py-4 overflow-y-auto">
+                <!-- Lo que se esta mapeando, para no tener que recordarlo al elegir -->
+                <div x-show="pedidoRefItem?.descripcion" class="mb-3 px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm text-gray-800">
+                  <span class="block text-[11px] font-bold text-gray-500 uppercase">Descripci&oacute;n de la l&iacute;nea</span>
+                  <span class="font-medium break-words" x-text="pedidoRefItem?.descripcion"></span>
+                </div>
                 <!-- Aviso: la referencia entera no daba nada y se busc&oacute; sin el sufijo de parte -->
                 <div x-show="pedidoRefItem && pedidoRefBuscada && pedidoRefBuscada !== pedidoRefItem.ref_pedido"
                   class="mb-3 px-3 py-2 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800">
@@ -586,6 +591,11 @@
 
               <!-- Filtros -->
               <div class="px-5 pt-4 pb-3 border-b border-gray-100 space-y-2">
+                <!-- Lo que se esta mapeando, para no tener que recordarlo al elegir -->
+                <div x-show="prodCliItem?.descripcion" class="px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm text-gray-800">
+                  <span class="block text-[11px] font-bold text-gray-500 uppercase">Descripci&oacute;n de la l&iacute;nea</span>
+                  <span class="font-medium break-words" x-text="prodCliItem?.descripcion"></span>
+                </div>
                 <div>
                   <label class="block text-[11px] font-bold text-gray-600 uppercase mb-1">Destino</label>
                   <select class="w-full px-4 py-2 bg-white border border-gray-300 rounded-xl shadow-sm text-sm"

@@ -342,6 +342,11 @@
               </div>
 
               <div class="px-5 py-4 overflow-y-auto">
+                <!-- Lo que se esta mapeando, para no tener que recordarlo al elegir -->
+                <div x-show="pedidoRefItem?.direccion" class="mb-3 px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm text-gray-800">
+                  <span class="block text-[11px] font-bold text-gray-500 uppercase">Direcci&oacute;n del transporte</span>
+                  <span class="font-medium break-words" x-text="pedidoRefItem?.direccion"></span>
+                </div>
                 <!-- Aviso: la referencia entera no daba nada y se busc&oacute; sin el sufijo de parte -->
                 <div x-show="pedidoRefItem && pedidoRefBuscada && pedidoRefBuscada !== pedidoRefItem.ref_pedido"
                   class="mb-3 px-3 py-2 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800">
