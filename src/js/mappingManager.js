@@ -61,8 +61,11 @@ export default function mappingManager() {
 
                 // Agrega nuevos si no están ya
                 for (const nuevo of data) {
-                    const yaExiste = this.mappings.some(m => m.id === nuevo.id);
-                    if (!yaExiste) {
+                    const existente = this.mappings.find(m => m.id === nuevo.id);
+                    if (existente) {
+                        // id_destino puede llegar despues (al mapear la direccion del pedido)
+                        existente.id_destino = nuevo.id_destino;
+                    } else {
                         nuevos.push({
                             ...nuevo,
                             id_categoria: "",
@@ -406,10 +409,17 @@ export default function mappingManager() {
             }
         },
 
-        // Si el pedido ya existe en NetAgro, su destino es el bueno: se preselecciona.
-        // Es una pista, no bloquea: si no hay pedido (o su destino no tiene predefinidos)
-        // se quedan todos los destinos.
+        // El destino del pedido se preselecciona: primero el que trae la card (id_destino, lo
+        // manda el PHP o lo rellena el mapping de la direccion) y, si no, el del pedido de
+        // NetAgro con esta referencia. Es una pista, no bloquea: si no hay (o ese destino no
+        // tiene predefinidos) se quedan todos los destinos.
         async preseleccionarDestinoPedido(item) {
+            const idCard = item.id_destino != null ? String(item.id_destino) : '';
+            if (idCard && this.prodCliDestinos.some(d => String(d.IdDestino) === idCard)) {
+                this.prodCliDestinoPedido = idCard;
+                if (this.prodCliDestino === '') this.prodCliDestino = idCard;
+                return;
+            }
             const ref = (item.ref_pedido || '').toString().trim();
             if (!ref) return;
             try {
