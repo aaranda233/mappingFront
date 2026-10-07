@@ -610,6 +610,23 @@
                 <input type="text" placeholder="Buscar por presentaci&oacute;n, g&eacute;nero, categor&iacute;a, marca o Id..."
                   class="w-full px-4 py-2 bg-white border border-gray-300 rounded-xl shadow-sm text-sm"
                   x-model="prodCliFiltro" />
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-700">
+                  <label class="flex items-center gap-1.5">
+                    <span class="font-bold text-[11px] text-gray-600 uppercase">Ordenar</span>
+                    <select class="px-2 py-1 bg-white border border-gray-300 rounded-lg text-xs" x-model="prodCliOrden">
+                      <option value="uso">M&aacute;s pedidas (12 meses)</option>
+                      <option value="reciente">Pedidas m&aacute;s recientemente</option>
+                    </select>
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer" x-show="prodCliOcultas.sinUso > 0">
+                    <input type="checkbox" class="accent-[#f17533]" x-model="prodCliSoloUsadas" />
+                    <span>Solo pedidas en el &uacute;ltimo a&ntilde;o <span class="text-gray-400" x-text="'(oculta ' + prodCliOcultas.sinUso + ')'"></span></span>
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer" x-show="prodCliOcultas.bajas > 0">
+                    <input type="checkbox" class="accent-[#f17533]" x-model="prodCliVerBajas" />
+                    <span>Ver dadas de baja <span class="text-gray-400" x-text="'(' + prodCliOcultas.bajas + ')'"></span></span>
+                  </label>
+                </div>
                 <p x-show="prodCliDestinoPedido" class="text-[11px] text-green-700">
                   Preseleccionado el destino del pedido de NetAgro con esta referencia.
                 </p>
@@ -617,44 +634,58 @@
 
               <div class="px-5 py-4 overflow-y-auto">
                 <p class="text-xs text-gray-500 mb-3">
-                  Pincha un producto para rellenar la <span class="font-semibold">presentaci&oacute;n, categor&iacute;a y g&eacute;nero</span> de la tarjeta.
+                  Una entrada por presentaci&oacute;n (<span class="font-semibold" x-text="prodCliTotal"></span>), agrupadas por g&eacute;nero.
+                  Pincha una para rellenar la <span class="font-semibold">presentaci&oacute;n, categor&iacute;a y g&eacute;nero</span> de la tarjeta;
+                  si el cliente la ha pedido con varias categor&iacute;as, elige la que toque abajo.
                 </p>
 
-                <template x-for="grupo in prodCliGrupos" :key="grupo.IdDestino">
+                <template x-for="grupo in prodCliGrupos" :key="grupo.IdGenero">
                   <div class="mb-4">
                     <div class="sticky top-0 z-10 flex items-center gap-2 px-3 py-1.5 mb-1.5 rounded-lg bg-gray-100 text-xs font-bold text-gray-700">
-                      <span x-show="grupo.NumeroDestino != null" class="px-1.5 py-0.5 rounded bg-[#00394a] text-white" x-text="grupo.NumeroDestino"></span>
-                      <span class="truncate" x-text="grupo.Destino"></span>
-                      <span x-show="grupo.PoblacionDestino" class="font-normal text-gray-500 truncate" x-text="grupo.PoblacionDestino"></span>
-                      <span x-show="String(grupo.IdDestino) === prodCliDestinoPedido"
-                        class="text-[10px] uppercase px-2 py-0.5 rounded-full bg-green-100 text-green-700 shrink-0">Destino del pedido</span>
-                      <span class="ml-auto font-normal text-gray-500 shrink-0" x-text="grupo.productos.length + ' productos'"></span>
+                      <span class="truncate" x-text="grupo.Genero || ('Género ' + grupo.IdGenero)"></span>
+                      <span class="ml-auto font-normal text-gray-500 shrink-0" x-text="grupo.productos.length + (grupo.productos.length === 1 ? ' presentación' : ' presentaciones')"></span>
                     </div>
                     <div class="space-y-1.5">
-                      <template x-for="prod in grupo.productos" :key="prod.IdLinea">
-                        <button type="button" :disabled="!prod.Valido" :title="prod.MotivoNoValido || ''"
-                          class="w-full text-left px-3 py-2 rounded-lg bg-white border border-gray-200 hover:bg-[#f17533]/10 hover:border-[#f17533] transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200"
-                          @click="aplicarProductoCliente(prod)">
-                          <div class="flex items-center justify-between gap-2">
-                            <div class="flex-1 min-w-0">
-                              <div class="text-sm font-semibold text-gray-800" x-text="prod.Presentacion || '(sin presentaci\u00f3n)'"></div>
-                              <div class="text-xs text-gray-500 truncate">
-                                G&eacute;nero: <span class="font-medium" x-text="prod.Genero"></span>
-                                &middot; Cat: <span class="font-medium" x-text="prod.IdCategoria + (prod.NombreCategoria ? ' - ' + prod.NombreCategoria : '')"></span>
-                                <span x-show="prod.Marca">&middot; Marca: <span class="font-medium" x-text="prod.Marca"></span></span>
+                      <template x-for="prod in grupo.productos" :key="prod.IdPresentacion">
+                        <div class="rounded-lg bg-white border border-gray-200">
+                          <button type="button" :disabled="!prod.catSel.Valido" :title="prod.catSel.MotivoNoValido || ''"
+                            class="w-full text-left px-3 py-2 rounded-lg hover:bg-[#f17533]/10 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
+                            @click="aplicarProductoCliente(prod, prod.catSel)">
+                            <div class="flex items-center justify-between gap-2">
+                              <div class="flex-1 min-w-0">
+                                <div class="text-sm font-semibold text-gray-800">
+                                  <span x-text="prod.Presentacion || '(sin presentación)'"></span>
+                                  <span x-show="!prod.Activa" class="ml-1 text-[10px] font-bold uppercase bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded">De baja</span>
+                                </div>
+                                <div class="text-xs text-gray-500 truncate">
+                                  Cat: <span class="font-medium" x-text="prod.catSel.IdCategoria + (prod.catSel.NombreCategoria ? ' - ' + prod.catSel.NombreCategoria : '')"></span>
+                                  <span x-show="prod.Marca">&middot; Marca: <span class="font-medium" x-text="prod.Marca"></span></span>
+                                </div>
+                                <div class="text-[11px] text-gray-400">
+                                  Id Presentaci&oacute;n: <span class="font-bold text-[#f17533]" x-text="prod.IdPresentacion"></span>
+                                  <span x-show="prod.TipoPalet">&middot; <span x-text="prod.TipoPalet"></span></span>
+                                  <span x-show="prod.BxP">&middot; <span x-text="prod.BxP"></span> bultos/palet</span>
+                                  <span x-show="prod.Destinos.length > 1">&middot; en <span x-text="prod.Destinos.length"></span> destinos</span>
+                                  &middot; <span class="font-semibold text-gray-600" x-text="prod.Pedidos12m"></span> pedidos en 12 meses
+                                  <span x-show="prod.UltimoPedido">&middot; &uacute;ltimo <span x-text="formatFecha(prod.UltimoPedido)"></span></span>
+                                </div>
                               </div>
-                              <div class="text-[11px] text-gray-400">
-                                Id Presentaci&oacute;n: <span class="font-bold text-[#f17533]" x-text="prod.IdPresentacion"></span>
-                                <span x-show="prod.TipoPalet">&middot; <span x-text="prod.TipoPalet"></span></span>
-                                <span x-show="prod.BxP">&middot; <span x-text="prod.BxP"></span> bultos/palet</span>
-                                <span x-show="prod.FechaPedido">&middot; &uacute;ltimo <span x-text="formatFecha(prod.FechaPedido)"></span></span>
-                              </div>
+                              <span x-show="prod.catSel.Valido" class="text-[10px] font-bold uppercase bg-[#f17533] text-white px-2 py-0.5 rounded-full shrink-0">Usar</span>
+                              <span x-show="!prod.catSel.Valido" class="text-[10px] font-bold uppercase bg-red-100 text-red-700 px-2 py-0.5 rounded-full shrink-0" x-text="'No válida'"></span>
                             </div>
-                            <span x-show="prod.Valido" class="text-[10px] font-bold uppercase bg-[#f17533] text-white px-2 py-0.5 rounded-full shrink-0">Usar</span>
-                            <span x-show="!prod.Valido" class="text-[10px] font-bold uppercase bg-red-100 text-red-700 px-2 py-0.5 rounded-full shrink-0" x-text="'No válida'"></span>
+                            <div x-show="!prod.catSel.Valido" class="text-[11px] text-red-600 mt-0.5" x-text="prod.catSel.MotivoNoValido"></div>
+                          </button>
+                          <!-- Misma presentacion con otras categorias que ha pedido el cliente -->
+                          <div x-show="prod.cats.length > 1" class="flex flex-wrap items-center gap-1 px-3 pb-2">
+                            <span class="text-[10px] font-bold uppercase text-gray-400 mr-1">Otras categor&iacute;as:</span>
+                            <template x-for="cat in prod.cats.filter(c => c !== prod.catSel)" :key="cat.IdCategoria">
+                              <button type="button" :disabled="!cat.Valido" :title="cat.MotivoNoValido || ''"
+                                class="text-[11px] px-2 py-0.5 rounded-full border border-gray-300 text-gray-700 hover:bg-[#f17533]/10 hover:border-[#f17533] transition disabled:opacity-50 disabled:cursor-not-allowed disabled:line-through disabled:hover:bg-white disabled:hover:border-gray-300"
+                                @click="aplicarProductoCliente(prod, cat)"
+                                x-text="cat.IdCategoria + (cat.NombreCategoria ? ' - ' + cat.NombreCategoria : '')"></button>
+                            </template>
                           </div>
-                          <div x-show="!prod.Valido" class="text-[11px] text-red-600 mt-0.5" x-text="prod.MotivoNoValido"></div>
-                        </button>
+                        </div>
                       </template>
                     </div>
                   </div>
